@@ -334,12 +334,9 @@ module Gvn {
   private predicate unifiableNonTypeParameterTypeArguments(
     CompoundTypeKind k, GvnTypeArgument arg1, GvnTypeArgument arg2, int i
   ) {
-    exists(int j |
-      arg1 = getNonTypeParameterTypeArgument(k, _, i) and
-      arg2 = getNonTypeParameterTypeArgument(k, _, j) and
-      i <= j and
-      j <= i
-    |
+    arg1 = getNonTypeParameterTypeArgument(k, _, pragma[only_bind_into](i)) and
+    arg2 = getNonTypeParameterTypeArgument(k, _, pragma[only_bind_into](i)) and
+    (
       arg1 = arg2
       or
       unifiable(arg1, arg2)
@@ -354,23 +351,22 @@ module Gvn {
   private predicate unifiableTypeArguments(
     CompoundTypeKind k, GvnTypeArgument arg1, GvnTypeArgument arg2, int i
   ) {
-    unifiableNonTypeParameterTypeArguments(k, arg1, arg2, i)
-    or
-    exists(int j |
-      arg1 = TTypeParameterGvnType() and
-      typeArgumentIsTypeParameter(k, _, i) and
-      arg2 = getTypeArgument(k, _, j) and
-      i <= j and
-      j <= i
+    // unifiableNonTypeParameterTypeArguments(k, arg1, arg2, i)
+    arg1 = getNonTypeParameterTypeArgument(k, _, pragma[only_bind_into](i)) and
+    arg2 = getNonTypeParameterTypeArgument(k, _, pragma[only_bind_into](i)) and
+    (
+      arg1 = arg2
+      or
+      unifiable(arg1, arg2)
     )
     or
-    exists(int j |
-      arg1 = getTypeArgument(k, _, i) and
-      typeArgumentIsTypeParameter(k, _, j) and
-      arg2 = TTypeParameterGvnType() and
-      i <= j and
-      j <= i
-    )
+    arg1 = TTypeParameterGvnType() and
+    typeArgumentIsTypeParameter(k, _, pragma[only_bind_into](i)) and
+    arg2 = getTypeArgument(k, _, pragma[only_bind_into](i))
+    or
+    arg1 = getTypeArgument(k, _, pragma[only_bind_into](i)) and
+    typeArgumentIsTypeParameter(k, _, pragma[only_bind_into](i)) and
+    arg2 = TTypeParameterGvnType()
   }
 
   pragma[nomagic]
@@ -386,6 +382,7 @@ module Gvn {
    * Holds if the type arguments of types `t1` and `t2` are unifiable, `t1`
    * and `t2` are of the same kind, and the number of type arguments is 1.
    */
+  pragma[nomagic]
   private predicate unifiableSingle(ConstructedGvnType t1, ConstructedGvnType t2) {
     exists(CompoundTypeKind k, GvnTypeArgument arg1, GvnTypeArgument arg2 |
       unifiableSingle0(k, t2, arg1, arg2) and
@@ -430,18 +427,21 @@ module Gvn {
 
   pragma[nomagic]
   private predicate unifiableMultiple2Aux(
-    CompoundTypeKind k, ConstructedGvnType t2, int i, GvnTypeArgument arg1, GvnTypeArgument arg2
+    CompoundTypeKind k, ConstructedGvnType t2, int i, GvnTypeArgument arg1
   ) {
-    unifiableTypeArguments(k, arg1, arg2, i) and
-    arg2 = getTypeArgument(k, t2, i) and
-    i >= 2
+    exists(GvnTypeArgument arg2 |
+      unifiableTypeArguments(k, arg1, arg2, i) and
+      arg2 = getTypeArgument(k, t2, i) and
+      i >= 2
+    )
   }
 
+  pragma[nomagic]
   private predicate unifiableMultiple2(
     CompoundTypeKind k, ConstructedGvnType t1, ConstructedGvnType t2, int i
   ) {
-    exists(GvnTypeArgument arg1, GvnTypeArgument arg2 |
-      unifiableMultiple2Aux(k, t2, i, arg1, arg2) and
+    exists(GvnTypeArgument arg1 |
+      unifiableMultiple2Aux(k, t2, i, arg1) and
       arg1 = getTypeArgument(k, t1, i)
     )
   }
@@ -454,58 +454,169 @@ module Gvn {
   private predicate unifiableMultiple(
     CompoundTypeKind k, ConstructedGvnType t1, ConstructedGvnType t2, int i
   ) {
-    unifiableMultiple01(k, t1, t2) and i = 1
+    exists(GvnTypeArgument arg10, GvnTypeArgument arg21 |
+      unifiableMultiple01Aux0(k, t2, arg10, arg21) and
+      unifiableMultiple01Aux1(k, t1, arg10, arg21)
+    ) and
+    i = 1
     or
     unifiableMultiple(k, t1, t2, i - 1) and
-    unifiableMultiple2(k, t1, t2, i)
-  }
-
-  private newtype TTypePath =
-    TTypePathNil() or
-    TTypePathCons(int head, TTypePath tail) { exists(getTypeAtCons(_, head, tail)) }
-
-  private class TypePath extends TTypePath {
-    string toString() {
-      this = TTypePathNil() and
-      result = ""
-      or
-      exists(int head, TypePath tail |
-        this = TTypePathCons(head, tail) and
-        result = head + "," + tail.toString()
-      )
-    }
-
-    int getLeafOrder(GvnType t) {
-      this =
-        rank[result + 1](TypePath tp | exists(getLeafTypeAt(t, tp)) | tp order by tp.toString() desc)
-    }
-  }
-
-  /**
-   * Gets the GVN inside GVN `t`, by following the path `path`, if any.
-   */
-  private GvnType getTypeAt(GvnType t, TTypePath path) {
-    path = TTypePathNil() and
-    result = t
-    or
-    exists(ConstructedGvnTypeList l, int head, TTypePath tail |
-      t = TConstructedGvnType(l) and
-      path = TTypePathCons(head, tail) and
-      result = getTypeAtCons(l, head, tail)
+    // unifiableMultiple2(k, t1, t2, i)
+    exists(GvnTypeArgument arg1 |
+      unifiableMultiple2Aux(k, t2, i, arg1) and
+      arg1 = getTypeArgument(k, t1, i)
     )
   }
 
-  private GvnType getTypeAtCons(ConstructedGvnTypeList l, int head, TTypePath tail) {
-    result = getTypeAt(l.getArg(head), tail)
+  /**
+   * Hold if (non-type-parameter) `arg1` subsumes (non-type-parameter) `arg2`,
+   * and both are the `i`th type argument of a compound type of kind `k`.
+   */
+  pragma[nomagic]
+  private predicate subsumeNonTypeParameterTypeArguments(
+    CompoundTypeKind k, GvnTypeArgument arg1, GvnTypeArgument arg2, int i
+  ) {
+    exists(ConstructedGvnType t1, ConstructedGvnType t2 |
+      // unifiable(pragma[only_bind_out](t1), pragma[only_bind_out](t2)) and
+      arg1 = getNonTypeParameterTypeArgument(k, t1, pragma[only_bind_into](i)) and
+      arg2 = getNonTypeParameterTypeArgument(k, t2, pragma[only_bind_into](i))
+    |
+      arg1 = arg2
+      or
+      subsumes(arg1, arg2)
+    )
   }
 
   /**
-   * Gets the leaf GVN inside GVN `t`, by following the path `path`, if any.
+   * Hold if `arg1` subsumes `arg2`, and both are the `i`th type argument
+   * of a compound type of kind `k`.
    */
-  pragma[noinline]
-  private GvnType getLeafTypeAt(GvnType t, TTypePath path) {
-    result = getTypeAt(t, path) and
-    not result instanceof ConstructedGvnType
+  pragma[nomagic]
+  private predicate subsumeTypeArguments(
+    CompoundTypeKind k, GvnTypeArgument arg1, GvnTypeArgument arg2, int i
+  ) {
+    // subsumeNonTypeParameterTypeArguments(k, arg1, arg2, i)
+    exists(ConstructedGvnType t1, ConstructedGvnType t2 |
+      // unifiable(pragma[only_bind_out](t1), pragma[only_bind_out](t2)) and
+      arg1 = getNonTypeParameterTypeArgument(k, t1, pragma[only_bind_into](i)) and
+      arg2 = getNonTypeParameterTypeArgument(k, t2, pragma[only_bind_into](i))
+    |
+      arg1 = arg2
+      or
+      subsumes(arg1, arg2)
+    )
+    or
+    exists(ConstructedGvnType t1, ConstructedGvnType t2 |
+      // unifiable(t1, t2) and
+      arg1 = TTypeParameterGvnType() and
+      typeArgumentIsTypeParameter(k, t1, pragma[only_bind_into](i)) and
+      arg2 = getTypeArgument(k, t2, pragma[only_bind_into](i))
+    )
+  }
+
+  pragma[nomagic]
+  private predicate subsumeSingle0(
+    CompoundTypeKind k, ConstructedGvnType t2, GvnTypeArgument arg1, GvnTypeArgument arg2
+  ) {
+    subsumeTypeArguments(k, arg1, arg2, 0) and
+    arg2 = getTypeArgument(k, t2, 0) and
+    k.getNumberOfTypeParameters() = 1
+  }
+
+  /**
+   * Holds if the type argument of `t1` subsumes the type argument of `t2`, `t1`
+   * and `t2` are of the same kind, and the number of type arguments is 1.
+   */
+  pragma[nomagic]
+  private predicate subsumesSingle(ConstructedGvnType t1, ConstructedGvnType t2) {
+    // unifiableSingle(t1, t2) and
+    exists(CompoundTypeKind k, GvnTypeArgument arg1, GvnTypeArgument arg2 |
+      subsumeSingle0(k, t2, arg1, arg2) and
+      arg1 = getTypeArgument(k, t1, 0)
+    )
+  }
+
+  pragma[nomagic]
+  private predicate subsumeMultiple01Aux0(
+    CompoundTypeKind k, ConstructedGvnType t2, GvnTypeArgument arg10, GvnTypeArgument arg21
+  ) {
+    exists(GvnTypeArgument arg20 |
+      subsumeTypeArguments(k, arg10, arg20, 0) and
+      arg20 = getTypeArgument(k, t2, 0) and
+      arg21 = getTypeArgument(k, t2, 1)
+    )
+  }
+
+  pragma[nomagic]
+  private predicate subsumeMultiple01Aux1(
+    CompoundTypeKind k, ConstructedGvnType t1, GvnTypeArgument arg10, GvnTypeArgument arg21
+  ) {
+    exists(GvnTypeArgument arg11 |
+      subsumeTypeArguments(k, arg11, arg21, 1) and
+      arg10 = getTypeArgument(k, t1, 0) and
+      arg11 = getTypeArgument(k, t1, 1)
+    )
+  }
+
+  /**
+   * Holds if the first two type arguments of type `t1` subsume the first two type
+   * arguments of `t2`, and both `t1` and `t2` are of kind `k`.
+   */
+  pragma[nomagic]
+  private predicate subsumeMultiple01(
+    CompoundTypeKind k, ConstructedGvnType t1, ConstructedGvnType t2
+  ) {
+    exists(GvnTypeArgument arg10, GvnTypeArgument arg21 |
+      subsumeMultiple01Aux0(k, t2, arg10, arg21) and
+      subsumeMultiple01Aux1(k, t1, arg10, arg21)
+    )
+  }
+
+  pragma[nomagic]
+  private predicate subsumeMultiple2Aux(
+    CompoundTypeKind k, ConstructedGvnType t2, int i, GvnTypeArgument arg1
+  ) {
+    exists(GvnTypeArgument arg2 |
+      subsumeTypeArguments(k, arg1, arg2, i) and
+      arg2 = getTypeArgument(k, t2, i) and
+      i >= 2
+    )
+  }
+
+  pragma[nomagic]
+  private predicate subsumeMultiple2(
+    CompoundTypeKind k, ConstructedGvnType t1, ConstructedGvnType t2, int i
+  ) {
+    // unifiable(t1, t2) and
+    exists(GvnTypeArgument arg1 |
+      subsumeMultiple2Aux(k, t2, i, arg1) and
+      arg1 = getTypeArgument(k, t1, i)
+    )
+  }
+
+  /**
+   * Holds if the arguments 0 through `i` (with `i >= 1`) of type
+   * `t1` subsume the corresponding type argument of `t2`, and both `t1`
+   * and `t2` are of kind `k`.
+   */
+  pragma[nomagic]
+  private predicate subsumeMultiple(
+    CompoundTypeKind k, ConstructedGvnType t1, ConstructedGvnType t2, int i
+  ) {
+    // unifiable(t1, t2) and
+    exists(GvnTypeArgument arg10, GvnTypeArgument arg21 |
+      subsumeMultiple01Aux0(k, t2, arg10, arg21) and
+      subsumeMultiple01Aux1(k, t1, arg10, arg21)
+    ) and
+    unifiable(pragma[only_bind_out](t1), pragma[only_bind_out](t2)) and
+    i = 1
+    or
+    subsumeMultiple(k, t1, t2, i - 1) and
+    // subsumeMultiple2(k, t1, t2, i)
+    exists(GvnTypeArgument arg1 |
+      subsumeMultiple2Aux(k, t2, i, arg1) and
+      arg1 = getTypeArgument(k, t1, i)
+    )
   }
 
   cached
@@ -563,28 +674,13 @@ module Gvn {
      */
     cached
     predicate unifiable(ConstructedGvnType t1, ConstructedGvnType t2) {
-      unifiableSingle(t1, t2)
+      // unifiableSingle(t1, t2)
+      exists(CompoundTypeKind k, GvnTypeArgument arg1, GvnTypeArgument arg2 |
+        unifiableSingle0(k, t2, arg1, arg2) and
+        arg1 = getTypeArgument(k, t1, 0)
+      )
       or
       exists(CompoundTypeKind k | unifiableMultiple(k, t1, t2, k.getNumberOfTypeParameters() - 1))
-    }
-
-    pragma[nomagic]
-    private predicate subsumes(ConstructedGvnType t1, ConstructedGvnType t2, int i) {
-      unifiable(t1, t2) and // subsumption implies unification
-      exists(TypePath path, GvnType leaf1, GvnType child2 |
-        leaf1 = getLeafTypeAt(t1, path) and
-        i = path.getLeafOrder(t1) and
-        child2 = getTypeAt(t2, path) and
-        (
-          leaf1 = TTypeParameterGvnType()
-          or
-          leaf1 = child2
-        )
-      |
-        i = 0
-        or
-        subsumes(t1, t2, i - 1)
-      )
     }
 
     /**
@@ -594,10 +690,13 @@ module Gvn {
      */
     cached
     predicate subsumes(ConstructedGvnType t1, ConstructedGvnType t2) {
-      exists(int last |
-        last = max(any(TypePath path).getLeafOrder(t1)) and
-        subsumes(t1, t2, last)
+      // subsumesSingle(t1, t2)
+      exists(CompoundTypeKind k, GvnTypeArgument arg1, GvnTypeArgument arg2 |
+        subsumeSingle0(k, t2, arg1, arg2) and
+        arg1 = getTypeArgument(k, t1, 0)
       )
+      or
+      exists(CompoundTypeKind k | subsumeMultiple(k, t1, t2, k.getNumberOfTypeParameters() - 1))
     }
   }
 
