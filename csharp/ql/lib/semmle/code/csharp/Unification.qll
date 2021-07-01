@@ -464,6 +464,23 @@ module Gvn {
     TTypePathNil() or
     TTypePathCons(int head, TTypePath tail) { exists(getTypeAtCons(_, head, tail)) }
 
+  private class TypePath extends TTypePath {
+    string toString() {
+      this = TTypePathNil() and
+      result = ""
+      or
+      exists(int head, TypePath tail |
+        this = TTypePathCons(head, tail) and
+        result = head + "," + tail.toString()
+      )
+    }
+
+    int getLeafOrder(GvnType t) {
+      this =
+        rank[result + 1](TypePath tp | exists(getLeafTypeAt(t, tp)) | tp order by tp.toString() desc)
+    }
+  }
+
   /**
    * Gets the GVN inside GVN `t`, by following the path `path`, if any.
    */
@@ -551,6 +568,25 @@ module Gvn {
       exists(CompoundTypeKind k | unifiableMultiple(k, t1, t2, k.getNumberOfTypeParameters() - 1))
     }
 
+    pragma[nomagic]
+    private predicate subsumes(ConstructedGvnType t1, ConstructedGvnType t2, int i) {
+      unifiable(t1, t2) and // subsumption implies unification
+      exists(TypePath path, GvnType leaf1, GvnType child2 |
+        leaf1 = getLeafTypeAt(t1, path) and
+        i = path.getLeafOrder(t1) and
+        child2 = getTypeAt(t2, path) and
+        (
+          leaf1 = TTypeParameterGvnType()
+          or
+          leaf1 = child2
+        )
+      |
+        i = 0
+        or
+        subsumes(t1, t2, i - 1)
+      )
+    }
+
     /**
      * Holds if GVN `t1` subsumes GVN `t2`. That is, is it possible to replace all
      * type parameters in `t1` with some GVNs (possibly type parameters themselves)
@@ -558,13 +594,9 @@ module Gvn {
      */
     cached
     predicate subsumes(ConstructedGvnType t1, ConstructedGvnType t2) {
-      unifiable(t1, t2) and // subsumption implies unification
-      forall(TTypePath path, GvnType leaf1 | leaf1 = getLeafTypeAt(t1, path) |
-        exists(GvnType child2 | child2 = getTypeAt(t2, path) |
-          leaf1 = TTypeParameterGvnType()
-          or
-          leaf1 = child2
-        )
+      exists(int last |
+        last = max(any(TypePath path).getLeafOrder(t1)) and
+        subsumes(t1, t2, last)
       )
     }
   }
