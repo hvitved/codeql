@@ -619,6 +619,120 @@ module Gvn {
     )
   }
 
+  private newtype TTypePath =
+    TTypePathNil() or
+    TTypePathCons(int head, TTypePath tail) { exists(getTypeAtCons(_, head, tail, _, _)) }
+
+  private newtype TBlah =
+    TBlahNil() or
+    TBlahCons(CompoundTypeKind head, TBlah tail) { exists(getTypeAtCons(_, _, _, head, tail)) }
+
+  private class TypePath extends TTypePath {
+    string toString() {
+      this = TTypePathNil() and
+      result = ""
+      or
+      exists(int head, TypePath tail |
+        this = TTypePathCons(head, tail) and
+        result = head + "," + tail.toString()
+      )
+    }
+
+    int getLeafOrder(GvnType t) {
+      this =
+        rank[result + 1](TypePath tp |
+          exists(getLeafTypeAt(t, tp, _))
+        |
+          tp order by tp.toString() desc
+        )
+    }
+  }
+
+  /**
+   * Gets the GVN inside GVN `t`, by following the path `path`, if any.
+   */
+  private GvnType getTypeAt(GvnType t, TTypePath path, TBlah blah) {
+    path = TTypePathNil() and
+    result = t and
+    blah = TBlahNil()
+    or
+    exists(ConstructedGvnTypeList l, int head, TTypePath tail, CompoundTypeKind k, TBlah blahTail |
+      t = TConstructedGvnType(l) and
+      path = TTypePathCons(head, tail) and
+      result = getTypeAtCons(l, head, tail, k, blahTail) and
+      blah = TBlahCons(k, blahTail)
+    )
+  }
+
+  private GvnType getTypeAtCons(
+    ConstructedGvnTypeList l, int head, TTypePath tail, CompoundTypeKind k, TBlah blah
+  ) {
+    result = getTypeAt(l.getArg(head), tail, blah) and
+    k = l.getKind()
+  }
+
+  /**
+   * Gets the leaf GVN inside GVN `t`, by following the path `path`, if any.
+   */
+  pragma[noinline]
+  private GvnType getLeafTypeAt(ConstructedGvnType t, TTypePath path, TBlah blah) {
+    result = getTypeAt(t, path, blah) and
+    not result instanceof ConstructedGvnType
+  }
+
+  private predicate isPrefix(TypePath pre, TypePath path, int length) {
+    pre = TTypePathNil() and
+    exists(path) and
+    length = 0
+    or
+    exists(int head, TypePath tail, TypePath tailOther |
+      pre = TTypePathCons(head, tail) and
+      path = TTypePathCons(head, tailOther) and
+      isPrefix(tail, tailOther, length - 1)
+    )
+  }
+
+  private predicate isPrefixBlah(TBlah pre, TBlah path, int length) {
+    pre = TBlahNil() and
+    exists(path) and
+    length = 0
+    or
+    exists(CompoundTypeKind head, TBlah tail, TBlah tailOther |
+      pre = TBlahCons(head, tail) and
+      path = TBlahCons(head, tailOther) and
+      isPrefixBlah(tail, tailOther, length - 1)
+    )
+  }
+
+  private predicate typeParameterAbove(ConstructedGvnType t, TypePath path, TBlah blah) {
+    exists(TypePath pre, int length, TBlah blah2 |
+      getLeafTypeAt(t, pre, blah2) = TTypeParameterGvnType() and
+      isPrefix(pre, path, length) and
+      isPrefixBlah(pragma[only_bind_out](blah2), pragma[only_bind_out](blah),
+        pragma[only_bind_out](length))
+    )
+  }
+
+  pragma[nomagic]
+  private predicate unifiableFrom(ConstructedGvnType t1, ConstructedGvnType t2, int i) {
+    exists(TypePath path, GvnType leaf1, TBlah blah |
+      leaf1 = getLeafTypeAt(t1, path, blah) and
+      i = path.getLeafOrder(t1) and
+      (
+        leaf1 = getLeafTypeAt(t2, path, blah)
+        or
+        leaf1 = TTypeParameterGvnType() and
+        exists(getTypeAt(t2, pragma[only_bind_out](path), pragma[only_bind_out](blah)))
+        or
+        typeParameterAbove(t2, pragma[only_bind_out](path), pragma[only_bind_out](blah))
+      )
+    |
+      i = 0
+      or
+      unifiableFrom(t1, t2, i - 1)
+    )
+  }
+
   cached
   private module Cached {
     cached
@@ -675,12 +789,16 @@ module Gvn {
     cached
     predicate unifiable(ConstructedGvnType t1, ConstructedGvnType t2) {
       // unifiableSingle(t1, t2)
-      exists(CompoundTypeKind k, GvnTypeArgument arg1, GvnTypeArgument arg2 |
-        unifiableSingle0(k, t2, arg1, arg2) and
-        arg1 = getTypeArgument(k, t1, 0)
+      // exists(CompoundTypeKind k, GvnTypeArgument arg1, GvnTypeArgument arg2 |
+      //   unifiableSingle0(k, t2, arg1, arg2) and
+      //   arg1 = getTypeArgument(k, t1, 0)
+      // )
+      // or
+      // exists(CompoundTypeKind k | unifiableMultiple(k, t1, t2, k.getNumberOfTypeParameters() - 1))
+      exists(int last |
+        last = max(any(TypePath path).getLeafOrder(t1)) and
+        unifiableFrom(t1, t2, last)
       )
-      or
-      exists(CompoundTypeKind k | unifiableMultiple(k, t1, t2, k.getNumberOfTypeParameters() - 1))
     }
 
     /**
