@@ -17,7 +17,7 @@ module Gvn {
   string getNameNested(Type t) {
     if not t instanceof NestedType or t.(NestedType).getDeclaringType() instanceof GenericType
     then result = t.getName()
-    else result = getNameNested(t.(NestedType).getDeclaringType()) + "." + t.getName()
+    else result = getNameNested(t.(NestedType).getDeclaringType()) + "+" + t.getName()
   }
 
   /**
@@ -275,6 +275,48 @@ module Gvn {
           )
         )
       )
+    }
+
+    private predicate sdfsdf(ConstructedType t) { t.getUnboundDeclaration().getName() = "Func<,>" }
+
+    private predicate sdf2(CompoundTypeKind k, int i, GvnType t) {
+      this.isFullyConstructed() and
+      not exists(this.toString()) and
+      k = this.getKind() and
+      t = this.getArg(i) and
+      i = 1 and
+      not this.getArg(_) instanceof TConstructedGvnType
+    }
+
+    private string sdf3(
+      CompoundTypeKind k, GenericType t, int i, int offset, int children, string name, int j,
+      int len
+    ) {
+      this.isFullyConstructed() and
+      not exists(this.toString()) and
+      k = this.getKind() and
+      not this.getArg(_) instanceof TConstructedGvnType and
+      t = this.getConstructedGenericDeclaringTypeAt(i) and
+      offset = t.getNumberOfDeclaringArguments() and
+      children = t.getNumberOfArgumentsSelf() and
+      name = getNameNested(t) and
+      t.toString() = "Func<,>" and
+      (
+        j = 0 and result = name.prefix(name.length() - children - 1) + "<"
+        or
+        j in [1 .. 2 * children - 1] and
+        if j % 2 = 0
+        then result = ","
+        else result = this.getArg((j + 1) / 2 + offset - 1).toString()
+        or
+        j = 2 * children and
+        result = ">"
+        or
+        this.isDeclaringTypeAt(i) and
+        j = 2 * children + 1 and
+        result = "."
+      ) and
+      len = this.length()
     }
 
     language[monotonicAggregates]
@@ -788,17 +830,20 @@ module Gvn {
      */
     cached
     predicate unifiable(ConstructedGvnType t1, ConstructedGvnType t2) {
-      // unifiableSingle(t1, t2)
-      // exists(CompoundTypeKind k, GvnTypeArgument arg1, GvnTypeArgument arg2 |
-      //   unifiableSingle0(k, t2, arg1, arg2) and
-      //   arg1 = getTypeArgument(k, t1, 0)
-      // )
-      // or
-      // exists(CompoundTypeKind k | unifiableMultiple(k, t1, t2, k.getNumberOfTypeParameters() - 1))
-      exists(int last |
-        last = max(any(TypePath path).getLeafOrder(t1)) and
-        unifiableFrom(t1, t2, last)
+      exists(CompoundTypeKind k, GvnTypeArgument arg1, GvnTypeArgument arg2 |
+        unifiableSingle0(k, t2, arg1, arg2) and
+        arg1 = getTypeArgument(k, t1, 0)
       )
+      or
+      exists(CompoundTypeKind k | unifiableMultiple(k, t1, t2, k.getNumberOfTypeParameters() - 1))
+      // exists(int last |
+      //   last = max(any(TypePath path).getLeafOrder(t1)) and
+      //   unifiableFrom(t1, t2, last)
+      // )
+    }
+
+    private predicate wer(ConstructedGvnType t, int c) {
+      c = strictcount(ConstructedGvnType t0 | unifiable(t, t0))
     }
 
     /**
