@@ -377,11 +377,8 @@ private predicate read(NodeEx node1, Content c, NodeEx node2, Configuration conf
   )
 }
 
-private predicate store(
-  NodeEx node1, TypedContent tc, NodeEx node2, DataFlowType contentType, Configuration config
-) {
-  store(node1.asNode(), tc, node2.asNode(), contentType) and
-  read(_, tc.getContent(), _, config)
+private predicate store(NodeEx node1, TypedContent tc, NodeEx node2, DataFlowType contentType) {
+  storeStep(node1.asNode(), tc, node2.asNode(), contentType)
 }
 
 pragma[nomagic]
@@ -415,73 +412,78 @@ private module Stage1 {
    * The Boolean `cc` records whether the node is reached through an
    * argument in a call.
    */
-  predicate fwdFlow(NodeEx node, Cc cc, Configuration config) {
+  predicate fwdFlow(NodeEx node, Cc cc, boolean valuePreserved, Configuration config) {
     not fullBarrier(node, config) and
     (
       sourceNode(node, config) and
-      cc = false
+      cc = false and
+      valuePreserved = true
       or
       exists(NodeEx mid |
-        fwdFlow(mid, cc, config) and
+        fwdFlow(mid, cc, valuePreserved, config) and
         localFlowStep(mid, node, config)
       )
       or
       exists(NodeEx mid |
-        fwdFlow(mid, cc, config) and
-        additionalLocalFlowStep(mid, node, config)
+        fwdFlow(mid, cc, _, config) and
+        additionalLocalFlowStep(mid, node, config) and
+        valuePreserved = false
       )
       or
       exists(NodeEx mid |
-        fwdFlow(mid, _, config) and
+        fwdFlow(mid, _, valuePreserved, config) and
         jumpStep(mid, node, config) and
         cc = false
       )
       or
       exists(NodeEx mid |
-        fwdFlow(mid, _, config) and
+        fwdFlow(mid, _, _, config) and
         additionalJumpStep(mid, node, config) and
-        cc = false
+        cc = false and
+        valuePreserved = false
       )
       or
       // store
       exists(NodeEx mid |
         useFieldFlow(config) and
-        fwdFlow(mid, cc, config) and
-        store(mid, _, node, _, config) and
+        fwdFlow(mid, cc, valuePreserved, config) and
+        store(mid, _, node, _) and
         not outBarrier(mid, config)
       )
       or
       // read
       exists(Content c |
-        fwdFlowRead(c, node, cc, config) and
-        fwdFlowConsCand(c, config) and
+        fwdFlowRead(c, node, cc, valuePreserved, config) and
+        (if valuePreserved = false then fwdFlowConsCand(c, config) else any()) and
         not inBarrier(node, config)
       )
       or
       // flow into a callable
       exists(NodeEx arg |
-        fwdFlow(arg, _, config) and
+        fwdFlow(arg, _, valuePreserved, config) and
         viableParamArgEx(_, node, arg) and
         cc = true
       )
       or
       // flow out of a callable
       exists(DataFlowCall call |
-        fwdFlowOut(call, node, false, config) and
+        fwdFlowOut(call, node, false, valuePreserved, config) and
         cc = false
         or
-        fwdFlowOutFromArg(call, node, config) and
-        fwdFlowIsEntered(call, cc, config)
+        fwdFlowOutFromArg(call, node, valuePreserved, config) and
+        fwdFlowIsEntered(call, cc, valuePreserved, config)
       )
     )
   }
 
-  private predicate fwdFlow(NodeEx node, Configuration config) { fwdFlow(node, _, config) }
+  private predicate fwdFlow(NodeEx node, Configuration config) { fwdFlow(node, _, _, config) }
 
   pragma[nomagic]
-  private predicate fwdFlowRead(Content c, NodeEx node, Cc cc, Configuration config) {
+  private predicate fwdFlowRead(
+    Content c, NodeEx node, Cc cc, boolean valuePreserved, Configuration config
+  ) {
     exists(NodeEx mid |
-      fwdFlow(mid, cc, config) and
+      fwdFlow(mid, cc, valuePreserved, config) and
       read(mid, c, node, config)
     )
   }
@@ -494,40 +496,48 @@ private module Stage1 {
     exists(NodeEx mid, NodeEx node, TypedContent tc |
       not fullBarrier(node, config) and
       useFieldFlow(config) and
-      fwdFlow(mid, _, config) and
-      store(mid, tc, node, _, config) and
+      fwdFlow(mid, _, _, config) and
+      store(mid, tc, node, _) and
       c = tc.getContent()
     )
   }
 
   pragma[nomagic]
-  private predicate fwdFlowReturnPosition(ReturnPosition pos, Cc cc, Configuration config) {
+  private predicate fwdFlowReturnPosition(
+    ReturnPosition pos, Cc cc, boolean valuePreserved, Configuration config
+  ) {
     exists(RetNodeEx ret |
-      fwdFlow(ret, cc, config) and
+      fwdFlow(ret, cc, valuePreserved, config) and
       ret.getReturnPosition() = pos
     )
   }
 
   pragma[nomagic]
-  private predicate fwdFlowOut(DataFlowCall call, NodeEx out, Cc cc, Configuration config) {
+  private predicate fwdFlowOut(
+    DataFlowCall call, NodeEx out, Cc cc, boolean valuePreserved, Configuration config
+  ) {
     exists(ReturnPosition pos |
-      fwdFlowReturnPosition(pos, cc, config) and
+      fwdFlowReturnPosition(pos, cc, valuePreserved, config) and
       viableReturnPosOutEx(call, pos, out)
     )
   }
 
   pragma[nomagic]
-  private predicate fwdFlowOutFromArg(DataFlowCall call, NodeEx out, Configuration config) {
-    fwdFlowOut(call, out, true, config)
+  private predicate fwdFlowOutFromArg(
+    DataFlowCall call, NodeEx out, boolean valuePreserved, Configuration config
+  ) {
+    fwdFlowOut(call, out, true, valuePreserved, config)
   }
 
   /**
    * Holds if an argument to `call` is reached in the flow covered by `fwdFlow`.
    */
   pragma[nomagic]
-  private predicate fwdFlowIsEntered(DataFlowCall call, Cc cc, Configuration config) {
+  private predicate fwdFlowIsEntered(
+    DataFlowCall call, Cc cc, boolean valuePreserved, Configuration config
+  ) {
     exists(ArgNodeEx arg |
-      fwdFlow(arg, cc, config) and
+      fwdFlow(arg, cc, valuePreserved, config) and
       viableParamArgEx(call, _, arg)
     )
   }
@@ -575,15 +585,17 @@ private module Stage1 {
     or
     // store
     exists(Content c |
-      revFlowStore(c, node, toReturn, config) and
-      revFlowConsCand(c, config)
+      revFlowStore(c, node, toReturn, config) //and
+      // revFlowConsCand(c, config)
     )
     or
     // read
     exists(NodeEx mid, Content c |
       read(node, c, mid, config) and
-      fwdFlowConsCand(c, pragma[only_bind_into](config)) and
+      // fwdFlowConsCand(c, pragma[only_bind_into](config)) and
       revFlow(mid, toReturn, pragma[only_bind_into](config))
+    |
+      fwdFlow(node, _, true, config) or fwdFlowConsCand(c, pragma[only_bind_into](config))
     )
     or
     // flow into a callable
@@ -621,7 +633,7 @@ private module Stage1 {
     exists(NodeEx mid, TypedContent tc |
       revFlow(mid, toReturn, pragma[only_bind_into](config)) and
       fwdFlowConsCand(c, pragma[only_bind_into](config)) and
-      store(node, tc, mid, _, config) and
+      store(node, tc, mid, _) and
       c = tc.getContent()
     )
   }
@@ -639,7 +651,7 @@ private module Stage1 {
   predicate viableReturnPosOutNodeCandFwd1(
     DataFlowCall call, ReturnPosition pos, NodeEx out, Configuration config
   ) {
-    fwdFlowReturnPosition(pos, _, config) and
+    fwdFlowReturnPosition(pos, _, _, config) and
     viableReturnPosOutEx(call, pos, out)
   }
 
@@ -683,7 +695,7 @@ private module Stage1 {
   private predicate revFlowIsReturned(DataFlowCall call, boolean toReturn, Configuration config) {
     exists(NodeEx out |
       revFlow(out, toReturn, config) and
-      fwdFlowOutFromArg(call, out, config)
+      fwdFlowOutFromArg(call, out, _, config)
     )
   }
 
@@ -695,7 +707,7 @@ private module Stage1 {
     exists(Content c |
       revFlowIsReadAndStored(c, pragma[only_bind_into](config)) and
       revFlow(node2, pragma[only_bind_into](config)) and
-      store(node1, tc, node2, contentType, config) and
+      store(node1, tc, node2, contentType) and
       c = tc.getContent() and
       exists(ap1)
     )
@@ -717,7 +729,7 @@ private module Stage1 {
 
   private predicate throughFlowNodeCand(NodeEx node, Configuration config) {
     revFlow(node, true, config) and
-    fwdFlow(node, true, config) and
+    fwdFlow(node, true, _, config) and
     not inBarrier(node, config) and
     not outBarrier(node, config)
   }
@@ -763,7 +775,7 @@ private module Stage1 {
     nodes = count(NodeEx node | fwdFlow(node, config)) and
     fields = count(Content f0 | fwdFlowConsCand(f0, config)) and
     conscand = -1 and
-    tuples = count(NodeEx n, boolean b | fwdFlow(n, b, config))
+    tuples = count(NodeEx n, boolean b1, boolean b2 | fwdFlow(n, b1, b2, config))
     or
     fwd = false and
     nodes = count(NodeEx node | revFlow(node, _, config)) and
@@ -1352,7 +1364,7 @@ private module Stage2 {
     Configuration config
   ) {
     exists(Ap ap2, Content c |
-      store(node1, tc, node2, contentType, config) and
+      store(node1, tc, node2, contentType) and
       revFlowStore(ap2, c, ap1, node1, tc, node2, _, _, config) and
       revFlowConsCand(ap2, c, ap1, config)
     )
@@ -1467,7 +1479,7 @@ private module LocalFlowBigStep {
       additionalJumpStep(_, node, config) or
       node instanceof ParamNodeEx or
       node.asNode() instanceof OutNodeExt or
-      store(_, _, node, _, config) or
+      store(_, _, node, _) or
       read(_, _, node, config) or
       node instanceof FlowCheckNode
     )
@@ -1483,7 +1495,7 @@ private module LocalFlowBigStep {
       additionalJumpStep(node, next, config) or
       flowIntoCallNodeCand1(_, node, next, config) or
       flowOutOfCallNodeCand1(_, node, next, config) or
-      store(node, _, next, _, config) or
+      store(node, _, next, _) or
       read(node, _, next, config)
     )
     or
@@ -2041,7 +2053,7 @@ private module Stage3 {
     Configuration config
   ) {
     exists(Ap ap2, Content c |
-      store(node1, tc, node2, contentType, config) and
+      store(node1, tc, node2, contentType) and
       revFlowStore(ap2, c, ap1, node1, tc, node2, _, _, config) and
       revFlowConsCand(ap2, c, ap1, config)
     )
@@ -2801,7 +2813,7 @@ private module Stage4 {
     Configuration config
   ) {
     exists(Ap ap2, Content c |
-      store(node1, tc, node2, contentType, config) and
+      store(node1, tc, node2, contentType) and
       revFlowStore(ap2, c, ap1, node1, tc, node2, _, _, config) and
       revFlowConsCand(ap2, c, ap1, config)
     )
@@ -4243,7 +4255,7 @@ private module FlowExploration {
     exists(NodeEx midNode, DataFlowType contentType |
       midNode = mid.getNodeEx() and
       ap1 = mid.getAp() and
-      store(midNode, tc, node, contentType, mid.getConfiguration()) and
+      store(midNode, tc, node, contentType) and
       ap2.getHead() = tc and
       ap2.len() = unbindInt(ap1.len() + 1) and
       compatibleTypes(ap1.getType(), contentType)
@@ -4481,7 +4493,7 @@ private module FlowExploration {
     exists(NodeEx midNode, TypedContent tc |
       midNode = mid.getNodeEx() and
       ap = mid.getAp() and
-      store(node, tc, midNode, _, config) and
+      store(node, tc, midNode, _) and
       ap.getHead() = c and
       config = mid.getConfiguration() and
       tc.getContent() = c
@@ -4556,4 +4568,31 @@ private predicate revPartialFlow(
   sink.getConfiguration() = configuration and
   sink.isRevSink() and
   node.getASuccessor+() = sink
+}
+
+private module Debug {
+  import csharp
+  import DataFlow::PathGraph
+
+  private predicate defaultSource(DataFlow::Node src) {
+    src.asExpr().(MethodCall).getTarget().getUndecoratedName() = ["Source", "Taint"] and
+    src.getLocation().getFile().getBaseName() = "K.cs"
+  }
+
+  private predicate defaultSink(DataFlow::Node sink) {
+    exists(MethodCall mc | mc.getTarget().hasUndecoratedName("Sink") |
+      sink.asExpr() = mc.getAnArgument()
+    ) and
+    sink.getLocation().getFile().getBaseName() = "K.cs"
+  }
+
+  class DefaultValueFlowConf extends DataFlow::Configuration {
+    DefaultValueFlowConf() { this = "qltest:defaultValueFlowConf" }
+
+    override predicate isSource(DataFlow::Node n) { defaultSource(n) }
+
+    override predicate isSink(DataFlow::Node n) { defaultSink(n) }
+
+    override int fieldFlowBranchLimit() { result = 1000 }
+  }
 }

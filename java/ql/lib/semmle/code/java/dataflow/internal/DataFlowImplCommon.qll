@@ -750,7 +750,7 @@ private module Cached {
    * been stored into, in order to handle cases like `x.f1.f2 = y`.
    */
   cached
-  predicate store(Node node1, TypedContent tc, Node node2, DataFlowType contentType) {
+  predicate storeStep(Node node1, TypedContent tc, Node node2, DataFlowType contentType) {
     store(node1, tc.getContent(), node2, contentType, tc.getContainerType())
   }
 
