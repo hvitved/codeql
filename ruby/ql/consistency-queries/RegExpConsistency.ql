@@ -17,3 +17,7 @@ query predicate regExpNormalNonUniqueCharValue(RegExpNormalChar term, string val
   value = term.getValue() and
   strictcount(term.getValue()) > 1
 }
+
+query predicate orphan(RegExpTerm term, string c) {
+  not exists(term.getParent()) and not term.isRootTerm() and c = term.getPrimaryQlClasses()
+}

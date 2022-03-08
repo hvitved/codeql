@@ -15,10 +15,8 @@
  */
 
 import codeql.ruby.security.performance.ExponentialBackTracking
-import codeql.ruby.security.performance.ReDoSUtil
-import codeql.ruby.Regexp
 
-from RegExpTerm t, string pump, State s, string prefixMsg
+from RegExpTreeView::RegExpTerm t, string pump, State s, string prefixMsg
 where hasReDoSResult(t, pump, s, prefixMsg)
 select t,
   "This part of the regular expression may cause exponential backtracking on strings " + prefixMsg +

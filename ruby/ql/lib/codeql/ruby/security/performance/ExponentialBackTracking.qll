@@ -79,7 +79,7 @@ private class MaybeBacktrackingRepetition extends InfiniteRepetitionQuantifier {
   MaybeBacktrackingRepetition() {
     exists(RegExpTerm child |
       child instanceof RegExpAlt or
-      child instanceof RegExpQuantifier
+      child.getATerm() instanceof RegExpTreeView::RegExpQuantifier
     |
       child.getParent+() = this
     )
@@ -112,14 +112,7 @@ private newtype TStatePair =
  * Gets a unique number for a `state`.
  * Is used to create an ordering of states, where states with the same `toString()` will be ordered differently.
  */
-private int rankState(State state) {
-  state =
-    rank[result](State s, Location l |
-      l = s.getRepr().getLocation()
-    |
-      s order by l.getStartLine(), l.getStartColumn(), s.toString()
-    )
-}
+private int rankState(State state) { state = rank[result](State s | | s order by s.toString()) }
 
 /**
  * A state in the product automaton.
