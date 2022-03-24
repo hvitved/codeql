@@ -112,7 +112,15 @@ private newtype TStatePair =
  * Gets a unique number for a `state`.
  * Is used to create an ordering of states, where states with the same `toString()` will be ordered differently.
  */
-private int rankState(State state) { state = rank[result](State s | | s order by s.toString()) }
+// private int rankState(State state) { state = rank[result](State s | | s order by s.toString()) }
+private int rankState(State state) {
+  state =
+    rank[result](State s, RegExpTreeView::Location l |
+      l = s.getRepr().getLocation()
+    |
+      s order by l.getStartLine(), l.getStartColumn(), s.toString()
+    )
+}
 
 /**
  * A state in the product automaton.

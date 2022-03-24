@@ -65,8 +65,10 @@ private module Cached {
 
   cached
   newtype TRegExpTerm =
-    MkRegExpTerm(RegExpFragmentFull re, RegExpFragmentFull root) {
-      root.getATerm() = re.getATerm().getRootTerm()
+    MkRegExpTerm(RegExpFragmentFull re, RegExpFragmentFull root, RegExpTreeView::RegExpTerm t) {
+      t = re.getATerm() and
+      root.getATerm() = t.getRootTerm()
+      // root.getATerm() = re.getATerm().getRootTerm()
     }
 
   pragma[nomagic]
@@ -388,8 +390,9 @@ private class RegExpFragmentFull extends RegExpFragment {
 class RegExpTerm extends MkRegExpTerm {
   RegExpFragmentFull re;
   RegExpFragmentFull root;
+  RegExpTreeView::RegExpTerm t;
 
-  RegExpTerm() { this = MkRegExpTerm(re, root) }
+  RegExpTerm() { this = MkRegExpTerm(re, root, t) }
 
   RegExpKind getKind() { result = re.getKind() }
 
@@ -397,7 +400,7 @@ class RegExpTerm extends MkRegExpTerm {
 
   int getNumChild() { result = re.getNumChild() }
 
-  RegExpTerm getChild(int i) { result = MkRegExpTerm(re.getChild(i), root) }
+  RegExpTerm getChild(int i) { result = MkRegExpTerm(re.getChild(i), root, t.getChild(i)) }
 
   RegExpTerm getAChild() { result = this.getChild(_) }
 
@@ -409,7 +412,8 @@ class RegExpTerm extends MkRegExpTerm {
 
   RegExpTreeView::RegExpTerm getATerm() {
     result = re.getATerm() and
-    result.getRootTerm() = root.getATerm()
+    result.getRootTerm() = root.getATerm() and
+    result = t
   }
 
   private RegExpTreeView::RegExpTerm test() {
@@ -423,7 +427,14 @@ class RegExpTerm extends MkRegExpTerm {
     result = this.getParent().(RegExpTerm).getRootTerm()
   }
 
-  string toString() { result = re.toString() + " in " + root.toString() }
+  // string toString() { result = re.toString() + " in " + root.toString() }
+  string toString() { result = t.toString() }
+
+  RegExpTreeView::Location getLocation() { result = t.getLocation() }
+
+  RegExpTreeView::File getFile() { result = t.getLocation().getFile() }
+
+  string getRawValue() { result = t.getRawValue() }
 
   string getPath() {
     re = root and
@@ -496,7 +507,7 @@ private class RegExpBackRef extends RegExpTerm {
 
   final RegExpGroup getGroup() {
     exists(RegExpFragmentFull res |
-      result = MkRegExpTerm(res, root) and
+      result = MkRegExpTerm(res, root, t.(RegExpTreeView::RegExpBackRef).getGroup()) and
       res.getATerm() = this.getATerm().(RegExpTreeView::RegExpBackRef).getGroup()
     )
   }
@@ -515,7 +526,9 @@ private class RegExpSubPattern extends RegExpTerm {
     operand = toRegExpTerm(this.getATerm().(RegExpTreeView::RegExpSubPattern).getOperand())
   }
 
-  RegExpTerm getOperand() { result = MkRegExpTerm(operand, root) }
+  RegExpTerm getOperand() {
+    result = MkRegExpTerm(operand, root, t.(RegExpTreeView::RegExpSubPattern).getOperand())
+  }
 }
 
 private class RegExpPositiveLookahead extends RegExpSubPattern {
@@ -610,18 +623,24 @@ private predicate isReDoSCandidate(State state, string pump) {
     not any(ReDoSConfiguration conf).isReDoSCandidate(epsilonSucc+(state), _)
     or
     epsilonSucc+(state) = state and
-    // state = epsilonSucc+(state) and
-    // any(ReDoSConfiguration conf).isReDoSCandidate(state, _) and
-    // state.getRepr() instanceof InfiniteRepetitionQuantifier
     state =
-      max(State s, string path |
+      max(State s, RegExpTreeView::Location l |
         s = epsilonSucc+(state) and
-        path = s.getRepr().getPath() and
+        l = s.getRepr().getLocation() and
         any(ReDoSConfiguration conf).isReDoSCandidate(s, _) and
         s.getRepr() instanceof InfiniteRepetitionQuantifier
       |
-        s order by path
+        s order by l.getStartLine(), l.getStartColumn(), l.getEndColumn(), l.getEndLine()
       )
+    // state =
+    //   max(State s, string path |
+    //     s = epsilonSucc+(state) and
+    //     path = s.getRepr().getPath() and
+    //     any(ReDoSConfiguration conf).isReDoSCandidate(s, _) and
+    //     s.getRepr() instanceof InfiniteRepetitionQuantifier
+    //   |
+    //     s order by path
+    //   )
   )
 }
 
@@ -760,6 +779,33 @@ private predicate charClass(RegExpTerm t, boolean isIgnoreCase) {
 }
 
 /**
+ * Holds if `term` is the chosen canonical representative for all terms with string representation `str`.
+ * The string representation includes which flags are used with the regular expression.
+ *
+ * Using canonical representatives gives a huge performance boost when working with tuples containing multiple `InputSymbol`s.
+ * The number of `InputSymbol`s is decreased by 3 orders of magnitude or more in some larger benchmarks.
+ */
+private predicate isCanonicalTerm(RelevantRegExpTerm term, string str) {
+  term =
+    min(RelevantRegExpTerm t, RegExpTreeView::Location loc, RegExpTreeView::File file |
+      loc = t.getLocation() and
+      file = t.getFile() and
+      str = t.getRawValue() + "|" + getCanonicalizationFlags(t.getRootTerm())
+    |
+      t order by t.getFile().getRelativePath(), loc.getStartLine(), loc.getStartColumn()
+    )
+}
+
+/**
+ * Gets a string reperesentation of the flags used with the regular expression.
+ * Only the flags that are relevant for the canonicalization are included.
+ */
+string getCanonicalizationFlags(RegExpTerm root) {
+  root.isRootTerm() and
+  (if root.isIgnoreCase() then result = "i" else result = "")
+}
+
+/**
  * An abstract input symbol, representing a set of concrete characters.
  */
 private newtype TInputSymbol =
@@ -785,13 +831,29 @@ private newtype TInputSymbol =
    * An input symbol representing all characters matched by
    * a (non-universal) character class that has string representation `charClassString`.
    */
-  CharClass(RegExpTerm t, boolean isIgnoreCase) { charClass(t, isIgnoreCase) } or
+  // CharClass(RegExpTerm t, boolean isIgnoreCase) { charClass(t, isIgnoreCase) } or
+  CharClass(string charClassString) {
+    exists(RelevantRegExpTerm recc | isCanonicalTerm(recc, charClassString) |
+      recc instanceof RegExpCharacterClass and
+      not recc.(RegExpCharacterClass).isUniversalClass()
+      or
+      recc instanceof RegExpEscape
+      // isEscapeClass(recc, _)
+    )
+  } or
   /** An input symbol representing all characters matched by `.`. */
   Dot() or
   /** An input symbol representing all characters. */
   Any() or
   /** An epsilon transition in the automaton. */
   Epsilon()
+
+/**
+ * Gets the canonical CharClass for `term`.
+ */
+CharClass getCanonicalCharClass(RegExpTerm term) {
+  exists(string str | isCanonicalTerm(term, str) | result = CharClass(str))
+}
 
 /**
  * Holds if `a` and `b` are input symbols from the same regexp.
@@ -826,10 +888,11 @@ class InputSymbol extends TInputSymbol {
   string toString() {
     this = Char(result)
     or
-    exists(RegExpTerm t |
-      this = CharClass(t, _) and
-      result = t.getATerm().toString()
-    )
+    // exists(RegExpTerm t |
+    //   this = CharClass(t, _) and
+    //   result = t.getATerm().toString()
+    // )
+    this = CharClass(result)
     or
     this = Dot() and result = "."
     or
@@ -888,6 +951,7 @@ private module CharacterClasses {
    */
   pragma[noinline]
   predicate hasChildThatMatchesIgnoringCasingFlags(RegExpCharacterClass cc, string char) {
+    exists(getCanonicalCharClass(cc)) and
     exists(RegExpTerm child | child = cc.getAChild() |
       char = child.(RegexpCharacterConstant).getValue()
       or
@@ -983,7 +1047,8 @@ private module CharacterClasses {
   private class PositiveCharacterClass extends CharacterClass, CharClass {
     RegExpCharacterClass cc;
 
-    PositiveCharacterClass() { this = CharClass(cc, _) and not cc.isInverted() }
+    // PositiveCharacterClass() { this = CharClass(cc, _) and not cc.isInverted() }
+    PositiveCharacterClass() { this = getCanonicalCharClass(cc) and not cc.isInverted() }
 
     override string getARelevantChar() { result = getAMentionedChar(cc) }
 
@@ -996,7 +1061,8 @@ private module CharacterClasses {
   private class InvertedCharacterClass extends CharacterClass, CharClass {
     RegExpCharacterClass cc;
 
-    InvertedCharacterClass() { this = CharClass(cc, _) and cc.isInverted() }
+    // InvertedCharacterClass() { this = CharClass(cc, _) and cc.isInverted() }
+    InvertedCharacterClass() { this = getCanonicalCharClass(cc) and cc.isInverted() }
 
     override string getARelevantChar() {
       result = nextChar(getAMentionedChar(cc)) or
@@ -1031,7 +1097,8 @@ private module CharacterClasses {
     PositiveCharacterClassEscape() {
       exists(RegExpTerm cc |
         charClass = cc.(RegExpEscape).getClass() and
-        this = CharClass(cc, _) and
+        // this = CharClass(cc, _) and
+        this = getCanonicalCharClass(cc) and
         charClass = ["d", "s", "w"]
       )
     }
@@ -1070,7 +1137,8 @@ private module CharacterClasses {
     NegativeCharacterClassEscape() {
       exists(RegExpTerm cc |
         charClass = cc.(RegExpEscape).getClass() and
-        this = CharClass(cc, _) and
+        // this = CharClass(cc, _) and
+        this = getCanonicalCharClass(cc) and
         charClass = ["D", "S", "W"]
       )
     }
@@ -1212,19 +1280,21 @@ predicate delta(State q1, EdgeLabel lbl, State q2) {
     cc.isUniversalClass() and q1 = before(cc) and lbl = Any() and q2 = after(cc)
     or
     q1 = before(cc) and
-    exists(boolean isIgnoreCase |
-      charClass(cc, isIgnoreCase) and
-      lbl = CharClass(cc, isIgnoreCase)
-    ) and
+    // exists(boolean isIgnoreCase |
+    //   charClass(cc, isIgnoreCase) and
+    //   lbl = CharClass(cc, isIgnoreCase)
+    // ) and
+    lbl = CharClass(cc.getRawValue() + "|" + getCanonicalizationFlags(cc.getRootTerm())) and
     q2 = after(cc)
   )
   or
   exists(RegExpEscape cc |
     q1 = before(cc) and
-    exists(boolean isIgnoreCase |
-      charClass(cc, isIgnoreCase) and
-      lbl = CharClass(cc, isIgnoreCase)
-    ) and
+    lbl = CharClass(cc.getRawValue() + "|" + getCanonicalizationFlags(cc.getRootTerm())) and
+    // exists(boolean isIgnoreCase |
+    //   charClass(cc, isIgnoreCase) and
+    //   lbl = CharClass(cc, isIgnoreCase)
+    // ) and
     q2 = after(cc)
   )
   or
@@ -1353,6 +1423,11 @@ class State extends TState {
   }
 
   /**
+   * Gets the location for this state.
+   */
+  RegExpTreeView::Location getLocation() { result = repr.getLocation() }
+
+  /**
    * Gets the term represented by this state.
    */
   RegExpTerm getRepr() { result = repr }
@@ -1438,14 +1513,25 @@ private module PrefixConstruction {
    * Holds if `state` is the textually last start state for the regular expression.
    */
   private predicate lastStartState(State state) {
+    // exists(RegExpRoot root |
+    //   state =
+    //     max(StateInPumpableRegexp s, string path |
+    //       isStartState(s) and
+    //       getRoot(s.getRepr()) = root and
+    //       path = s.getRepr().getPath()
+    //     |
+    //       s order by path
+    //     )
+    // )
     exists(RegExpRoot root |
       state =
-        max(StateInPumpableRegexp s, string path |
-          isStartState(s) and
-          getRoot(s.getRepr()) = root and
-          path = s.getRepr().getPath()
+        max(StateInPumpableRegexp s, RegExpTreeView::Location l |
+          isStartState(s) and getRoot(s.getRepr()) = root and l = s.getRepr().getLocation()
         |
-          s order by path
+          s
+          order by
+            l.getStartLine(), l.getStartColumn(), s.getRepr().toString(), l.getEndColumn(),
+            l.getEndLine()
         )
     )
   }
@@ -1482,12 +1568,22 @@ private module PrefixConstruction {
     exists(State prev |
       // select a unique predecessor (by an arbitrary measure)
       prev =
-        min(State s |
+        // min(State s |
+        //   lengthFromStart(s) = lengthFromStart(state) - 1 and
+        //   // path = s.getRepr().getPath() and
+        //   delta(s, _, state)
+        // |
+        //   s order by s.getRepr().toString()
+        // )
+        min(State s, RegExpTreeView::Location loc |
           lengthFromStart(s) = lengthFromStart(state) - 1 and
-          // path = s.getRepr().getPath() and
+          loc = s.getRepr().getLocation() and
           delta(s, _, state)
         |
-          s order by s.getRepr().toString()
+          s
+          order by
+            loc.getStartLine(), loc.getStartColumn(), loc.getEndLine(), loc.getEndColumn(),
+            s.getRepr().toString()
         )
     |
       // greedy search for the shortest prefix
