@@ -427,24 +427,38 @@ class RegExpTerm extends MkRegExpTerm {
     result = this.getParent().(RegExpTerm).getRootTerm()
   }
 
-  // string toString() { result = re.toString() + " in " + root.toString() }
+  string toStringNew() { result = re.toString() + " in " + root.toString() }
+
   string toString() { result = t.toString() }
 
-  RegExpTreeView::Location getLocation() { result = t.getLocation() }
+  private RegExpTreeView::RegExpTerm getCanonicalRootTerm() {
+    result =
+      min(RegExpTreeView::RegExpTerm term, RegExpTreeView::Location l |
+        term = root.getATerm() and
+        l = term.getLocation()
+      |
+        term
+        order by
+          l.getFile().getAbsolutePath(), l.getStartLine(), l.getStartColumn(), l.getEndLine(),
+          l.getEndColumn()
+      )
+  }
+
+  private RegExpTreeView::RegExpTerm getCanonicalTerm() {
+    re = root and
+    result = this.getCanonicalRootTerm()
+    or
+    exists(RegExpTerm parent, int i |
+      this = parent.getChild(i) and
+      result = parent.getCanonicalTerm().getChild(i)
+    )
+  }
+
+  RegExpTreeView::Location getLocation() { result = this.getCanonicalTerm().getLocation() }
 
   RegExpTreeView::File getFile() { result = t.getLocation().getFile() }
 
   string getRawValue() { result = t.getRawValue() }
-
-  string getPath() {
-    re = root and
-    result = ""
-    or
-    exists(RegExpTerm parent, int i |
-      this = parent.getChild(i) and
-      result = parent.getPath() + "." + i
-    )
-  }
 }
 
 // private class RegExpParent extends RegExpTerm {
@@ -632,15 +646,6 @@ private predicate isReDoSCandidate(State state, string pump) {
       |
         s order by l.getStartLine(), l.getStartColumn(), l.getEndColumn(), l.getEndLine()
       )
-    // state =
-    //   max(State s, string path |
-    //     s = epsilonSucc+(state) and
-    //     path = s.getRepr().getPath() and
-    //     any(ReDoSConfiguration conf).isReDoSCandidate(s, _) and
-    //     s.getRepr() instanceof InfiniteRepetitionQuantifier
-    //   |
-    //     s order by path
-    //   )
   )
 }
 
@@ -1513,16 +1518,6 @@ private module PrefixConstruction {
    * Holds if `state` is the textually last start state for the regular expression.
    */
   private predicate lastStartState(State state) {
-    // exists(RegExpRoot root |
-    //   state =
-    //     max(StateInPumpableRegexp s, string path |
-    //       isStartState(s) and
-    //       getRoot(s.getRepr()) = root and
-    //       path = s.getRepr().getPath()
-    //     |
-    //       s order by path
-    //     )
-    // )
     exists(RegExpRoot root |
       state =
         max(StateInPumpableRegexp s, RegExpTreeView::Location l |
@@ -1568,13 +1563,6 @@ private module PrefixConstruction {
     exists(State prev |
       // select a unique predecessor (by an arbitrary measure)
       prev =
-        // min(State s |
-        //   lengthFromStart(s) = lengthFromStart(state) - 1 and
-        //   // path = s.getRepr().getPath() and
-        //   delta(s, _, state)
-        // |
-        //   s order by s.getRepr().toString()
-        // )
         min(State s, RegExpTreeView::Location loc |
           lengthFromStart(s) = lengthFromStart(state) - 1 and
           loc = s.getRepr().getLocation() and
@@ -1583,7 +1571,7 @@ private module PrefixConstruction {
           s
           order by
             loc.getStartLine(), loc.getStartColumn(), loc.getEndLine(), loc.getEndColumn(),
-            s.getRepr().toString()
+            s.getRepr().toStringNew()
         )
     |
       // greedy search for the shortest prefix
