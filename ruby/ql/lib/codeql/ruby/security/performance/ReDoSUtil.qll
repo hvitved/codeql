@@ -784,33 +784,6 @@ private predicate charClass(RegExpTerm t, boolean isIgnoreCase) {
 }
 
 /**
- * Holds if `term` is the chosen canonical representative for all terms with string representation `str`.
- * The string representation includes which flags are used with the regular expression.
- *
- * Using canonical representatives gives a huge performance boost when working with tuples containing multiple `InputSymbol`s.
- * The number of `InputSymbol`s is decreased by 3 orders of magnitude or more in some larger benchmarks.
- */
-private predicate isCanonicalTerm(RelevantRegExpTerm term, string str) {
-  term =
-    min(RelevantRegExpTerm t, RegExpTreeView::Location loc, RegExpTreeView::File file |
-      loc = t.getLocation() and
-      file = t.getFile() and
-      str = t.getRawValue() + "|" + getCanonicalizationFlags(t.getRootTerm())
-    |
-      t order by t.getFile().getRelativePath(), loc.getStartLine(), loc.getStartColumn()
-    )
-}
-
-/**
- * Gets a string reperesentation of the flags used with the regular expression.
- * Only the flags that are relevant for the canonicalization are included.
- */
-string getCanonicalizationFlags(RegExpTerm root) {
-  root.isRootTerm() and
-  (if root.isIgnoreCase() then result = "i" else result = "")
-}
-
-/**
  * An abstract input symbol, representing a set of concrete characters.
  */
 private newtype TInputSymbol =
@@ -836,29 +809,13 @@ private newtype TInputSymbol =
    * An input symbol representing all characters matched by
    * a (non-universal) character class that has string representation `charClassString`.
    */
-  // CharClass(RegExpTerm t, boolean isIgnoreCase) { charClass(t, isIgnoreCase) } or
-  CharClass(string charClassString) {
-    exists(RelevantRegExpTerm recc | isCanonicalTerm(recc, charClassString) |
-      recc instanceof RegExpCharacterClass and
-      not recc.(RegExpCharacterClass).isUniversalClass()
-      or
-      recc instanceof RegExpEscape
-      // isEscapeClass(recc, _)
-    )
-  } or
+  CharClass(RegExpTerm t, boolean isIgnoreCase) { charClass(t, isIgnoreCase) } or
   /** An input symbol representing all characters matched by `.`. */
   Dot() or
   /** An input symbol representing all characters. */
   Any() or
   /** An epsilon transition in the automaton. */
   Epsilon()
-
-/**
- * Gets the canonical CharClass for `term`.
- */
-CharClass getCanonicalCharClass(RegExpTerm term) {
-  exists(string str | isCanonicalTerm(term, str) | result = CharClass(str))
-}
 
 /**
  * Holds if `a` and `b` are input symbols from the same regexp.
@@ -893,12 +850,12 @@ class InputSymbol extends TInputSymbol {
   string toString() {
     this = Char(result)
     or
-    // exists(RegExpTerm t |
-    //   this = CharClass(t, _) and
-    //   result = t.getATerm().toString()
-    // )
-    this = CharClass(result)
+    exists(RegExpTerm t |
+      this = CharClass(t, _) and
+      result = t.getATerm().toString()
+    )
     or
+    // this = CharClass(result)
     this = Dot() and result = "."
     or
     this = Any() and result = "[^]"
@@ -956,7 +913,6 @@ private module CharacterClasses {
    */
   pragma[noinline]
   predicate hasChildThatMatchesIgnoringCasingFlags(RegExpCharacterClass cc, string char) {
-    exists(getCanonicalCharClass(cc)) and
     exists(RegExpTerm child | child = cc.getAChild() |
       char = child.(RegexpCharacterConstant).getValue()
       or
@@ -1052,8 +1008,7 @@ private module CharacterClasses {
   private class PositiveCharacterClass extends CharacterClass, CharClass {
     RegExpCharacterClass cc;
 
-    // PositiveCharacterClass() { this = CharClass(cc, _) and not cc.isInverted() }
-    PositiveCharacterClass() { this = getCanonicalCharClass(cc) and not cc.isInverted() }
+    PositiveCharacterClass() { this = CharClass(cc, _) and not cc.isInverted() }
 
     override string getARelevantChar() { result = getAMentionedChar(cc) }
 
@@ -1066,8 +1021,7 @@ private module CharacterClasses {
   private class InvertedCharacterClass extends CharacterClass, CharClass {
     RegExpCharacterClass cc;
 
-    // InvertedCharacterClass() { this = CharClass(cc, _) and cc.isInverted() }
-    InvertedCharacterClass() { this = getCanonicalCharClass(cc) and cc.isInverted() }
+    InvertedCharacterClass() { this = CharClass(cc, _) and cc.isInverted() }
 
     override string getARelevantChar() {
       result = nextChar(getAMentionedChar(cc)) or
@@ -1102,8 +1056,7 @@ private module CharacterClasses {
     PositiveCharacterClassEscape() {
       exists(RegExpTerm cc |
         charClass = cc.(RegExpEscape).getClass() and
-        // this = CharClass(cc, _) and
-        this = getCanonicalCharClass(cc) and
+        this = CharClass(cc, _) and
         charClass = ["d", "s", "w"]
       )
     }
@@ -1142,8 +1095,7 @@ private module CharacterClasses {
     NegativeCharacterClassEscape() {
       exists(RegExpTerm cc |
         charClass = cc.(RegExpEscape).getClass() and
-        // this = CharClass(cc, _) and
-        this = getCanonicalCharClass(cc) and
+        this = CharClass(cc, _) and
         charClass = ["D", "S", "W"]
       )
     }
@@ -1285,21 +1237,19 @@ predicate delta(State q1, EdgeLabel lbl, State q2) {
     cc.isUniversalClass() and q1 = before(cc) and lbl = Any() and q2 = after(cc)
     or
     q1 = before(cc) and
-    // exists(boolean isIgnoreCase |
-    //   charClass(cc, isIgnoreCase) and
-    //   lbl = CharClass(cc, isIgnoreCase)
-    // ) and
-    lbl = CharClass(cc.getRawValue() + "|" + getCanonicalizationFlags(cc.getRootTerm())) and
+    exists(boolean isIgnoreCase |
+      charClass(cc, isIgnoreCase) and
+      lbl = CharClass(cc, isIgnoreCase)
+    ) and
     q2 = after(cc)
   )
   or
   exists(RegExpEscape cc |
     q1 = before(cc) and
-    lbl = CharClass(cc.getRawValue() + "|" + getCanonicalizationFlags(cc.getRootTerm())) and
-    // exists(boolean isIgnoreCase |
-    //   charClass(cc, isIgnoreCase) and
-    //   lbl = CharClass(cc, isIgnoreCase)
-    // ) and
+    exists(boolean isIgnoreCase |
+      charClass(cc, isIgnoreCase) and
+      lbl = CharClass(cc, isIgnoreCase)
+    ) and
     q2 = after(cc)
   )
   or
