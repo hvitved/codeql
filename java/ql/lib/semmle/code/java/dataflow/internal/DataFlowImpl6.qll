@@ -515,6 +515,15 @@ private predicate clearsContentEx(NodeEx n, Content c) {
   )
 }
 
+// inline to reduce fan-out via `getAReadContent`
+pragma[inline]
+private predicate expectsContentEx(NodeEx n, Content c) {
+  exists(ContentSet cs |
+    expectsContentCached(n.asNode(), cs) and
+    c = cs.getAReadContent()
+  )
+}
+
 pragma[nomagic]
 private predicate store(
   NodeEx node1, TypedContent tc, NodeEx node2, DataFlowType contentType, Configuration config
@@ -1178,11 +1187,31 @@ private module Stage2 {
 
   private predicate flowIntoCall = flowIntoCallNodeCand1/5;
 
+  pragma[nomagic]
+  private predicate expectsContent(NodeEx node, Content c, Configuration config) {
+    PrevStage::revFlow(node, config) and
+    expectsContentEx(node, c)
+  }
+
+  pragma[nomagic]
+  private predicate expectsPossibleContent(NodeEx node, Configuration config) {
+    exists(Content c |
+      expectsContent(node, c, config) and
+      PrevStage::readStepCand(_, c, _, config)
+    )
+  }
+
   bindingset[node, state, ap, config]
   private predicate filter(NodeEx node, FlowState state, Ap ap, Configuration config) {
     PrevStage::revFlowState(state, config) and
     exists(ap) and
-    not stateBarrier(node, state, config)
+    not stateBarrier(node, state, config) and
+    (
+      not expectsContent(node, _, config)
+      or
+      ap = true and
+      expectsPossibleContent(node, config)
+    )
   }
 
   bindingset[ap, contentType]
@@ -1737,7 +1766,8 @@ private module LocalFlowBigStep {
   private class FlowCheckNode extends NodeEx {
     FlowCheckNode() {
       castNode(this.asNode()) or
-      clearsContentCached(this.asNode(), _)
+      clearsContentCached(this.asNode(), _) or
+      expectsContentCached(this.asNode(), _)
     }
   }
 
@@ -1972,6 +2002,12 @@ private module Stage3 {
   }
 
   pragma[nomagic]
+  private predicate expectsContent(NodeEx node, Content c, Configuration config) {
+    PrevStage::revFlow(node, config) and
+    expectsContentEx(node, c)
+  }
+
+  pragma[nomagic]
   private predicate clear(NodeEx node, Ap ap, Configuration config) {
     clearContent(node, ap.getHead().getContent(), config)
   }
@@ -1984,7 +2020,12 @@ private module Stage3 {
     exists(state) and
     exists(config) and
     not clear(node, ap, config) and
-    if castingNodeEx(node) then compatibleTypes(node.getDataFlowType(), ap.getType()) else any()
+    (if castingNodeEx(node) then compatibleTypes(node.getDataFlowType(), ap.getType()) else any()) and
+    (
+      not expectsContent(node, _, config)
+      or
+      expectsContent(node, ap.getHead().getContent(), config)
+    )
   }
 
   bindingset[ap, contentType]
@@ -4606,6 +4647,10 @@ private module FlowExploration {
       exists(PartialPathNodeRev mid |
         revPartialPathStep(mid, node, state, sc1, sc2, sc3, ap, config) and
         not clearsContentEx(node, ap.getHead()) and
+        (
+          not expectsContentEx(node, _) or
+          expectsContentEx(node, ap.getHead())
+        ) and
         not fullBarrier(node, config) and
         not stateBarrier(node, state, config) and
         distSink(node.getEnclosingCallable(), config) <= config.explorationLimit()
@@ -4622,6 +4667,10 @@ private module FlowExploration {
       not fullBarrier(node, config) and
       not stateBarrier(node, state, config) and
       not clearsContentEx(node, ap.getHead().getContent()) and
+      (
+        not expectsContentEx(node, _) or
+        expectsContentEx(node, ap.getHead().getContent())
+      ) and
       if node.asNode() instanceof CastingNode
       then compatibleTypes(node.getDataFlowType(), ap.getType())
       else any()
