@@ -88,6 +88,25 @@ SummaryComponent interpretComponentSpecific(AccessPathToken c) {
       )
     )
   )
+  or
+  c = "Clear_ArrayElement" and
+  exists(ContentSet cs |
+    result = FlowSummary::SummaryComponent::clearContent(cs) and
+    cs.isAnyArrayElement()
+  )
+  or
+  exists(ContentSet cs, int i |
+    c.getName() = "Clear_ArrayElement" and
+    result = FlowSummary::SummaryComponent::clearContent(cs) and
+    i = AccessPath::parseInt(c.getAnArgument()) and
+    FlowSummary::SummaryComponent::content(cs) = FlowSummary::SummaryComponent::arrayElementKnown(i)
+  )
+  or
+  c = "Expect_ArrayElement" and
+  exists(ContentSet cs |
+    result = FlowSummary::SummaryComponent::expectContent(cs) and
+    cs.isAnyArrayElement()
+  )
 }
 
 /** Gets the textual representation of a summary component in the format used for flow summaries. */

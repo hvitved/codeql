@@ -26,6 +26,10 @@ module Public {
     string toString() {
       exists(ContentSet c | this = TContentSummaryComponent(c) and result = c.toString())
       or
+      exists(ContentSet c | this = TClearContentSummaryComponent(c) and result = "clear " + c)
+      or
+      exists(ContentSet c | this = TExpectContentSummaryComponent(c) and result = "expect " + c)
+      or
       exists(ArgumentPosition pos |
         this = TParameterSummaryComponent(pos) and result = "parameter " + pos
       )
@@ -42,6 +46,12 @@ module Public {
   module SummaryComponent {
     /** Gets a summary component for content `c`. */
     SummaryComponent content(ContentSet c) { result = TContentSummaryComponent(c) }
+
+    /** Gets a summary component for clearing content `c`. */
+    SummaryComponent clearContent(ContentSet c) { result = TClearContentSummaryComponent(c) }
+
+    /** Gets a summary component for expecting content `c`. */
+    SummaryComponent expectContent(ContentSet c) { result = TExpectContentSummaryComponent(c) }
 
     /** Gets a summary component for a parameter at position `pos`. */
     SummaryComponent parameter(ArgumentPosition pos) { result = TParameterSummaryComponent(pos) }
@@ -207,18 +217,9 @@ module Public {
      * by zero or more `SummaryComponent::content(_)` components.
      */
     pragma[nomagic]
-    predicate propagatesFlow(
+    abstract predicate propagatesFlow(
       SummaryComponentStack input, SummaryComponentStack output, boolean preservesValue
-    ) {
-      none()
-    }
-
-    /**
-     * Holds if values stored inside `content` are cleared on objects passed as
-     * arguments at position `pos` to this callable.
-     */
-    pragma[nomagic]
-    predicate clearsContent(ParameterPosition pos, ContentSet content) { none() }
+    );
   }
 }
 
@@ -234,7 +235,9 @@ module Private {
     TContentSummaryComponent(ContentSet c) or
     TParameterSummaryComponent(ArgumentPosition pos) or
     TArgumentSummaryComponent(ParameterPosition pos) or
-    TReturnSummaryComponent(ReturnKind rk)
+    TReturnSummaryComponent(ReturnKind rk) or
+    TClearContentSummaryComponent(ContentSet c) or
+    TExpectContentSummaryComponent(ContentSet c)
 
   private TParameterSummaryComponent thisParam() {
     result = TParameterSummaryComponent(instanceParameterPosition())
@@ -378,10 +381,7 @@ module Private {
 
   private newtype TSummaryNodeState =
     TSummaryNodeInputState(SummaryComponentStack s) { inputState(_, s) } or
-    TSummaryNodeOutputState(SummaryComponentStack s) { outputState(_, s) } or
-    TSummaryNodeClearsContentState(ParameterPosition pos, boolean post) {
-      any(SummarizedCallable sc).clearsContent(pos, _) and post in [false, true]
-    }
+    TSummaryNodeOutputState(SummaryComponentStack s) { outputState(_, s) }
 
   /**
    * A state used to break up (complex) flow summaries into atomic flow steps.
@@ -428,12 +428,6 @@ module Private {
         this = TSummaryNodeOutputState(s) and
         result = "to write: " + s
       )
-      or
-      exists(ParameterPosition pos, boolean post, string postStr |
-        this = TSummaryNodeClearsContentState(pos, post) and
-        (if post = true then postStr = " (post)" else postStr = "") and
-        result = "clear: " + pos + postStr
-      )
     }
   }
 
@@ -457,11 +451,6 @@ module Private {
     not parameterReadState(c, state, _)
     or
     state.isOutputState(c, _)
-    or
-    exists(ParameterPosition pos |
-      c.clearsContent(pos, _) and
-      state = TSummaryNodeClearsContentState(pos, _)
-    )
   }
 
   pragma[noinline]
@@ -497,8 +486,6 @@ module Private {
     parameterReadState(c, _, pos)
     or
     isParameterPostUpdate(_, c, pos)
-    or
-    c.clearsContent(pos, _)
   }
 
   private predicate callbackOutput(
@@ -544,6 +531,11 @@ module Private {
           head = TContentSummaryComponent(cont) and result = getContentType(cont)
         )
         or
+        exists(ContentSet cont | result = summaryNodeType(summaryNodeInputState(c, s.tail())) |
+          head = TClearContentSummaryComponent(cont) or
+          head = TExpectContentSummaryComponent(cont)
+        )
+        or
         exists(ReturnKind rk |
           head = TReturnSummaryComponent(rk) and
           result =
@@ -571,12 +563,6 @@ module Private {
         )
       )
     )
-    or
-    exists(SummarizedCallable c, ParameterPosition pos, ParamNode p |
-      n = summaryNode(c, TSummaryNodeClearsContentState(pos, false)) and
-      p.isParameterOf(c, pos) and
-      result = getNodeType(p)
-    )
   }
 
   /** Holds if summary node `out` contains output of kind `rk` from call `c`. */
@@ -602,9 +588,6 @@ module Private {
     exists(SummarizedCallable c, ParameterPosition pos |
       isParameterPostUpdate(post, c, pos) and
       pre.(ParamNode).isParameterOf(c, pos)
-      or
-      pre = summaryNode(c, TSummaryNodeClearsContentState(pos, false)) and
-      post = summaryNode(c, TSummaryNodeClearsContentState(pos, true))
     )
     or
     exists(SummarizedCallable callable, SummaryComponentStack s |
@@ -628,8 +611,6 @@ module Private {
    */
   predicate summaryAllowParameterReturnInSelf(ParamNode p) {
     exists(SummarizedCallable c, ParameterPosition ppos | p.isParameterOf(c, ppos) |
-      c.clearsContent(ppos, _)
-      or
       exists(SummaryComponentStack inputContents, SummaryComponentStack outputContents |
         summary(c, inputContents, outputContents, _) and
         inputContents.bottom() = pragma[only_bind_into](TArgumentSummaryComponent(ppos)) and
@@ -658,9 +639,10 @@ module Private {
         preservesValue = false and not summary(c, inputContents, outputContents, true)
       )
       or
-      exists(SummarizedCallable c, ParameterPosition pos |
-        pred.(ParamNode).isParameterOf(c, pos) and
-        succ = summaryNode(c, TSummaryNodeClearsContentState(pos, _)) and
+      exists(SummarizedCallable c, SummaryComponentStack s |
+        pred = summaryNodeInputState(c, s.drop(1)) and
+        succ = summaryNodeInputState(c, s) and
+        s.head() = [SummaryComponent::clearContent(_), SummaryComponent::expectContent(_)] and
         preservesValue = true
       )
     }
@@ -709,9 +691,22 @@ module Private {
      * node where field `b` is cleared).
      */
     predicate summaryClearsContent(Node n, ContentSet c) {
-      exists(SummarizedCallable sc, ParameterPosition pos |
-        n = summaryNode(sc, TSummaryNodeClearsContentState(pos, true)) and
-        sc.clearsContent(pos, c)
+      exists(SummarizedCallable sc, SummaryNodeState state, SummaryComponentStack stack |
+        n = summaryNode(sc, state) and
+        state.isInputState(sc, stack) and
+        stack.head() = SummaryComponent::clearContent(c)
+      )
+    }
+
+    /**
+     * Holds if the value that is being tracked is expected to be stored inside
+     * content `c` at `n`.
+     */
+    predicate summaryExpectsContent(Node n, ContentSet c) {
+      exists(SummarizedCallable sc, SummaryNodeState state, SummaryComponentStack stack |
+        n = summaryNode(sc, state) and
+        state.isInputState(sc, stack) and
+        stack.head() = SummaryComponent::expectContent(c)
       )
     }
 
@@ -723,22 +718,6 @@ module Private {
       sc = viableCallable(call)
     }
 
-    /**
-     * Holds if values stored inside content `c` are cleared inside a
-     * callable to which `arg` is an argument.
-     *
-     * In such cases, it is important to prevent use-use flow out of
-     * `arg` (see comment for `summaryClearsContent`).
-     */
-    pragma[nomagic]
-    predicate summaryClearsContentArg(ArgNode arg, ContentSet c) {
-      exists(DataFlowCall call, SummarizedCallable sc, ParameterPosition ppos |
-        argumentPositionMatch(call, arg, ppos) and
-        viableParam(call, sc, ppos, _) and
-        sc.clearsContent(ppos, c)
-      )
-    }
-
     pragma[nomagic]
     private ParamNode summaryArgParam0(DataFlowCall call, ArgNode arg) {
       exists(ParameterPosition ppos, SummarizedCallable sc |
@@ -746,6 +725,25 @@ module Private {
         viableParam(call, sc, ppos, result)
       )
     }
+
+    private predicate summaryClearsPred(Node n) {
+      summaryClearsContent(n, _)
+      or
+      exists(Node mid | summaryClearsPred(mid) |
+        summaryLocalStep(n, mid, true) or
+        summaryReadStep(n, _, mid)
+      )
+    }
+
+    /**
+     * Holds if values stored inside _some_ (possibly nested) content
+     * are cleared inside a callable to which `arg` is an argument.
+     *
+     * In such cases, it is important to prevent use-use flow out of
+     * `arg` (see comment for `summaryClearsContent`).
+     */
+    pragma[nomagic]
+    predicate summaryClearsContentArg(ArgNode arg) { summaryClearsPred(summaryArgParam0(_, arg)) }
 
     pragma[nomagic]
     private ParamNode summaryArgParam(ArgNode arg, ReturnKindExt rk, OutNodeExt out) {

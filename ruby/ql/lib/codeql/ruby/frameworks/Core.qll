@@ -61,11 +61,11 @@ private class SplatSummary extends SummarizedCallable {
   override predicate propagatesFlowExt(string input, string output, boolean preservesValue) {
     (
       // *1 = [1]
-      input = "Argument[self]" and
+      input = "Argument[self].Clear_ArrayElement" and
       output = "ReturnValue.ArrayElement[0]"
       or
       // *[1] = [1]
-      input = "Argument[self]" and
+      input = "Argument[self].Expect_ArrayElement" and
       output = "ReturnValue"
     ) and
     preservesValue = true

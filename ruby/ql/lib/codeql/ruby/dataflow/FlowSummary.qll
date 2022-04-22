@@ -25,6 +25,10 @@ module SummaryComponent {
 
   predicate content = SC::content/1;
 
+  predicate clearContent = SC::clearContent/1;
+
+  predicate expectContent = SC::expectContent/1;
+
   /** Gets a summary component that represents a receiver. */
   SummaryComponent receiver() { result = argument(any(ParameterPosition pos | pos.isSelf())) }
 
@@ -130,13 +134,6 @@ abstract class SummarizedCallable extends LibraryCallable {
    */
   pragma[nomagic]
   predicate propagatesFlowExt(string input, string output, boolean preservesValue) { none() }
-
-  /**
-   * Holds if values stored inside `content` are cleared on objects passed as
-   * arguments at position `pos` to this callable.
-   */
-  pragma[nomagic]
-  predicate clearsContent(ParameterPosition pos, DataFlow::ContentSet content) { none() }
 }
 
 /**
@@ -161,10 +158,6 @@ private class SummarizedCallableAdapter extends Impl::Public::SummarizedCallable
     SummaryComponentStack input, SummaryComponentStack output, boolean preservesValue
   ) {
     sc.propagatesFlow(input, output, preservesValue)
-  }
-
-  final override predicate clearsContent(ParameterPosition pos, DataFlow::ContentSet content) {
-    sc.clearsContent(pos, content)
   }
 }
 
