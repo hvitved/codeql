@@ -4,6 +4,27 @@
 
 import csharp
 import SsaImplCommon
+private import AssignableDefinitions
+
+private module SsaInput implements SsaInputSig {
+  class BasicBlock = ControlFlow::BasicBlock;
+
+  BasicBlock getImmediateBasicBlockDominator(BasicBlock bb) { result = bb.getImmediateDominator() }
+
+  BasicBlock getABasicBlockSuccessor(BasicBlock bb) { result = bb.getASuccessor() }
+
+  class ExitBasicBlock = ControlFlow::BasicBlocks::ExitBlock;
+
+  class SourceVariable = Ssa::SourceVariable;
+
+  predicate variableWrite = variableWriteImpl/4;
+
+  predicate variableRead = variableReadImpl/4;
+}
+
+private module MakeSsaImplCommon = Make<SsaInput>;
+
+import MakeSsaImplCommon
 
 /**
  * Holds if the `i`th node of basic block `bb` reads source variable `v`.
@@ -811,7 +832,9 @@ private module CapturedVariableImpl {
  *
  * This includes implicit writes via calls.
  */
-predicate variableWrite(ControlFlow::BasicBlock bb, int i, Ssa::SourceVariable v, boolean certain) {
+predicate variableWriteImpl(
+  ControlFlow::BasicBlock bb, int i, Ssa::SourceVariable v, boolean certain
+) {
   variableWriteDirect(bb, i, v, certain)
   or
   variableWriteQualifier(bb, i, v, certain)
@@ -1044,7 +1067,7 @@ private predicate variableReadPseudo(ControlFlow::BasicBlock bb, int i, Ssa::Sou
  *
  * This includes implicit reads via calls.
  */
-predicate variableRead(ControlFlow::BasicBlock bb, int i, Ssa::SourceVariable v, boolean certain) {
+predicate variableReadImpl(ControlFlow::BasicBlock bb, int i, Ssa::SourceVariable v, boolean certain) {
   variableReadActual(bb, i, v) and
   certain = true
   or
@@ -1151,7 +1174,7 @@ private module Cached {
   predicate variableWriteQualifier(
     ControlFlow::BasicBlock bb, int i, QualifiedFieldOrPropSourceVariable v, boolean certain
   ) {
-    variableWrite(bb, i, v.getQualifier(), certain) and
+    variableWriteImpl(bb, i, v.getQualifier(), certain) and
     // Eliminate corner case where a call definition can overlap with a
     // qualifier definition: if method `M` updates field `F`, then a call
     // to `M` is both an update of `x.M` and `x.M.M`, so the former call
