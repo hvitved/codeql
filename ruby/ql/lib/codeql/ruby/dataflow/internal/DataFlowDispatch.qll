@@ -197,6 +197,11 @@ private module Cached {
       FlowSummaryImpl::Private::summaryCallbackRange(c, receiver)
     }
 
+  private CfgScope testgetTarget(CfgNodes::ExprNodes::CallCfgNode call, int c) {
+    result = getTarget(call) and
+    c = strictcount(getTarget(call))
+  }
+
   cached
   CfgScope getTarget(CfgNodes::ExprNodes::CallCfgNode call) {
     // Temporarily disable operation resolution (due to bad performance)
@@ -377,11 +382,19 @@ private DataFlow::LocalSourceNode trackBlock(Block block) {
   result = trackBlock(block, TypeTracker::end())
 }
 
+private predicate testsingletonMethod(MethodBase method, Expr object) {
+  singletonMethod(method, object) and
+  method.getLocation().getFile().getRelativePath().matches("%syntax_suggest%")
+}
+
 private predicate singletonMethod(MethodBase method, Expr object) {
-  object = method.(SingletonMethod).getObject()
-  or
-  exists(SingletonClass cls |
-    object = cls.getValue() and method instanceof Method and method = cls.getAMethod()
+  not method.getLocation().getFile().getRelativePath().matches("%syntax_suggest%") and
+  (
+    object = method.(SingletonMethod).getObject()
+    or
+    exists(SingletonClass cls |
+      object = cls.getValue() and method instanceof Method and method = cls.getAMethod()
+    )
   )
 }
 
