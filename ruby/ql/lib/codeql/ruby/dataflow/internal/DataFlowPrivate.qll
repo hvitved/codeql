@@ -233,7 +233,8 @@ private module Cached {
     } or
     TExprPostUpdateNode(CfgNodes::ExprCfgNode n) {
       n instanceof Argument or
-      n = any(CfgNodes::ExprNodes::InstanceVariableAccessCfgNode v).getReceiver()
+      n = any(CfgNodes::ExprNodes::InstanceVariableAccessCfgNode v).getReceiver() or
+      singletonMethodOnInstance(_, _, n.getExpr())
     } or
     TSummaryNode(
       FlowSummaryImpl::Public::SummarizedCallable c,
@@ -304,7 +305,9 @@ private module Cached {
       nodeTo = LocalFlow::getParameterDefNode(p)
     )
     or
-    LocalFlow::localSsaFlowStepUseUse(_, nodeFrom, nodeTo)
+    // TODO: Comment
+    LocalFlow::localSsaFlowStepUseUse(_, nodeFrom, nodeTo) and
+    not singletonMethodOnInstance(_, _, nodeFrom.asExpr().getExpr())
   }
 
   private predicate entrySsaDefinition(SsaDefinitionNode n) {
@@ -349,6 +352,11 @@ private module Cached {
     or
     // Needed for stores in type tracking
     TypeTrackerSpecific::basicStoreStep(_, n, _)
+    or
+    // Needed to be able to track singleton methods defined on instances
+    singletonMethodOnInstance(_, _, n.(PostUpdateNode).getPreUpdateNode().asExpr().getExpr())
+    // // or
+    // singletonMethodOnInstance(_, _, n.asExpr().getExpr())
   }
 
   cached
@@ -437,6 +445,9 @@ class SsaDefinitionNode extends NodeImpl, TSsaDefinitionNode {
 
   /** Gets the underlying SSA definition. */
   Ssa::Definition getDefinition() { result = def }
+
+  /** Gets the underlying local variable. */
+  LocalVariable getVariable() { result = def.getSourceVariable() }
 
   override CfgScope getCfgScope() { result = def.getBasicBlock().getScope() }
 

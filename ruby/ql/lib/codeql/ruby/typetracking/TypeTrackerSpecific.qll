@@ -35,7 +35,14 @@ private predicate summarizedLocalStep(Node nodeFrom, Node nodeTo) {
 }
 
 /** Holds if there is a level step from `nodeFrom` to `nodeTo`. */
-predicate levelStep(Node nodeFrom, Node nodeTo) { summarizedLocalStep(nodeFrom, nodeTo) }
+predicate levelStep(Node nodeFrom, Node nodeTo) {
+  summarizedLocalStep(nodeFrom, nodeTo)
+  or
+  // DataFlowPrivate::LocalFlow::localSsaFlowStepUseUse(_, nodeFrom, nodeTo) and
+  // DataFlowDispatch::singletonMethodOnInstance(_, _, nodeFrom.asExpr().getExpr())
+  nodeTo.(DataFlowPublic::PostUpdateNode).getPreUpdateNode() = nodeFrom and
+  DataFlowDispatch::singletonMethodOnInstance(_, _, nodeFrom.asExpr().getExpr())
+}
 
 /**
  * Gets the name of a possible piece of content. This will usually include things like
