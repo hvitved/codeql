@@ -45,29 +45,29 @@ calls.rb:
 
 #   86| Kernel
 
-#   90| Module
+#   91| Module
 #-----|  -> Object
 
-#   97| Object
+#   98| Object
 #-----|  -> BasicObject
 
-#  102| Hash
+#  103| Hash
 #-----|  -> Object
 
-#  106| Array
+#  108| Array
 #-----|  -> Object
 
-#  144| S
+#  148| S
 #-----|  -> Object
 
-#  150| A
+#  154| A
 #-----|  -> B
 #-----|  -> S
 
-#  155| B
+#  159| B
 #-----|  -> S
 
-#  169| Singletons
+#  173| Singletons
 #-----|  -> Object
 
 hello.rb:

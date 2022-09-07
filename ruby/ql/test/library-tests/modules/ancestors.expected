@@ -46,32 +46,32 @@ calls.rb:
 
 #   86| Kernel
 
-#   90| Module
+#   91| Module
 #-----| super -> Object
 
-#   97| Object
+#   98| Object
 #-----| super -> BasicObject
 #-----| include -> Kernel
 #-----| prepend -> A
 
-#  102| Hash
+#  103| Hash
 #-----| super -> Object
 
-#  106| Array
+#  108| Array
 #-----| super -> Object
 
-#  144| S
+#  148| S
 #-----| super -> Object
 
-#  150| A
+#  154| A
 #-----| super -> S
 #-----| super -> B
 #-----| prepend -> A::B
 
-#  155| B
+#  159| B
 #-----| super -> S
 
-#  169| Singletons
+#  173| Singletons
 #-----| super -> Object
 
 hello.rb:

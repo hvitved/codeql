@@ -84,7 +84,8 @@ class String
 end
 
 module Kernel
-    def puts; end
+    alias :old_puts :puts
+    def puts x; old_puts x end
 end
 
 class Module
@@ -100,11 +101,14 @@ class Object < Module
 end
 
 class Hash
-    def []; end
+    alias :old_lookup :[]
+    def [] x; old_lookup(x) end
 end
 
 class Array
-  def []; end
+  alias :old_lookup :[]
+  def [] x; old_lookup(x) end
+
   def length; end
 
   def foreach &body
@@ -168,19 +172,62 @@ private_on_main
 
 class Singletons
     def self.singleton_a
+        puts "singleton_a"
         self.singleton_b
     end
     
     def self.singleton_b
+        puts "singleton_b"
         self.singleton_c
     end
     
     def self.singleton_c
+        puts "singleton_c"
     end
     
     def self.singleton_d
+        puts "singleton_d"
         self.singleton_a
     end
 end
   
 Singletons.singleton_a
+
+c1 = Singletons.new
+
+def c1.singleton_e;
+    puts "singleton_e_1"
+end
+
+c1.singleton_e
+
+def c1.singleton_e;
+    puts "singleton_e_2"
+end
+
+c1.singleton_e
+
+class << c1
+    def singleton_e;
+        puts "singleton_e_3"
+    end
+end
+
+c1.singleton_e
+
+c2 = Singletons.new
+c2.singleton_e # NoMethodError
+
+self.new # NoMethodError
+
+puts "top-level"
+
+def Singletons.singleton_e
+    puts "singleton_e"
+end
+
+Singletons.singleton_e
+c1.singleton_e
+c2.singleton_e # NoMethodError
+c3 = Singletons.new
+c3.singleton_e
