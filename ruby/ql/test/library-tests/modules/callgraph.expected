@@ -157,7 +157,6 @@ getTarget
 | calls.rb:402:9:402:18 | call to singleton2 | calls.rb:397:5:399:7 | singleton2 |
 | calls.rb:402:9:402:18 | call to singleton2 | calls.rb:423:5:425:7 | singleton2 |
 | calls.rb:404:13:404:22 | call to singleton2 | calls.rb:397:5:399:7 | singleton2 |
-| calls.rb:404:13:404:22 | call to singleton2 | calls.rb:423:5:425:7 | singleton2 |
 | calls.rb:408:5:408:14 | call to singleton2 | calls.rb:397:5:399:7 | singleton2 |
 | calls.rb:411:1:411:29 | call to singleton1 | calls.rb:388:9:390:11 | singleton1 |
 | calls.rb:412:1:412:29 | call to singleton2 | calls.rb:397:5:399:7 | singleton2 |
