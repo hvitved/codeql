@@ -58,6 +58,35 @@ private module SsaInput implements SsaImplCommon::InputSig {
     namespaceSelfExitRead(bb, i, v) and
     certain = false
   }
+
+  private predicate testvariableRead(
+    BasicBlock bb, int i, SelfVariable v, boolean certain, Cfg::CfgNode n
+  ) {
+    variableRead(bb, i, v, certain) and
+    v.getLocation().getFile().getStem() = "instance_variables" and
+    v.getDeclaringScope() instanceof Toplevel and
+    n = bb.getNode(i)
+  }
+
+  private predicate testvariableWrite(BasicBlock bb, int i, SelfVariable v, Cfg::CfgNode n) {
+    exists(Scope scope | scope = v.(SelfVariable).getDeclaringScope() |
+      // We consider the `self` variable to have a single write at the entry to a method block...
+      scope = bb.(BasicBlocks::EntryBasicBlock).getScope() and
+      i = 0
+      or
+      // ...or a class or module block.
+      bb.getNode(i).getNode() = scope.(ModuleBase).getAControlFlowEntryNode()
+    ) and
+    // or
+    uninitializedWrite(bb, i, v)
+    or
+    // capturedEntryWrite(bb, i, v)
+    // or
+    // variableWriteActual(bb, i, v, _)
+    v.getLocation().getFile().getStem() = "instance_variables" and
+    v.getDeclaringScope() instanceof Toplevel and
+    n = bb.getNode(i)
+  }
 }
 
 import SsaImplCommon::Make<SsaInput>
@@ -447,6 +476,13 @@ private module Cached {
       variableReadActual(bb, i, _) and
       read = bb.getNode(i)
     )
+  }
+
+  private predicate testlastRead(Definition def, VariableReadAccessCfgNode read) {
+    lastRead(def, read) and
+    def.getSourceVariable().getLocation().getFile().getStem() = "instance_variables" and
+    def.getSourceVariable().getDeclaringScope() instanceof Toplevel and
+    def.getSourceVariable() instanceof SelfVariable
   }
 
   /**
