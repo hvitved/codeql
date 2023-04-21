@@ -224,6 +224,12 @@ private module Cached {
 
 private import Cached
 
+private predicate stepCallAlias = stepCall/3;
+
+private predicate smallStepNoCallAlias = smallstepNoCall/3;
+
+private predicate smallStepCallAlias = smallstepCall/3;
+
 /**
  * Holds if `nodeFrom` is being written to the `content` of the object in `nodeTo`.
  *
@@ -313,6 +319,8 @@ module StepSummary {
     stepCall(nodeFrom, nodeTo, summary)
   }
 
+  predicate stepCall = stepCallAlias/3;
+
   /**
    * Gets the summary that corresponds to having taken a forwards
    * local, heap and/or inter-procedural step from `nodeFrom` to `nodeTo`.
@@ -327,7 +335,23 @@ module StepSummary {
     smallstepCall(nodeFrom, nodeTo, summary)
   }
 
+  predicate smallstepNoCall = smallStepNoCallAlias/3;
+
+  predicate smallstepCall = smallStepCallAlias/3;
+
   deprecated predicate localSourceStoreStep = flowsToStoreStep/3;
+}
+
+bindingset[t, nodeFrom]
+pragma[inline_late]
+private TypeTracker stepNoCallHelper(
+  TypeTracker t, TypeTrackingNode nodeFrom, TypeTrackingNode nodeTo
+) {
+  exists(StepSummary summary |
+    stepNoCall(pragma[only_bind_out](nodeFrom), _, pragma[only_bind_into](summary)) and
+    result = pragma[only_bind_into](pragma[only_bind_out](t)).append(summary) and
+    stepNoCall(pragma[only_bind_into](pragma[only_bind_out](nodeFrom)), nodeTo, summary)
+  )
 }
 
 /**
@@ -435,6 +459,15 @@ class TypeTracker extends TTypeTracker {
       StepSummary::step(nodeFrom, pragma[only_bind_out](nodeTo), pragma[only_bind_into](summary)) and
       result = this.append(pragma[only_bind_into](summary))
     )
+  }
+
+  /**
+   * Gets the summary that corresponds to having taken a forwards
+   * heap and/or inter-procedural step from `nodeFrom` to `nodeTo`.
+   */
+  pragma[inline]
+  TypeTracker stepNoCall(TypeTrackingNode nodeFrom, TypeTrackingNode nodeTo) {
+    result = stepNoCallHelper(this, nodeFrom, nodeTo)
   }
 
   /**
