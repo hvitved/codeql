@@ -328,9 +328,6 @@ private module Cached {
     exists(Node mid | hasLocalSource(mid, source) |
       localFlowStepTypeTracker(mid, sink)
       or
-      // Explicitly include the SSA param input step as type-tracking omits this step.
-      LocalFlow::localFlowSsaParamInput(mid, sink)
-      or
       LocalFlow::localFlowSsaParamCaptureInput(mid, sink)
     )
   }
@@ -1174,18 +1171,14 @@ class CallableNode extends StmtSequenceNode {
   }
 
   /**
-   * Gets the canonical return node from this callable.
-   *
-   * Each callable has exactly one such node, and its location may not correspond
-   * to any particular return site - consider using `getAReturningNode` to get nodes
-   * whose locations correspond to return sites.
-   */
-  Node getReturn() { result.(SynthReturnNode).getCfgScope() = callable }
-
-  /**
    * Gets a data flow node whose value is about to be returned by this callable.
    */
-  Node getAReturningNode() { result = this.getReturn().(SynthReturnNode).getAnInput() }
+  Node getAReturnNode() { result.(ReturnNode).(NodeImpl).getCfgScope() = callable }
+
+  /**
+   * DEPRECATED. Use `getAReturnNode` instead.
+   */
+  deprecated Node getAReturningNode() { result = this.getAReturnNode() }
 }
 
 /**

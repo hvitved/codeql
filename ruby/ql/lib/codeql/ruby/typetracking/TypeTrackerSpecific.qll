@@ -79,11 +79,11 @@ predicate jumpStep = DataFlowPrivate::jumpStep/2;
 /** Holds if there is direct flow from `param` to a return. */
 pragma[nomagic]
 private predicate flowThrough(DataFlowPublic::ParameterNode param) {
-  exists(DataFlowPrivate::ReturningNode returnNode, DataFlowDispatch::ReturnKind rk |
+  exists(DataFlowPrivate::SourceReturnNode returnNode, DataFlowDispatch::ReturnKind rk |
     DataFlowPrivate::LocalFlow::getParameterDefNode(param.getParameter())
         .(TypeTrackingNode)
         .flowsTo(returnNode) and
-    rk = returnNode.getKind()
+    rk = returnNode.getKindSource()
   |
     rk instanceof DataFlowDispatch::NormalReturnKind
     or
@@ -212,15 +212,7 @@ predicate callStep(ExprNodes::CallCfgNode call, Node arg, DataFlowPrivate::Param
  * recursion (or, at best, terrible performance), since identifying calls to library
  * methods is done using API graphs (which uses type tracking).
  */
-predicate callStep(Node nodeFrom, Node nodeTo) {
-  callStep(_, nodeFrom, nodeTo)
-  or
-  // In normal data-flow, this will be a local flow step. But for type tracking
-  // we model it as a call step, in order to avoid computing a potential
-  // self-cross product of all calls to a function that returns one of its parameters
-  // (only to later filter that flow out using `TypeTracker::append`).
-  DataFlowPrivate::LocalFlow::localFlowSsaParamInput(nodeFrom, nodeTo)
-}
+predicate callStep(Node nodeFrom, Node nodeTo) { callStep(_, nodeFrom, nodeTo) }
 
 /**
  * Holds if `nodeFrom` steps to `nodeTo` by being returned from a call.
@@ -238,13 +230,6 @@ predicate returnStep(Node nodeFrom, Node nodeTo) {
     // will reach all reads via `callStep` and `localFieldStep`.
     nodeTo.asExpr().getNode() = call.getNode()
   )
-  or
-  // In normal data-flow, this will be a local flow step. But for type tracking
-  // we model it as a returning flow step, in order to avoid computing a potential
-  // self-cross product of all calls to a function that returns one of its parameters
-  // (only to later filter that flow out using `TypeTracker::append`).
-  nodeTo.(DataFlowPrivate::SynthReturnNode).getAnInput() = nodeFrom and
-  not nodeFrom instanceof DataFlowPrivate::InitializeReturnNode
 }
 
 /**
@@ -411,23 +396,6 @@ private predicate hasStoreSummary(
         .propagatesFlow(push(SummaryComponent::withoutContent(_), input),
           push(SummaryComponent::content(contents), output), true)
   )
-}
-
-pragma[nomagic]
-private predicate hasStoreSummary2(
-  SummarizedCallable callable, DataFlow::ContentSet contents, SummaryComponentStack input,
-  SummaryComponentStack output
-) {
-  not isNonLocal(input.head()) and
-  not isNonLocal(output.head()) and
-  callable.propagatesFlow(input, push(SummaryComponent::content(contents), output), true)
-  // or
-  // // Allow the input to start with an arbitrary WithoutContent[X].
-  // // Since type-tracking only tracks one content deep, and we're about to store into another content,
-  // // we're already preventing the input from being in a content.
-  // callable
-  //     .propagatesFlow(push(SummaryComponent::withoutContent(_), input),
-  //       push(SummaryComponent::content(contents), output), true)
 }
 
 pragma[nomagic]
@@ -624,7 +592,8 @@ private DataFlow::Node evaluateSummaryComponentStackLocal(
     )
     or
     head = SummaryComponent::return() and
-    result.(DataFlowPrivate::SynthReturnNode).getCfgScope() = prev.asExpr().getExpr()
+    result.(DataFlowPrivate::ReturnNode).(DataFlowPrivate::NodeImpl).getCfgScope() =
+      prev.asExpr().getExpr()
     or
     exists(DataFlow::ContentSet content |
       head = SummaryComponent::withoutContent(content) and

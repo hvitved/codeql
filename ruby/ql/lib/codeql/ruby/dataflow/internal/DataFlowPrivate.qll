@@ -130,7 +130,7 @@ module LocalFlow {
   /**
    * Holds if `nodeFrom` is a parameter node, and `nodeTo` is a corresponding SSA node.
    */
-  predicate localFlowSsaParamInput(Node nodeFrom, Node nodeTo) {
+  predicate localFlowSsaParamInput(Node nodeFrom, SsaDefinitionExtNode nodeTo) {
     nodeTo = getParameterDefNode(nodeFrom.(ParameterNodeImpl).getParameter())
     or
     nodeTo = getSelfParameterDefNode(nodeFrom.(SelfParameterNode).getMethod())
@@ -162,7 +162,7 @@ module LocalFlow {
 
   /**
    * Holds if there is a local flow step from `nodeFrom` to `nodeTo` involving
-   * SSA definition `def`.
+   * some SSA definition.
    */
   private predicate localSsaFlowStep(Node nodeFrom, Node nodeTo) {
     exists(SsaImpl::DefinitionExt def |
@@ -180,6 +180,8 @@ module LocalFlow {
       // Flow into phi (read) SSA definition node from def
       localFlowSsaInputFromDef(nodeFrom, def, nodeTo)
     )
+    or
+    localFlowSsaParamInput(nodeFrom, nodeTo)
     // TODO
     // or
     // // Flow into uncertain SSA definition
@@ -277,12 +279,6 @@ private module Cached {
   newtype TNode =
     TExprNode(CfgNodes::ExprCfgNode n) { TaintTrackingPrivate::forceCachingInSameStage() } or
     TReturningNode(CfgNodes::ReturningCfgNode n) or
-    TSynthReturnNode(CfgScope scope, ReturnKind kind) {
-      exists(ReturningNode ret |
-        ret.(NodeImpl).getCfgScope() = scope and
-        ret.getKind() = kind
-      )
-    } or
     TSsaDefinitionExtNode(SsaImpl::DefinitionExt def) or
     TNormalParameterNode(Parameter p) {
       p instanceof SimpleParameter or
@@ -346,10 +342,6 @@ private module Cached {
     or
     defaultValueFlow(nodeTo.(ParameterNodeImpl).getParameter(), nodeFrom)
     or
-    LocalFlow::localFlowSsaParamInput(nodeFrom, nodeTo)
-    or
-    nodeTo.(SynthReturnNode).getAnInput() = nodeFrom
-    or
     LocalFlow::localSsaFlowStepUseUse(_, nodeFrom, nodeTo) and
     not FlowSummaryImpl::Private::Steps::prohibitsUseUseFlow(nodeFrom, _)
     or
@@ -373,8 +365,6 @@ private module Cached {
     or
     defaultValueFlow(nodeTo.(ParameterNodeImpl).getParameter(), nodeFrom)
     or
-    LocalFlow::localFlowSsaParamInput(nodeFrom, nodeTo)
-    or
     LocalFlow::localSsaFlowStepUseUse(_, nodeFrom, nodeTo)
     or
     // Simple flow through library code is included in the exposed local
@@ -384,9 +374,6 @@ private module Cached {
 
   /**
    * This is the local flow predicate that is used in type tracking.
-   *
-   * This needs to exclude `localFlowSsaParamInput` due to a performance trick
-   * in type tracking, where such steps are treated as call steps.
    */
   cached
   predicate localFlowStepTypeTracker(Node nodeFrom, Node nodeTo) {
@@ -438,12 +425,10 @@ private module Cached {
     n instanceof ExprNode and
     not reachedFromExprOrEntrySsaDef(n)
     or
-    // Ensure all entry SSA definitions are local sources -- for parameters, this
-    // is needed by type tracking
-    entrySsaDefinition(n)
-    or
-    // Needed for flow out in type tracking
-    n instanceof SynthReturnNode
+    // Ensure all entry SSA definitions are local sources, except those that correspond
+    // to parameters (which are themselves local sources)
+    entrySsaDefinition(n) and
+    not LocalFlow::localFlowSsaParamInput(_, n)
     or
     // Needed for stores in type tracking
     TypeTrackerSpecific::storeStepIntoSourceNode(_, n, _)
@@ -505,7 +490,7 @@ private module Cached {
    */
   cached
   predicate exprNodeReturnedFromCached(ExprNode e, Callable c) {
-    exists(ReturningNode r |
+    exists(ReturnNode r |
       nodeGetEnclosingCallable(r).asCallable() = c and
       (
         r.(ExplicitReturnNode).getReturningNode().getReturnedValueNode() = e.asExpr() or
@@ -539,8 +524,6 @@ predicate nodeIsHidden(Node n) {
   n instanceof SummaryNode
   or
   n instanceof SummaryParameterNode
-  or
-  n instanceof SynthReturnNode
   or
   n instanceof SynthHashSplatParameterNode
   or
@@ -935,16 +918,18 @@ private class NewCall extends DataFlowCall {
   NewCall() { this.asCall().getExpr().(MethodCall).getMethodName() = "new" }
 }
 
-/** A data-flow node that represents a value syntactically returned by a callable. */
-abstract class ReturningNode extends Node {
+/** A data-flow node that represents a value returned by a callable. */
+abstract class ReturnNode extends Node {
   /** Gets the kind of this return node. */
   abstract ReturnKind getKind();
 }
 
 /** A data-flow node that represents a value returned by a callable. */
-abstract class ReturnNode extends Node {
+abstract class SourceReturnNode extends ReturnNode {
   /** Gets the kind of this return node. */
-  abstract ReturnKind getKind();
+  abstract ReturnKind getKindSource(); // only exists to avoid spurious negative recursion
+
+  final override ReturnKind getKind() { result = this.getKindSource() }
 }
 
 private module ReturnNodes {
@@ -968,14 +953,14 @@ private module ReturnNodes {
    * A data-flow node that represents an expression explicitly returned by
    * a callable.
    */
-  class ExplicitReturnNode extends ReturningNode, ReturningStatementNode {
+  class ExplicitReturnNode extends SourceReturnNode, ReturningStatementNode {
     ExplicitReturnNode() {
       isValid(n) and
       n.getASuccessor().(CfgNodes::AnnotatedExitNode).isNormal() and
       n.getScope() instanceof Callable
     }
 
-    override ReturnKind getKind() {
+    override ReturnKind getKindSource() {
       if n.getNode() instanceof BreakStmt
       then result instanceof BreakReturnKind
       else
@@ -1004,10 +989,10 @@ private module ReturnNodes {
    * a callable. An implicit return happens when an expression can be the
    * last thing that is evaluated in the body of the callable.
    */
-  class ExprReturnNode extends ReturningNode, ExprNode {
+  class ExprReturnNode extends SourceReturnNode, ExprNode {
     ExprReturnNode() { exists(Callable c | implicitReturn(c, this) = c.getAStmt()) }
 
-    override ReturnKind getKind() {
+    override ReturnKind getKindSource() {
       exists(CfgScope scope | scope = this.(NodeImpl).getCfgScope() |
         if isUserDefinedNew(scope)
         then result instanceof NewReturnKind
@@ -1032,7 +1017,7 @@ private module ReturnNodes {
    * the implicit `self` reference in `@x` will return data stored in the field
    * `x` out to the call `C.new`.
    */
-  class InitializeReturnNode extends ExprPostUpdateNode, ReturningNode {
+  class InitializeReturnNode extends ExprPostUpdateNode, ReturnNode {
     InitializeReturnNode() {
       exists(Method initialize |
         this.getCfgScope() = initialize and
@@ -1043,34 +1028,6 @@ private module ReturnNodes {
     }
 
     override ReturnKind getKind() { result instanceof NewReturnKind }
-  }
-
-  /**
-   * A synthetic data-flow node for joining flow from different syntactic
-   * returns into a single node.
-   *
-   * This node only exists to avoid computing the product of a large fan-in
-   * with a large fan-out.
-   */
-  class SynthReturnNode extends NodeImpl, ReturnNode, TSynthReturnNode {
-    private CfgScope scope;
-    private ReturnKind kind;
-
-    SynthReturnNode() { this = TSynthReturnNode(scope, kind) }
-
-    /** Gets a syntactic return node that flows into this synthetic node. */
-    ReturningNode getAnInput() {
-      result.(NodeImpl).getCfgScope() = scope and
-      result.getKind() = kind
-    }
-
-    override ReturnKind getKind() { result = kind }
-
-    override CfgScope getCfgScope() { result = scope }
-
-    override Location getLocationImpl() { result = scope.getLocation() }
-
-    override string toStringImpl() { result = "return " + kind + " in " + scope }
   }
 
   private class SummaryReturnNode extends SummaryNode, ReturnNode {
@@ -1333,9 +1290,6 @@ private import PostUpdateNodes
 /** A node that performs a type cast. */
 class CastNode extends Node {
   CastNode() {
-    // ensure that actual return nodes are included in the path graph
-    this instanceof ReturningNode
-    or
     // ensure that all variable assignments are included in the path graph
     this.(SsaDefinitionExtNode).getDefinitionExt() instanceof Ssa::WriteDefinition
   }
