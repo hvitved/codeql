@@ -785,3 +785,109 @@ module TypeBackTracker {
    */
   TypeBackTracker end() { result.end() }
 }
+
+/**
+ * INTERNAL: Do not use.
+ *
+ * Provides logic for constructing a call graph in mutual recursion with type tracking.
+ */
+module CallGraphConstruction {
+  /** The input to call graph construction. */
+  signature module InputSig {
+    /** A state to track during type tracking. */
+    class State;
+
+    /** Holds if type tracking should start at `start` in state `state`. */
+    predicate start(Node start, State state);
+
+    /**
+     * Holds if type tracking should use the step from `nodeFrom` to `nodeTo`,
+     * which _does not_ depend on the call graph.
+     */
+    predicate stepNoCall(Node nodeFrom, Node nodeTo, StepSummary summary);
+
+    /**
+     * Holds if type tracking should use the step from `nodeFrom` to `nodeTo`,
+     * which _does_ depend on the call graph.
+     */
+    predicate stepCall(Node nodeFrom, Node nodeTo, StepSummary summary);
+
+    /** A projection of an element from the state space. */
+    class StateProj;
+
+    /** Gets the projection of `state`. */
+    StateProj stateProj(State state);
+
+    /** Holds if type tracking should stop at `n` when we are tracking projected state `stateProj`. */
+    predicate filter(Node n, StateProj stateProj);
+  }
+
+  /** Provides the `track` predicate for use in call graph construction. */
+  module Make<InputSig Input> {
+    pragma[nomagic]
+    private predicate stepNoCallProj_(Node nodeFrom, StepSummary summary) {
+      Input::stepNoCall(nodeFrom, _, summary)
+    }
+
+    pragma[nomagic]
+    private predicate stepCallProj_(Node nodeFrom, StepSummary summary) {
+      Input::stepCall(nodeFrom, _, summary)
+    }
+
+    bindingset[nodeFrom, t]
+    pragma[inline_late]
+    pragma[noopt]
+    private TypeTracker stepNoCallInlineLate_(
+      TypeTracker t, TypeTrackingNode nodeFrom, TypeTrackingNode nodeTo
+    ) {
+      exists(StepSummary summary |
+        stepNoCallProj_(nodeFrom, summary) and
+        result = t.append(summary) and
+        Input::stepNoCall(nodeFrom, nodeTo, summary)
+      )
+    }
+
+    bindingset[state]
+    pragma[inline_late]
+    private Input::StateProj stateProjInlineLate(Input::State state) {
+      result = Input::stateProj(state)
+    }
+
+    pragma[nomagic]
+    private Node track(Input::State state, TypeTracker t) {
+      t.start() and Input::start(result, state)
+      or
+      exists(Input::StateProj stateProj |
+        stateProj = stateProjInlineLate(state) and
+        not Input::filter(result, stateProj)
+      |
+        exists(TypeTracker t2 | t = stepNoCallInlineLate_(t2, track(state, t2), result))
+        or
+        exists(StepSummary summary |
+          // non-linear recursion
+          Input::stepCall(trackCall(state, t, summary), result, summary)
+        )
+      )
+    }
+
+    bindingset[t, summary]
+    pragma[inline_late]
+    private TypeTracker appendInlineLate(TypeTracker t, StepSummary summary) {
+      result = t.append(summary)
+    }
+
+    pragma[nomagic]
+    private Node trackCall(Input::State state, TypeTracker t, StepSummary summary) {
+      exists(TypeTracker t2 |
+        // non-linear recursion
+        result = track(state, t2) and
+        stepCallProj_(result, summary) and
+        t = appendInlineLate(t2, summary)
+      )
+    }
+
+    /** Gets a node that can be reached from _some_ start node in state `state`. */
+    pragma[nomagic]
+    Node track(Input::State state) { result = track(state, TypeTracker::end()) }
+  }
+}
