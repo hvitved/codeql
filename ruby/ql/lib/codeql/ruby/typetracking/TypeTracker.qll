@@ -847,8 +847,8 @@ module CallGraphConstruction {
       )
     }
 
-    bindingset[state]
-    pragma[inline_late]
+    // bindingset[state]
+    // pragma[inline_late]
     private Input::StateProj stateProjInlineLate(Input::State state) {
       result = Input::stateProj(state)
     }
