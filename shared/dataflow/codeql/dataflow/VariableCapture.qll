@@ -141,9 +141,6 @@ signature module InputSig {
 
     /** Gets the location of this callable. */
     Location getLocation();
-
-    /** Holds if this callable is a constructor. */
-    predicate isConstructor();
   }
 }
 
@@ -199,12 +196,6 @@ signature module OutputSig<InputSig I> {
     I::Callable getCallable();
   }
 
-  /** A data flow node for the instance parameter argument of a constructor call. */
-  class MallocNode extends ClosureNode {
-    /** Gets the closure construction that is the post-update of this node. */
-    I::ClosureExpr getClosureExpr();
-  }
-
   /** Holds if `post` is a `PostUpdateNode` for `pre`. */
   predicate capturePostUpdateNode(SynthesizedCaptureNode post, SynthesizedCaptureNode pre);
 
@@ -216,6 +207,13 @@ signature module OutputSig<InputSig I> {
 
   /** Holds if there is a read step from `node1` to `node2`. */
   predicate readStep(ClosureNode node1, I::CapturedVariable v, ClosureNode node2);
+
+  /**
+   * Holds if `v` is available in `c` through capture. This can either be due to
+   * an explicit variable reference or through the construction of a closure
+   * that has a nested capture.
+   */
+  predicate captureAccess(I::CapturedVariable v, I::Callable c);
 
   /** Holds if this-to-this summaries are expected for `c`. */
   predicate heuristicAllowInstanceParameterReturnInSelf(I::Callable c);
@@ -519,12 +517,7 @@ module Flow<InputSig Input> implements OutputSig<Input> {
     exists(BasicBlock bb | ce.hasCfgNode(bb, _) and result = bb.getEnclosingCallable())
   }
 
-  /**
-   * Holds if `v` is available in `c` through capture. This can either be due to
-   * an explicit variable reference or through the construction of a closure
-   * that has a nested capture.
-   */
-  private predicate captureAccess(CapturedVariable v, Callable c) {
+  predicate captureAccess(CapturedVariable v, Callable c) {
     exists(BasicBlock bb | captureRead(v, bb, _, _, _) or captureWrite(v, bb, _, _, _) |
       c = bb.getEnclosingCallable() and
       c != v.getCallable()
@@ -546,15 +539,6 @@ module Flow<InputSig Input> implements OutputSig<Input> {
     // If multiple variables are captured, then we should allow flow from one to
     // another, which entails a this-to-this summary.
     2 <= strictcount(CapturedVariable v | captureAccess(v, c))
-    or
-    // Constructors that capture a variable may assign it to a field, which also
-    // entails a this-to-this summary.
-    captureAccess(_, c) and c.isConstructor()
-  }
-
-  /** Holds if the constructor, if any, for the closure defined by `ce` captures `v`. */
-  private predicate hasConstructorCapture(ClosureExpr ce, CapturedVariable v) {
-    exists(Callable c | ce.hasBody(c) and c.isConstructor() and captureAccess(v, c))
   }
 
   /**
@@ -694,8 +678,7 @@ module Flow<InputSig Input> implements OutputSig<Input> {
       synthRead(_, _, _, _, expr) and isPost = [false, true]
     } or
     TParamNode(CapturedParameter p) or
-    TThisParamNode(Callable c) { captureAccess(_, c) } or
-    TMallocNode(ClosureExpr ce) { hasConstructorCapture(ce, _) }
+    TThisParamNode(Callable c) { captureAccess(_, c) }
 
   class ClosureNode extends TClosureNode {
     /** Gets a textual representation of this node. */
@@ -719,8 +702,6 @@ module Flow<InputSig Input> implements OutputSig<Input> {
       exists(CapturedParameter p | this = TParamNode(p) and result = p.toString())
       or
       result = "this" and this = TThisParamNode(_)
-      or
-      result = "malloc" and this = TMallocNode(_)
     }
 
     /** Gets the location of this node. */
@@ -746,8 +727,6 @@ module Flow<InputSig Input> implements OutputSig<Input> {
       exists(CapturedParameter p | this = TParamNode(p) and result = p.getCallable().getLocation())
       or
       exists(Callable c | this = TThisParamNode(c) and result = c.getLocation())
-      or
-      exists(ClosureExpr ce | this = TMallocNode(ce) and result = ce.getLocation())
     }
   }
 
@@ -801,10 +780,6 @@ module Flow<InputSig Input> implements OutputSig<Input> {
 
   class ThisParameterNode extends ClosureNode, TThisParamNode {
     Callable getCallable() { this = TThisParamNode(result) }
-  }
-
-  class MallocNode extends ClosureNode, TMallocNode {
-    ClosureExpr getClosureExpr() { this = TMallocNode(result) }
   }
 
   predicate capturePostUpdateNode(SynthesizedCaptureNode post, SynthesizedCaptureNode pre) {
@@ -885,14 +860,11 @@ module Flow<InputSig Input> implements OutputSig<Input> {
   }
 
   predicate storeStep(ClosureNode node1, CapturedVariable v, ClosureNode node2) {
-    // store v in the closure or in the malloc in case of a relevant constructor call
+    // store v in the closure
     exists(BasicBlock bb, int i, Expr closure |
       synthRead(v, bb, i, _, closure) and
-      node1 = TSynthRead(v, bb, i, false)
-    |
+      node1 = TSynthRead(v, bb, i, false) and
       node2 = TExprNode(closure, false)
-      or
-      node2 = TMallocNode(closure) and hasConstructorCapture(closure, v)
     )
     or
     // write to v inside the closure body
@@ -905,15 +877,10 @@ module Flow<InputSig Input> implements OutputSig<Input> {
 
   predicate readStep(ClosureNode node1, CapturedVariable v, ClosureNode node2) {
     // read v from the closure post-update to observe side-effects
-    exists(BasicBlock bb, int i, Expr closure, boolean post |
+    exists(BasicBlock bb, int i, Expr closure |
       synthRead(v, bb, i, _, closure) and
-      node1 = TExprNode(closure, post) and
+      node1 = TExprNode(closure, true) and
       node2 = TSynthRead(v, bb, i, true)
-    |
-      post = true
-      or
-      // for a constructor call the regular ExprNode is the post-update for the MallocNode
-      post = false and hasConstructorCapture(closure, v)
     )
     or
     // read v from the closure inside the closure body

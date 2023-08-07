@@ -62,6 +62,10 @@ private predicate closureFlowStep(Expr e1, Expr e2) {
   )
 }
 
+private predicate localClassInstanceExpr(ClassInstanceExpr cie, LocalClass c) {
+  cie.getConstructedType().getASourceSupertype*().getSourceDeclaration() = c
+}
+
 private module CaptureInput implements VariableCapture::InputSig {
   private import java as J
 
@@ -134,8 +138,7 @@ private module CaptureInput implements VariableCapture::InputSig {
     ClosureExpr() {
       nc.(AnonymousClass).getClassInstanceExpr() = this
       or
-      nc instanceof LocalClass and
-      super.getConstructedType().getASourceSupertype*().getSourceDeclaration() = nc
+      localClassInstanceExpr(this, nc)
     }
 
     predicate hasBody(Callable body) { nc.getACallable() = body }
@@ -143,9 +146,7 @@ private module CaptureInput implements VariableCapture::InputSig {
     predicate hasAliasedAccess(Expr f) { closureFlowStep+(this, f) and not closureFlowStep(f, _) }
   }
 
-  class Callable extends J::Callable {
-    predicate isConstructor() { this instanceof Constructor }
-  }
+  class Callable extends J::Callable { }
 }
 
 class CapturedVariable = CaptureInput::CapturedVariable;
@@ -156,13 +157,22 @@ module CaptureFlow = VariableCapture::Flow<CaptureInput>;
 
 CaptureFlow::ClosureNode asClosureNode(Node n) {
   result = n.(CaptureNode).getSynthesizedCaptureNode() or
-  result.(CaptureFlow::ExprNode).getExpr() = n.asExpr() or
+  result.(CaptureFlow::ExprNode).getExpr() =
+    any(Expr e |
+      // account for `new` expressions having swapped pre/post order nodes
+      if localClassInstanceExpr(e, _)
+      then exprNode(e).(PostUpdateNode).getPreUpdateNode() = n
+      else e = n.asExpr()
+    ) or
   result.(CaptureFlow::ExprPostUpdateNode).getExpr() =
-    n.(PostUpdateNode).getPreUpdateNode().asExpr() or
+    any(Expr e |
+      // account for `new` expressions having swapped pre/post order nodes
+      if localClassInstanceExpr(e, _)
+      then e = n.asExpr()
+      else e = n.(PostUpdateNode).getPreUpdateNode().asExpr()
+    ) or
   result.(CaptureFlow::ParameterNode).getParameter() = n.asParameter() or
-  result.(CaptureFlow::ThisParameterNode).getCallable() = n.(InstanceParameterNode).getCallable() or
-  exprNode(result.(CaptureFlow::MallocNode).getClosureExpr()).(PostUpdateNode).getPreUpdateNode() =
-    n
+  result.(CaptureFlow::ThisParameterNode).getCallable() = n.(InstanceParameterNode).getCallable()
 }
 
 private predicate captureStoreStep(Node node1, ClosureContent c, Node node2) {
@@ -523,7 +533,14 @@ predicate additionalLambdaFlowStep(Node nodeFrom, Node nodeTo, boolean preserves
 predicate allowParameterReturnInSelf(ParameterNode p) {
   FlowSummaryImpl::Private::summaryAllowParameterReturnInSelf(p)
   or
-  CaptureFlow::heuristicAllowInstanceParameterReturnInSelf(p.(InstanceParameterNode).getCallable())
+  exists(Callable c | c = p.(InstanceParameterNode).getCallable() |
+    CaptureFlow::heuristicAllowInstanceParameterReturnInSelf(c)
+    or
+    // Constructors that capture a variable may assign it to a field, which also
+    // entails a this-to-this summary.
+    c instanceof Constructor and
+    CaptureFlow::captureAccess(_, c)
+  )
 }
 
 /** An approximated `Content`. */
