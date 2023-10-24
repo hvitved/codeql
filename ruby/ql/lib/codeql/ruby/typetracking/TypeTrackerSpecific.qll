@@ -1,14 +1,13 @@
-private import codeql.ruby.AST as Ast
+private import codeql.ruby.AST
 private import codeql.ruby.CFG as Cfg
+private import codeql.ruby.DataFlow
 private import Cfg::CfgNodes
-private import codeql.ruby.dataflow.FlowSummary
+private import codeql.ruby.dataflow.FlowSummary as FlowSummary
 private import codeql.ruby.dataflow.internal.DataFlowImplCommon as DataFlowImplCommon
 private import codeql.ruby.dataflow.internal.DataFlowPublic as DataFlowPublic
 private import codeql.ruby.dataflow.internal.DataFlowPrivate as DataFlowPrivate
 private import codeql.ruby.dataflow.internal.DataFlowDispatch as DataFlowDispatch
 private import codeql.ruby.dataflow.internal.FlowSummaryImpl as FlowSummaryImpl
-private import codeql.ruby.dataflow.internal.FlowSummaryImplSpecific as FlowSummaryImplSpecific
-private import codeql.ruby.dataflow.internal.AccessPathSyntax
 
 class Node = DataFlowPublic::Node;
 
@@ -16,9 +15,9 @@ class TypeTrackingNode = DataFlowPublic::LocalSourceNode;
 
 class TypeTrackerContent = DataFlowPublic::ContentSet;
 
-private module SCS = SummaryComponentStack;
+private module SCS = FlowSummaryImpl::Private::SummaryComponentStack;
 
-private module SC = SummaryComponent;
+private module SC = FlowSummaryImpl::Private::SummaryComponent;
 
 /**
  * An optional content set, that is, a `ContentSet` or the special "no content set" value.
@@ -280,10 +279,10 @@ predicate storeStepIntoSourceNode(Node nodeFrom, Node nodeTo, DataFlow::ContentS
   exists(ExprNodes::MethodCallCfgNode call |
     contents
         .isSingleton(DataFlowPublic::Content::getAttributeName(call.getExpr()
-                .(Ast::SetterMethodCall)
+                .(SetterMethodCall)
                 .getTargetName())) and
     nodeTo.(DataFlowPublic::PostUpdateNode).getPreUpdateNode().asExpr() = call.getReceiver() and
-    call.getExpr() instanceof Ast::SetterMethodCall and
+    call.getExpr() instanceof SetterMethodCall and
     call.getArgument(call.getNumberOfArguments() - 1) =
       nodeFrom.(DataFlowPublic::ExprNode).getExprNode()
   )
@@ -365,21 +364,21 @@ class Boolean extends boolean {
   Boolean() { this = true or this = false }
 }
 
-private import SummaryComponentStack
+private import FlowSummaryImpl::Private::SummaryComponentStack
 
 /**
  * Holds if the given component can't be evaluated by `evaluateSummaryComponentStackLocal`.
  */
 pragma[nomagic]
-predicate isNonLocal(SummaryComponent component) {
+predicate isNonLocal(FlowSummaryImpl::Private::SummaryComponent component) {
   component = SC::content(_)
   or
   component = SC::withContent(_)
 }
 
 private import internal.SummaryTypeTracker as SummaryTypeTracker
-private import codeql.ruby.dataflow.FlowSummary as FlowSummary
 
+// private import codeql.ruby.dataflow.FlowSummary as FlowSummary
 private module SummaryTypeTrackerInput implements SummaryTypeTracker::Input {
   // Dataflow nodes
   class Node = DataFlow::Node;
@@ -420,37 +419,40 @@ private module SummaryTypeTrackerInput implements SummaryTypeTracker::Input {
   }
 
   // Summaries and their stacks
-  class SummaryComponent = FlowSummary::SummaryComponent;
+  class SummaryComponent = FlowSummaryImpl::Private::SummaryComponent;
 
-  class SummaryComponentStack = FlowSummary::SummaryComponentStack;
+  class SummaryComponentStack = FlowSummaryImpl::Private::SummaryComponentStack;
 
-  predicate singleton = FlowSummary::SummaryComponentStack::singleton/1;
+  predicate singleton = FlowSummaryImpl::Private::SummaryComponentStack::singleton/1;
 
-  predicate push = FlowSummary::SummaryComponentStack::push/2;
+  predicate push = FlowSummaryImpl::Private::SummaryComponentStack::push/2;
 
   // Relating content to summaries
-  predicate content = FlowSummary::SummaryComponent::content/1;
+  predicate content = FlowSummaryImpl::Private::SummaryComponent::content/1;
 
-  predicate withoutContent = FlowSummary::SummaryComponent::withoutContent/1;
+  predicate withoutContent = FlowSummaryImpl::Private::SummaryComponent::withoutContent/1;
 
-  predicate withContent = FlowSummary::SummaryComponent::withContent/1;
+  predicate withContent = FlowSummaryImpl::Private::SummaryComponent::withContent/1;
 
-  predicate return = FlowSummary::SummaryComponent::return/0;
+  SummaryComponent return() {
+    result =
+      FlowSummaryImpl::Private::SummaryComponent::return(any(DataFlowDispatch::NormalReturnKind k))
+  }
 
   // Callables
-  class SummarizedCallable = FlowSummary::SummarizedCallable;
+  class SummarizedCallable = FlowSummaryImpl::Private::SummarizedCallableImpl;
 
   // Relating nodes to summaries
-  Node argumentOf(Node call, SummaryComponent arg) {
+  Node argumentOf(Node call, FlowSummaryImpl::Private::SummaryComponent arg) {
     exists(DataFlowDispatch::ParameterPosition pos |
-      arg = SummaryComponent::argument(pos) and
+      arg = FlowSummaryImpl::Private::SummaryComponent::argument(pos) and
       argumentPositionMatch(call.asExpr(), result, pos)
     )
   }
 
   Node parameterOf(Node callable, SummaryComponent param) {
     exists(DataFlowDispatch::ArgumentPosition apos, DataFlowDispatch::ParameterPosition ppos |
-      param = SummaryComponent::parameter(apos) and
+      param = FlowSummaryImpl::Private::SummaryComponent::parameter(apos) and
       DataFlowDispatch::parameterMatch(ppos, apos) and
       result
           .(DataFlowPrivate::ParameterNodeImpl)
@@ -459,13 +461,15 @@ private module SummaryTypeTrackerInput implements SummaryTypeTracker::Input {
   }
 
   Node returnOf(Node callable, SummaryComponent return) {
-    return = SummaryComponent::return() and
+    return = return() and
     result.(DataFlowPrivate::ReturnNode).(DataFlowPrivate::NodeImpl).getCfgScope() =
       callable.asExpr().getExpr()
   }
 
   // Relating callables to nodes
-  Node callTo(SummarizedCallable callable) { result.asExpr().getExpr() = callable.getACallSimple() }
+  Node callTo(SummarizedCallable callable) {
+    result.asExpr().getExpr() = callable.(FlowSummary::SummarizedCallable).getACallSimple()
+  }
 }
 
 private module TypeTrackerSummaryFlow = SummaryTypeTracker::SummaryFlow<SummaryTypeTrackerInput>;

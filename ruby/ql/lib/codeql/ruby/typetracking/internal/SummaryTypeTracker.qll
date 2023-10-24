@@ -7,7 +7,9 @@
 /** The classes and predicates needed to generate type-tracking steps from summaries. */
 signature module Input {
   // Dataflow nodes
-  class Node;
+  class Node {
+    string toString();
+  }
 
   // Content
   class TypeTrackerContent;

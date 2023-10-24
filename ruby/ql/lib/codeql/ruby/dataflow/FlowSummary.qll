@@ -8,7 +8,6 @@ private import internal.FlowSummaryImpl as Impl
 private import internal.DataFlowDispatch
 private import internal.DataFlowImplCommon as DataFlowImplCommon
 private import internal.DataFlowPrivate
-private import internal.FlowSummaryImplSpecific
 
 // import all instances below
 private module Summaries {
@@ -16,37 +15,45 @@ private module Summaries {
   private import codeql.ruby.frameworks.data.ModelsAsData
 }
 
-class SummaryComponent = Impl::Public::SummaryComponent;
+deprecated class SummaryComponent = Impl::Private::SummaryComponent;
 
-/** Provides predicates for constructing summary components. */
-module SummaryComponent {
-  private import Impl::Public::SummaryComponent as SC
+/**
+ * DEPRECATED.
+ *
+ * Provides predicates for constructing summary components.
+ */
+deprecated module SummaryComponent {
+  private import Impl::Private::SummaryComponent as SC
 
-  predicate parameter = SC::parameter/1;
+  deprecated predicate parameter = SC::parameter/1;
 
-  predicate argument = SC::argument/1;
+  deprecated predicate argument = SC::argument/1;
 
-  predicate content = SC::content/1;
+  deprecated predicate content = SC::content/1;
 
-  predicate withoutContent = SC::withoutContent/1;
+  deprecated predicate withoutContent = SC::withoutContent/1;
 
-  predicate withContent = SC::withContent/1;
+  deprecated predicate withContent = SC::withContent/1;
 
-  class SyntheticGlobal = SC::SyntheticGlobal;
+  deprecated class SyntheticGlobal = Impl::Private::SyntheticGlobal;
 
   /** Gets a summary component that represents a receiver. */
-  SummaryComponent receiver() { result = argument(any(ParameterPosition pos | pos.isSelf())) }
+  deprecated SummaryComponent receiver() {
+    result = argument(any(ParameterPosition pos | pos.isSelf()))
+  }
 
   /** Gets a summary component that represents a block argument. */
-  SummaryComponent block() { result = argument(any(ParameterPosition pos | pos.isBlock())) }
+  deprecated SummaryComponent block() {
+    result = argument(any(ParameterPosition pos | pos.isBlock()))
+  }
 
   /** Gets a summary component that represents an element in a collection at an unknown index. */
-  SummaryComponent elementUnknown() {
+  deprecated SummaryComponent elementUnknown() {
     result = SC::content(TSingletonContent(TUnknownElementContent()))
   }
 
   /** Gets a summary component that represents an element in a collection at a known index. */
-  SummaryComponent elementKnown(ConstantValue cv) {
+  deprecated SummaryComponent elementKnown(ConstantValue cv) {
     result = SC::content(TSingletonContent(DataFlow::Content::getElementContent(cv)))
   }
 
@@ -54,7 +61,7 @@ module SummaryComponent {
    * Gets a summary component that represents an element in a collection at a specific
    * known index `cv`, or an unknown index.
    */
-  SummaryComponent elementKnownOrUnknown(ConstantValue cv) {
+  deprecated SummaryComponent elementKnownOrUnknown(ConstantValue cv) {
     result = SC::content(TKnownOrUnknownElementContent(TKnownElementContent(cv)))
     or
     not exists(TKnownElementContent(cv)) and
@@ -71,13 +78,13 @@ module SummaryComponent {
    *
    * but is more efficient, because it is represented by a single value.
    */
-  SummaryComponent elementAny() { result = SC::content(TAnyElementContent()) }
+  deprecated SummaryComponent elementAny() { result = SC::content(TAnyElementContent()) }
 
   /**
    * Gets a summary component that represents an element in a collection at known
    * integer index `lower` or above.
    */
-  SummaryComponent elementLowerBound(int lower) {
+  deprecated SummaryComponent elementLowerBound(int lower) {
     result = SC::content(TElementLowerBoundContent(lower, false))
   }
 
@@ -85,34 +92,38 @@ module SummaryComponent {
    * Gets a summary component that represents an element in a collection at known
    * integer index `lower` or above, or possibly at an unknown index.
    */
-  SummaryComponent elementLowerBoundOrUnknown(int lower) {
+  deprecated SummaryComponent elementLowerBoundOrUnknown(int lower) {
     result = SC::content(TElementLowerBoundContent(lower, true))
   }
 
   /** Gets a summary component that represents the return value of a call. */
-  SummaryComponent return() { result = SC::return(any(NormalReturnKind rk)) }
+  deprecated SummaryComponent return() { result = SC::return(any(NormalReturnKind rk)) }
 }
 
-class SummaryComponentStack = Impl::Public::SummaryComponentStack;
+deprecated class SummaryComponentStack = Impl::Private::SummaryComponentStack;
 
-/** Provides predicates for constructing stacks of summary components. */
-module SummaryComponentStack {
-  private import Impl::Public::SummaryComponentStack as SCS
+/**
+ * DEPRECATED.
+ *
+ * Provides predicates for constructing stacks of summary components.
+ */
+deprecated module SummaryComponentStack {
+  private import Impl::Private::SummaryComponentStack as SCS
 
-  predicate singleton = SCS::singleton/1;
+  deprecated predicate singleton = SCS::singleton/1;
 
-  predicate push = SCS::push/2;
+  deprecated predicate push = SCS::push/2;
 
-  predicate argument = SCS::argument/1;
+  deprecated predicate argument = SCS::argument/1;
 
   /** Gets a singleton stack representing a receiver. */
-  SummaryComponentStack receiver() { result = singleton(SummaryComponent::receiver()) }
+  deprecated SummaryComponentStack receiver() { result = singleton(SummaryComponent::receiver()) }
 
   /** Gets a singleton stack representing a block argument. */
-  SummaryComponentStack block() { result = singleton(SummaryComponent::block()) }
+  deprecated SummaryComponentStack block() { result = singleton(SummaryComponent::block()) }
 
   /** Gets a singleton stack representing the return value of a call. */
-  SummaryComponentStack return() { result = singleton(SummaryComponent::return()) }
+  deprecated SummaryComponentStack return() { result = singleton(SummaryComponent::return()) }
 }
 
 /** A callable with a flow summary, identified by a unique string. */
@@ -121,18 +132,12 @@ abstract class SummarizedCallable extends LibraryCallable, Impl::Public::Summari
   SummarizedCallable() { any() }
 
   /**
-   * Same as
-   *
-   * ```ql
-   * propagatesFlow(
-   *   SummaryComponentStack input, SummaryComponentStack output, boolean preservesValue
-   * )
-   * ```
-   *
-   * but uses an external (string) representation of the input and output stacks.
+   * DEPRECATED: Use `propagatesFlow` instead.
    */
   pragma[nomagic]
-  predicate propagatesFlowExt(string input, string output, boolean preservesValue) { none() }
+  deprecated predicate propagatesFlowExt(string input, string output, boolean preservesValue) {
+    none()
+  }
 
   /**
    * Gets the synthesized parameter that results from an input specification
@@ -141,7 +146,7 @@ abstract class SummarizedCallable extends LibraryCallable, Impl::Public::Summari
   DataFlow::ParameterNode getParameter(string s) {
     exists(ParameterPosition pos |
       DataFlowImplCommon::parameterNode(result, TLibraryCallable(this), pos) and
-      s = getParameterPosition(pos)
+      s = Impl::Input::encodeParameterPosition(pos)
     )
   }
 }
@@ -159,7 +164,7 @@ abstract class SimpleSummarizedCallable extends SummarizedCallable {
   final override MethodCall getACallSimple() { result = mc }
 }
 
-class RequiredSummaryComponentStack = Impl::Public::RequiredSummaryComponentStack;
+deprecated class RequiredSummaryComponentStack = Impl::Private::RequiredSummaryComponentStack;
 
 /**
  * Provides a set of special flow summaries to ensure that callbacks passed into
@@ -199,7 +204,7 @@ private module LibraryCallbackSummaries {
       libraryCallHasLambdaArg(result.getAControlFlowNode(), _)
     }
 
-    override predicate propagatesFlowExt(string input, string output, boolean preservesValue) {
+    override predicate propagatesFlow(string input, string output, boolean preservesValue) {
       (
         input = "Argument[block]" and
         output = "Argument[block].Parameter[lambda-self]"

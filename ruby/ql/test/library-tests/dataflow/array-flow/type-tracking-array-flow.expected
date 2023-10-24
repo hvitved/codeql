@@ -31,42 +31,16 @@ testFailures
 | array_flow.rb:594:19:594:47 | # $ SPURIOUS: hasValueFlow=64 | Fixed spurious result:hasValueFlow=64 |
 | array_flow.rb:595:16:595:34 | # $ hasValueFlow=64 | Missing result:hasValueFlow=64 |
 | array_flow.rb:596:19:596:47 | # $ SPURIOUS: hasValueFlow=64 | Fixed spurious result:hasValueFlow=64 |
-| array_flow.rb:657:10:657:13 | ...[...] | Unexpected result: hasValueFlow=70.1 |
-| array_flow.rb:657:10:657:13 | ...[...] | Unexpected result: hasValueFlow=70.2 |
-| array_flow.rb:657:10:657:13 | ...[...] | Unexpected result: hasValueFlow=70.3 |
-| array_flow.rb:658:10:658:13 | ...[...] | Unexpected result: hasValueFlow=70.1 |
-| array_flow.rb:658:10:658:13 | ...[...] | Unexpected result: hasValueFlow=70.3 |
 | array_flow.rb:659:10:659:13 | ...[...] | Unexpected result: hasValueFlow=70.1 |
-| array_flow.rb:659:10:659:13 | ...[...] | Unexpected result: hasValueFlow=70.2 |
-| array_flow.rb:660:10:660:13 | ...[...] | Unexpected result: hasValueFlow=70.1 |
 | array_flow.rb:660:10:660:13 | ...[...] | Unexpected result: hasValueFlow=70.2 |
-| array_flow.rb:660:10:660:13 | ...[...] | Unexpected result: hasValueFlow=70.3 |
-| array_flow.rb:661:10:661:13 | ...[...] | Unexpected result: hasValueFlow=70.2 |
 | array_flow.rb:661:10:661:13 | ...[...] | Unexpected result: hasValueFlow=70.3 |
-| array_flow.rb:662:10:662:13 | ...[...] | Unexpected result: hasValueFlow=70.1 |
-| array_flow.rb:662:10:662:13 | ...[...] | Unexpected result: hasValueFlow=70.2 |
-| array_flow.rb:662:10:662:13 | ...[...] | Unexpected result: hasValueFlow=70.3 |
-| array_flow.rb:663:10:663:13 | ...[...] | Unexpected result: hasValueFlow=70.1 |
-| array_flow.rb:663:10:663:13 | ...[...] | Unexpected result: hasValueFlow=70.3 |
 | array_flow.rb:664:10:664:13 | ...[...] | Unexpected result: hasValueFlow=70.1 |
-| array_flow.rb:664:10:664:13 | ...[...] | Unexpected result: hasValueFlow=70.2 |
-| array_flow.rb:665:10:665:13 | ...[...] | Unexpected result: hasValueFlow=70.1 |
 | array_flow.rb:665:10:665:13 | ...[...] | Unexpected result: hasValueFlow=70.2 |
-| array_flow.rb:665:10:665:13 | ...[...] | Unexpected result: hasValueFlow=70.3 |
-| array_flow.rb:666:10:666:13 | ...[...] | Unexpected result: hasValueFlow=70.2 |
 | array_flow.rb:666:10:666:13 | ...[...] | Unexpected result: hasValueFlow=70.3 |
 | array_flow.rb:719:14:719:14 | x | Unexpected result: hasValueFlow=76.2 |
 | array_flow.rb:871:18:871:36 | # $ hasValueFlow=87 | Missing result:hasValueFlow=87 |
 | array_flow.rb:872:18:872:36 | # $ hasValueFlow=87 | Missing result:hasValueFlow=87 |
-| array_flow.rb:926:10:926:13 | ...[...] | Unexpected result: hasValueFlow=90.1 |
-| array_flow.rb:926:10:926:13 | ...[...] | Unexpected result: hasValueFlow=90.2 |
-| array_flow.rb:927:10:927:13 | ...[...] | Unexpected result: hasValueFlow=90.1 |
-| array_flow.rb:927:10:927:13 | ...[...] | Unexpected result: hasValueFlow=90.2 |
 | array_flow.rb:928:10:928:13 | ...[...] | Unexpected result: hasValueFlow=90.1 |
-| array_flow.rb:929:10:929:13 | ...[...] | Unexpected result: hasValueFlow=90.1 |
-| array_flow.rb:929:10:929:13 | ...[...] | Unexpected result: hasValueFlow=90.2 |
-| array_flow.rb:930:10:930:13 | ...[...] | Unexpected result: hasValueFlow=90.1 |
-| array_flow.rb:930:10:930:13 | ...[...] | Unexpected result: hasValueFlow=90.2 |
 | array_flow.rb:931:10:931:13 | ...[...] | Unexpected result: hasValueFlow=90.2 |
 | array_flow.rb:939:18:939:78 | # $ hasValueFlow=91.1 $ hasValueFlow=91.2 $ hasValueFlow=91.3 | Missing result:hasValueFlow=91.1 |
 | array_flow.rb:939:18:939:78 | # $ hasValueFlow=91.1 $ hasValueFlow=91.2 $ hasValueFlow=91.3 | Missing result:hasValueFlow=91.2 |
@@ -143,15 +117,7 @@ testFailures
 | array_flow.rb:1512:18:1512:39 | # $ hasValueFlow=128.1 | Missing result:hasValueFlow=128.1 |
 | array_flow.rb:1513:18:1513:39 | # $ hasValueFlow=128.2 | Missing result:hasValueFlow=128.2 |
 | array_flow.rb:1514:18:1514:39 | # $ hasValueFlow=128.3 | Missing result:hasValueFlow=128.3 |
-| array_flow.rb:1563:10:1563:13 | ...[...] | Unexpected result: hasValueFlow=132.1 |
-| array_flow.rb:1563:10:1563:13 | ...[...] | Unexpected result: hasValueFlow=132.2 |
-| array_flow.rb:1564:10:1564:13 | ...[...] | Unexpected result: hasValueFlow=132.1 |
-| array_flow.rb:1564:10:1564:13 | ...[...] | Unexpected result: hasValueFlow=132.2 |
 | array_flow.rb:1565:10:1565:13 | ...[...] | Unexpected result: hasValueFlow=132.1 |
-| array_flow.rb:1566:10:1566:13 | ...[...] | Unexpected result: hasValueFlow=132.1 |
-| array_flow.rb:1566:10:1566:13 | ...[...] | Unexpected result: hasValueFlow=132.2 |
-| array_flow.rb:1567:10:1567:13 | ...[...] | Unexpected result: hasValueFlow=132.1 |
-| array_flow.rb:1567:10:1567:13 | ...[...] | Unexpected result: hasValueFlow=132.2 |
 | array_flow.rb:1568:10:1568:13 | ...[...] | Unexpected result: hasValueFlow=132.2 |
 | array_flow.rb:1601:18:1601:39 | # $ hasValueFlow=134.3 | Missing result:hasValueFlow=134.3 |
 | array_flow.rb:1602:18:1602:39 | # $ hasValueFlow=134.2 | Missing result:hasValueFlow=134.2 |
