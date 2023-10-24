@@ -19,32 +19,7 @@ signature module InputSig<DF::InputSig Lang> {
   }
 
   /** Gets the parameter position representing a callback itself, if any. */
-  Lang::ArgumentPosition callbackSelfParameterPosition();
-
-  /** Gets the type of content `c`. */
-  Lang::DataFlowType getContentType(Lang::ContentSet c);
-
-  /** Gets the type of the parameter at the given position. */
-  bindingset[c, pos]
-  Lang::DataFlowType getParameterType(SummarizedCallableBase c, Lang::ParameterPosition pos);
-
-  /** Gets the return type of kind `rk` for callable `c`. */
-  bindingset[c, rk]
-  Lang::DataFlowType getReturnType(SummarizedCallableBase c, Lang::ReturnKind rk);
-
-  /**
-   * Gets the type of the `i`th parameter in a synthesized call that targets a
-   * callback of type `t`.
-   */
-  bindingset[t, pos]
-  Lang::DataFlowType getCallbackParameterType(Lang::DataFlowType t, Lang::ArgumentPosition pos);
-
-  /**
-   * Gets the return type of kind `rk` in a synthesized call that targets a
-   * callback of type `t`.
-   */
-  bindingset[t, rk]
-  Lang::DataFlowType getCallbackReturnType(Lang::DataFlowType t, Lang::ReturnKind rk);
+  default Lang::ArgumentPosition callbackSelfParameterPosition() { none() }
 
   /** Gets the return kind corresponding to specification `"ReturnValue"`. */
   Lang::ReturnKind getStandardReturnValueKind();
@@ -887,14 +862,43 @@ module Make<DF::InputSig DataFlowLang, InputSig<DataFlowLang> Input> {
       )
     }
 
-    signature module StepsInputSig {
-      DataFlowType getSyntheticGlobalType(SyntheticGlobal sg);
+    signature module TypesInputSig {
+      /** Gets the type of content `c`. */
+      DataFlowType getContentType(ContentSet c);
 
-      DataFlowCall getACall(SummarizedCallable sc);
+      /** Gets the type of the parameter at the given position. */
+      bindingset[c, pos]
+      DataFlowType getParameterType(SummarizedCallableBase c, ParameterPosition pos);
+
+      /** Gets the return type of kind `rk` for callable `c`. */
+      bindingset[c, rk]
+      DataFlowType getReturnType(SummarizedCallableBase c, ReturnKind rk);
+
+      /**
+       * Gets the type of the `i`th parameter in a synthesized call that targets a
+       * callback of type `t`.
+       */
+      bindingset[t, pos]
+      DataFlowType getCallbackParameterType(DataFlowType t, ArgumentPosition pos);
+
+      /**
+       * Gets the return type of kind `rk` in a synthesized call that targets a
+       * callback of type `t`.
+       */
+      bindingset[t, rk]
+      DataFlowType getCallbackReturnType(DataFlowType t, ReturnKind rk);
+
+      DataFlowType getSyntheticGlobalType(SyntheticGlobal sg);
     }
 
-    /** Provides a compilation of flow summaries to atomic data-flow steps. */
-    module Steps<StepsInputSig StepsInput> {
+    /**
+     * Provides the predicate `summaryNodeType` for associating types with summary nodes.
+     *
+     * Only relevent for typed languages.
+     */
+    module Types<TypesInputSig TypesInput> {
+      private import TypesInput
+
       /**
        * Gets the type of synthesized summary node `n`.
        *
@@ -930,7 +934,7 @@ module Make<DF::InputSig DataFlowLang, InputSig<DataFlowLang> Input> {
             or
             exists(SyntheticGlobal sg |
               head = TSyntheticGlobalSummaryComponent(sg) and
-              result = StepsInput::getSyntheticGlobalType(sg)
+              result = getSyntheticGlobalType(sg)
             )
             or
             exists(ParameterPosition pos |
@@ -959,12 +963,19 @@ module Make<DF::InputSig DataFlowLang, InputSig<DataFlowLang> Input> {
             or
             exists(SyntheticGlobal sg |
               head = TSyntheticGlobalSummaryComponent(sg) and
-              result = StepsInput::getSyntheticGlobalType(sg)
+              result = getSyntheticGlobalType(sg)
             )
           )
         )
       }
+    }
 
+    signature module StepsInputSig {
+      DataFlowCall getACall(SummarizedCallable sc);
+    }
+
+    /** Provides a compilation of flow summaries to atomic data-flow steps. */
+    module Steps<StepsInputSig StepsInput> {
       /**
        * Holds if there is a local step from `pred` to `succ`, which is synthesized
        * from a flow summary.
@@ -1364,7 +1375,9 @@ module Make<DF::InputSig DataFlowLang, InputSig<DataFlowLang> Input> {
         class SourceOrSinkElement extends Element;
 
         /** An entity used to interpret a source/sink specification. */
-        class InterpretNode extends Element {
+        class InterpretNode {
+          string toString();
+
           /** Gets the element that this node corresponds to, if any. */
           SourceOrSinkElement asElement();
 
@@ -1388,10 +1401,10 @@ module Make<DF::InputSig DataFlowLang, InputSig<DataFlowLang> Input> {
         predicate interpretInput(string c, InterpretNode mid, InterpretNode node);
 
         /** Holds if output specification component `c` needs a reference. */
-        predicate outputNeedsReference(string c);
+        default predicate outputNeedsReference(string c) { none() }
 
         /** Holds if input specification component `c` needs a reference. */
-        predicate inputNeedsReference(string c);
+        default predicate inputNeedsReference(string c) { none() }
       }
 
       /**
