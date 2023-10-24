@@ -4,7 +4,6 @@
  * It must export the following members:
  * ```ql
  * class Unit // a unit type
- * module AccessPathSyntax // a re-export of the AccessPathSyntax module
  * class InvokeNode // a type representing an invocation connected to the API graph
  * module API // the API graph module
  * predicate isPackageUsed(string package)
