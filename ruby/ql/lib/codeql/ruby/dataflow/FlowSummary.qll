@@ -17,114 +17,11 @@ private module Summaries {
 
 deprecated class SummaryComponent = Impl::Private::SummaryComponent;
 
-/**
- * DEPRECATED.
- *
- * Provides predicates for constructing summary components.
- */
-deprecated module SummaryComponent {
-  private import Impl::Private::SummaryComponent as SC
-
-  deprecated predicate parameter = SC::parameter/1;
-
-  deprecated predicate argument = SC::argument/1;
-
-  deprecated predicate content = SC::content/1;
-
-  deprecated predicate withoutContent = SC::withoutContent/1;
-
-  deprecated predicate withContent = SC::withContent/1;
-
-  deprecated class SyntheticGlobal = Impl::Private::SyntheticGlobal;
-
-  /** Gets a summary component that represents a receiver. */
-  deprecated SummaryComponent receiver() {
-    result = argument(any(ParameterPosition pos | pos.isSelf()))
-  }
-
-  /** Gets a summary component that represents a block argument. */
-  deprecated SummaryComponent block() {
-    result = argument(any(ParameterPosition pos | pos.isBlock()))
-  }
-
-  /** Gets a summary component that represents an element in a collection at an unknown index. */
-  deprecated SummaryComponent elementUnknown() {
-    result = SC::content(TSingletonContent(TUnknownElementContent()))
-  }
-
-  /** Gets a summary component that represents an element in a collection at a known index. */
-  deprecated SummaryComponent elementKnown(ConstantValue cv) {
-    result = SC::content(TSingletonContent(DataFlow::Content::getElementContent(cv)))
-  }
-
-  /**
-   * Gets a summary component that represents an element in a collection at a specific
-   * known index `cv`, or an unknown index.
-   */
-  deprecated SummaryComponent elementKnownOrUnknown(ConstantValue cv) {
-    result = SC::content(TKnownOrUnknownElementContent(TKnownElementContent(cv)))
-    or
-    not exists(TKnownElementContent(cv)) and
-    result = elementUnknown()
-  }
-
-  /**
-   * Gets a summary component that represents an element in a collection at either an unknown
-   * index or known index. This has the same semantics as
-   *
-   * ```ql
-   * elementKnown() or elementUnknown(_)
-   * ```
-   *
-   * but is more efficient, because it is represented by a single value.
-   */
-  deprecated SummaryComponent elementAny() { result = SC::content(TAnyElementContent()) }
-
-  /**
-   * Gets a summary component that represents an element in a collection at known
-   * integer index `lower` or above.
-   */
-  deprecated SummaryComponent elementLowerBound(int lower) {
-    result = SC::content(TElementLowerBoundContent(lower, false))
-  }
-
-  /**
-   * Gets a summary component that represents an element in a collection at known
-   * integer index `lower` or above, or possibly at an unknown index.
-   */
-  deprecated SummaryComponent elementLowerBoundOrUnknown(int lower) {
-    result = SC::content(TElementLowerBoundContent(lower, true))
-  }
-
-  /** Gets a summary component that represents the return value of a call. */
-  deprecated SummaryComponent return() { result = SC::return(any(NormalReturnKind rk)) }
-}
+deprecated module SummaryComponent = Impl::Private::SummaryComponent;
 
 deprecated class SummaryComponentStack = Impl::Private::SummaryComponentStack;
 
-/**
- * DEPRECATED.
- *
- * Provides predicates for constructing stacks of summary components.
- */
-deprecated module SummaryComponentStack {
-  private import Impl::Private::SummaryComponentStack as SCS
-
-  deprecated predicate singleton = SCS::singleton/1;
-
-  deprecated predicate push = SCS::push/2;
-
-  deprecated predicate argument = SCS::argument/1;
-
-  /** Gets a singleton stack representing a receiver. */
-  deprecated SummaryComponentStack receiver() { result = singleton(SummaryComponent::receiver()) }
-
-  /** Gets a singleton stack representing a block argument. */
-  deprecated SummaryComponentStack block() { result = singleton(SummaryComponent::block()) }
-
-  /** Gets a singleton stack representing the return value of a call. */
-  deprecated SummaryComponentStack return() { result = singleton(SummaryComponent::return()) }
-}
+deprecated module SummaryComponentStack = Impl::Private::SummaryComponentStack;
 
 /** A callable with a flow summary, identified by a unique string. */
 abstract class SummarizedCallable extends LibraryCallable, Impl::Public::SummarizedCallable {
@@ -134,7 +31,6 @@ abstract class SummarizedCallable extends LibraryCallable, Impl::Public::Summari
   /**
    * DEPRECATED: Use `propagatesFlow` instead.
    */
-  pragma[nomagic]
   deprecated predicate propagatesFlowExt(string input, string output, boolean preservesValue) {
     none()
   }

@@ -378,7 +378,6 @@ predicate isNonLocal(FlowSummaryImpl::Private::SummaryComponent component) {
 
 private import internal.SummaryTypeTracker as SummaryTypeTracker
 
-// private import codeql.ruby.dataflow.FlowSummary as FlowSummary
 private module SummaryTypeTrackerInput implements SummaryTypeTracker::Input {
   // Dataflow nodes
   class Node = DataFlow::Node;
@@ -434,10 +433,7 @@ private module SummaryTypeTrackerInput implements SummaryTypeTracker::Input {
 
   predicate withContent = FlowSummaryImpl::Private::SummaryComponent::withContent/1;
 
-  SummaryComponent return() {
-    result =
-      FlowSummaryImpl::Private::SummaryComponent::return(any(DataFlowDispatch::NormalReturnKind k))
-  }
+  predicate return = FlowSummaryImpl::Private::SummaryComponent::return/0;
 
   // Callables
   class SummarizedCallable = FlowSummaryImpl::Private::SummarizedCallableImpl;

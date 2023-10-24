@@ -14,28 +14,6 @@ module Input implements InputSig<DataFlowImplSpecific::RubyDataFlow> {
 
   ArgumentPosition callbackSelfParameterPosition() { result.isLambdaSelf() }
 
-  DataFlowType getContentType(ContentSet c) { result = TUnknownDataFlowType() and exists(c) }
-
-  bindingset[c, pos]
-  DataFlowType getParameterType(SummarizedCallableBase c, ParameterPosition pos) {
-    result = TUnknownDataFlowType() and exists(c) and exists(pos)
-  }
-
-  bindingset[c, rk]
-  DataFlowType getReturnType(SummarizedCallableBase c, ReturnKind rk) {
-    result = TUnknownDataFlowType() and exists(c) and exists(rk)
-  }
-
-  bindingset[t, pos]
-  DataFlowType getCallbackParameterType(DataFlowType t, ArgumentPosition pos) {
-    result = TUnknownDataFlowType() and exists(t) and exists(pos)
-  }
-
-  bindingset[t, rk]
-  DataFlowType getCallbackReturnType(DataFlowType t, ReturnKind rk) {
-    result = TUnknownDataFlowType() and exists(t) and exists(rk)
-  }
-
   ReturnKind getStandardReturnValueKind() { result instanceof NormalReturnKind }
 
   string encodeParameterPosition(ParameterPosition pos) {
@@ -145,10 +123,6 @@ module Input implements InputSig<DataFlowImplSpecific::RubyDataFlow> {
 private import Make<DataFlowImplSpecific::RubyDataFlow, Input> as Impl
 
 private module StepsInput implements Impl::Private::StepsInputSig {
-  DataFlowType getSyntheticGlobalType(Private::SyntheticGlobal sg) {
-    result = TUnknownDataFlowType() and exists(sg)
-  }
-
   DataFlowCall getACall(Public::SummarizedCallable sc) {
     result.asCall().getAstNode() = sc.(LibraryCallable).getACall()
     or
@@ -160,6 +134,103 @@ module Private {
   import Impl::Private
 
   module Steps = Impl::Private::Steps<StepsInput>;
+
+  /**
+   * Provides predicates for constructing summary components.
+   */
+  module SummaryComponent {
+    private import Impl::Private::SummaryComponent as SC
+
+    predicate parameter = SC::parameter/1;
+
+    predicate argument = SC::argument/1;
+
+    predicate content = SC::content/1;
+
+    predicate withoutContent = SC::withoutContent/1;
+
+    predicate withContent = SC::withContent/1;
+
+    /** Gets a summary component that represents a receiver. */
+    SummaryComponent receiver() { result = argument(any(ParameterPosition pos | pos.isSelf())) }
+
+    /** Gets a summary component that represents a block argument. */
+    SummaryComponent block() { result = argument(any(ParameterPosition pos | pos.isBlock())) }
+
+    /** Gets a summary component that represents an element in a collection at an unknown index. */
+    SummaryComponent elementUnknown() {
+      result = SC::content(TSingletonContent(TUnknownElementContent()))
+    }
+
+    /** Gets a summary component that represents an element in a collection at a known index. */
+    SummaryComponent elementKnown(ConstantValue cv) {
+      result = SC::content(TSingletonContent(Content::getElementContent(cv)))
+    }
+
+    /**
+     * Gets a summary component that represents an element in a collection at a specific
+     * known index `cv`, or an unknown index.
+     */
+    SummaryComponent elementKnownOrUnknown(ConstantValue cv) {
+      result = SC::content(TKnownOrUnknownElementContent(TKnownElementContent(cv)))
+      or
+      not exists(TKnownElementContent(cv)) and
+      result = elementUnknown()
+    }
+
+    /**
+     * Gets a summary component that represents an element in a collection at either an unknown
+     * index or known index. This has the same semantics as
+     *
+     * ```ql
+     * elementKnown() or elementUnknown(_)
+     * ```
+     *
+     * but is more efficient, because it is represented by a single value.
+     */
+    SummaryComponent elementAny() { result = SC::content(TAnyElementContent()) }
+
+    /**
+     * Gets a summary component that represents an element in a collection at known
+     * integer index `lower` or above.
+     */
+    SummaryComponent elementLowerBound(int lower) {
+      result = SC::content(TElementLowerBoundContent(lower, false))
+    }
+
+    /**
+     * Gets a summary component that represents an element in a collection at known
+     * integer index `lower` or above, or possibly at an unknown index.
+     */
+    SummaryComponent elementLowerBoundOrUnknown(int lower) {
+      result = SC::content(TElementLowerBoundContent(lower, true))
+    }
+
+    /** Gets a summary component that represents the return value of a call. */
+    SummaryComponent return() { result = SC::return(any(NormalReturnKind rk)) }
+  }
+
+  /**
+   * Provides predicates for constructing stacks of summary components.
+   */
+  module SummaryComponentStack {
+    private import Impl::Private::SummaryComponentStack as SCS
+
+    predicate singleton = SCS::singleton/1;
+
+    predicate push = SCS::push/2;
+
+    predicate argument = SCS::argument/1;
+
+    /** Gets a singleton stack representing a receiver. */
+    SummaryComponentStack receiver() { result = singleton(SummaryComponent::receiver()) }
+
+    /** Gets a singleton stack representing a block argument. */
+    SummaryComponentStack block() { result = singleton(SummaryComponent::block()) }
+
+    /** Gets a singleton stack representing the return value of a call. */
+    SummaryComponentStack return() { result = singleton(SummaryComponent::return()) }
+  }
 }
 
 module Public = Impl::Public;
