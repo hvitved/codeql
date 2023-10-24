@@ -8,7 +8,6 @@ private import DataFlowPublic
 private import DataFlowDispatch
 private import SsaImpl as SsaImpl
 private import FlowSummaryImpl as FlowSummaryImpl
-private import FlowSummaryImplSpecific as FlowSummaryImplSpecific
 private import codeql.ruby.frameworks.data.ModelsAsData
 
 /** Gets the callable in which this node occurs. */
@@ -609,8 +608,7 @@ private module Cached {
     TAnyElementContent() or
     TKnownOrUnknownElementContent(Content::KnownElementContent c) or
     TElementLowerBoundContent(int lower, boolean includeUnknown) {
-      FlowSummaryImplSpecific::ParsePositions::isParsedElementLowerBoundPosition(_, includeUnknown,
-        lower)
+      FlowSummaryImpl::ParsePositions::isParsedElementLowerBoundPosition(_, includeUnknown, lower)
     } or
     TElementContentOfTypeContent(string type, Boolean includeUnknown) {
       type = any(Content::KnownElementContent content).getIndex().getValueType()
@@ -680,6 +678,21 @@ private module Cached {
     THashSplatContentApprox(string approx) { approx = approxKnownElementIndex(_) } or
     TNonElementContentApprox(Content c) { not c instanceof Content::ElementContent } or
     TCapturedVariableContentApprox(VariableCapture::CapturedVariable v)
+
+  cached
+  newtype TDataFlowType =
+    TLambdaDataFlowType(Callable c) { c = any(LambdaSelfReferenceNode n).getCallable() } or
+    // In order to reduce the set of cons-candidates, we annotate all implicit (hash) splat
+    // creations with the name of the method that they are passed into. This includes
+    // array/hash literals as well (where the name is simply `[]`), because of how they
+    // are modeled (see `Array.qll` and `Hash.qll`).
+    TSynthHashSplatArgumentType(string methodName) {
+      methodName = any(SynthHashSplatArgumentNode n).getMethodName()
+    } or
+    TSynthSplatArgumentType(string methodName) {
+      methodName = any(SynthSplatArgumentNode n).getMethodName()
+    } or
+    TUnknownDataFlowType()
 }
 
 class TElementContent =
@@ -1234,11 +1247,11 @@ module ArgumentNodes {
   }
 
   private class SummaryArgumentNode extends FlowSummaryNode, ArgumentNode {
-    private DataFlowCall call_;
+    private SummaryCall call_;
     private ArgumentPosition pos_;
 
     SummaryArgumentNode() {
-      FlowSummaryImpl::Private::summaryArgumentNode(call_, this.getSummaryNode(), pos_)
+      FlowSummaryImpl::Private::summaryArgumentNode(call_.getReceiver(), this.getSummaryNode(), pos_)
     }
 
     override predicate sourceArgumentOf(CfgNodes::ExprNodes::CallCfgNode call, ArgumentPosition pos) {
@@ -1604,11 +1617,11 @@ private module OutNodes {
   }
 
   private class SummaryOutNode extends FlowSummaryNode, OutNode {
-    private DataFlowCall call;
+    private SummaryCall call;
     private ReturnKind kind_;
 
     SummaryOutNode() {
-      FlowSummaryImpl::Private::summaryOutNode(call, this.getSummaryNode(), kind_)
+      FlowSummaryImpl::Private::summaryOutNode(call.getReceiver(), this.getSummaryNode(), kind_)
     }
 
     override DataFlowCall getCall(ReturnKind kind) { result = call and kind = kind_ }
@@ -1765,20 +1778,6 @@ predicate clearsContent(Node n, ContentSet c) {
 predicate expectsContent(Node n, ContentSet c) {
   FlowSummaryImpl::Private::Steps::summaryExpectsContent(n.(FlowSummaryNode).getSummaryNode(), c)
 }
-
-private newtype TDataFlowType =
-  TLambdaDataFlowType(Callable c) { c = any(LambdaSelfReferenceNode n).getCallable() } or
-  // In order to reduce the set of cons-candidates, we annotate all implicit (hash) splat
-  // creations with the name of the method that they are passed into. This includes
-  // array/hash literals as well (where the name is simply `[]`), because of how they
-  // are modeled (see `Array.qll` and `Hash.qll`).
-  TSynthHashSplatArgumentType(string methodName) {
-    methodName = any(SynthHashSplatArgumentNode n).getMethodName()
-  } or
-  TSynthSplatArgumentType(string methodName) {
-    methodName = any(SynthSplatArgumentNode n).getMethodName()
-  } or
-  TUnknownDataFlowType()
 
 class DataFlowType extends TDataFlowType {
   string toString() { result = "" }
@@ -2006,7 +2005,10 @@ predicate additionalLambdaFlowStep(Node nodeFrom, Node nodeTo, boolean preserves
  * by default as a heuristic.
  */
 predicate allowParameterReturnInSelf(ParameterNodeImpl p) {
-  FlowSummaryImpl::Private::summaryAllowParameterReturnInSelf(p)
+  exists(DataFlowCallable c, ParameterPosition pos |
+    p.isParameterOf(c, pos) and
+    FlowSummaryImpl::Private::summaryAllowParameterReturnInSelf(c.asLibraryCallable(), pos)
+  )
   or
   VariableCapture::Flow::heuristicAllowInstanceParameterReturnInSelf(p.(SelfParameterNode)
         .getCallable())
