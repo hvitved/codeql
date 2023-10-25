@@ -468,7 +468,18 @@ module Make<DF::InputSig DataFlowLang, InputSig<DataFlowLang> Input> {
       abstract predicate required(SummaryComponent head, SummaryComponentStack tail);
     }
 
-    /** A callable with a flow summary. */
+    /**
+     * A callable with a flow summary.
+     *
+     * This interface is not meant to be used directly, instead use the public
+     * `SummarizedCallable` interface. However, _if_ you need to use this, make
+     * sure that that all entities that extend `SummarizedCallableImpl` also
+     * extend `SummarizedCallable`, with
+     *
+     * ```ql
+     * override predicate propagatesFlow(string input, string output, boolean preservesValue) { none() }
+     * ```
+     */
     abstract class SummarizedCallableImpl extends SummarizedCallableBaseFinal {
       bindingset[this]
       SummarizedCallableImpl() { any() }
@@ -1333,6 +1344,17 @@ module Make<DF::InputSig DataFlowLang, InputSig<DataFlowLang> Input> {
         override predicate hasProvenance(Provenance provenance) {
           summaryElement(this, _, _, _, provenance)
         }
+      }
+
+      private class SummarizedCallableInternal extends SummarizedCallable instanceof SummarizedCallableImpl
+      {
+        override predicate propagatesFlow(string input, string output, boolean preservesValue) {
+          none()
+        }
+        // override predicate hasProvenance(Public::Provenance provenance) {
+        //   // SummarizedCallableImpl.super.hasProvenance(provenance)
+        //   none()
+        // }
       }
 
       /** Holds if component `c` of specification `spec` cannot be parsed. */

@@ -89,7 +89,7 @@ module EntityFramework {
     bindingset[this]
     EFSummarizedCallable() { any() }
 
-    override predicate hasProvenance(Provenance provenance) { provenance = "hq-generated" }
+    override predicate hasProvenance(Provenance provenance) { provenance = "manual" }
   }
 
   /** The class `Microsoft.EntityFrameworkCore.DbQuery<>` or `System.Data.Entity.DbQuery<>`. */

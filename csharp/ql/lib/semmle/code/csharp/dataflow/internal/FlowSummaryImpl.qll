@@ -356,7 +356,7 @@ private predicate recordConstructorFlow(Constructor c, int i, Property p) {
 private class RecordConstructorFlow extends Impl::Private::SummarizedCallableImpl {
   RecordConstructorFlow() { recordConstructorFlow(this, _, _) }
 
-  override predicate propagatesFlow(
+  predicate propagatesFlowImpl(
     Impl::Private::SummaryComponentStack input, Impl::Private::SummaryComponentStack output,
     boolean preservesValue
   ) {
@@ -369,9 +369,29 @@ private class RecordConstructorFlow extends Impl::Private::SummarizedCallableImp
     )
   }
 
-  override predicate hasProvenance(Public::Provenance provenance) { provenance = "hq-generated" }
+  override predicate propagatesFlow(
+    Impl::Private::SummaryComponentStack input, Impl::Private::SummaryComponentStack output,
+    boolean preservesValue
+  ) {
+    this.propagatesFlowImpl(input, output, preservesValue)
+  }
+
+  override predicate hasProvenance(Public::Provenance provenance) { provenance = "manual" }
 }
 
+// private class RecordConstructorFlow2 extends Impl::Public::SummarizedCallable instanceof RecordConstructorFlow
+// {
+//   override predicate propagatesFlow(string input, string output, boolean preservesValue) {
+//     exists(Impl::Private::SummaryComponentStack inp, Impl::Private::SummaryComponentStack outp |
+//       RecordConstructorFlow.super.propagatesFlowImpl(inp, outp, preservesValue) and
+//       inp.getMadRepresentation() = input and
+//       outp.getMadRepresentation() = output
+//     )
+//   }
+//   override predicate hasProvenance(Public::Provenance provenance) {
+//     RecordConstructorFlow.super.hasProvenance(provenance)
+//   }
+// }
 private class RecordConstructorFlowRequiredSummaryComponentStack extends Impl::Private::RequiredSummaryComponentStack
 {
   override predicate required(
@@ -403,5 +423,5 @@ private class SummarizedCallableWithCallback extends Public::SummarizedCallable 
     preservesValue = true
   }
 
-  override predicate hasProvenance(Public::Provenance provenance) { provenance = "hq-generated" }
+  override predicate hasProvenance(Public::Provenance provenance) { provenance = "manual" }
 }

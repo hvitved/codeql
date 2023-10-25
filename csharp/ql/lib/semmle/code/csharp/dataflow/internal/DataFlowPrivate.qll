@@ -1699,7 +1699,7 @@ import OutNodes
 class FlowSummaryNode extends NodeImpl, TFlowSummaryNode {
   FlowSummaryImpl::Private::SummaryNode getSummaryNode() { this = TFlowSummaryNode(result) }
 
-  FlowSummaryImpl::Public::SummarizedCallable getSummarizedCallable() {
+  FlowSummary::SummarizedCallable getSummarizedCallable() {
     result = this.getSummaryNode().getSummarizedCallable()
   }
 
