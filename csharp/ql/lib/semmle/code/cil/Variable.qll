@@ -31,7 +31,7 @@ class Variable extends DotNet::Variable, Declaration, DataFlowNode, @cil_variabl
 class StackVariable extends Variable, @cil_stack_variable {
   deprecated override predicate hasQualifiedName(string qualifier, string name) { none() }
 
-   override predicate hasFullyQualifiedName(string qualifier, string name) { none() }
+  override predicate hasFullyQualifiedName(string qualifier, string name) { none() }
 }
 
 /**
