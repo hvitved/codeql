@@ -11,6 +11,12 @@ private import commons.QualifiedName
 
 private module QualifiedNameInput implements QualifiedNameInputSig { }
 
+private module FullyQualifiedNameInput implements QualifiedNameInputSig {
+  string getUnboundGenericSuffix(UnboundGeneric ug) {
+    result = "`" + ug.getNumberOfTypeParameters()
+  }
+}
+
 /**
  * A declaration.
  *
@@ -24,8 +30,12 @@ class Declaration extends DotNet::Declaration, Element, @declaration {
 
   override string toString() { result = this.getName() }
 
-  override predicate hasQualifiedName(string qualifier, string name) {
+  deprecated override predicate hasQualifiedName(string qualifier, string name) {
     QualifiedName<QualifiedNameInput>::hasQualifiedName(this, qualifier, name)
+  }
+
+  override predicate hasFullyQualifiedName(string qualifier, string name) {
+    QualifiedName<FullyQualifiedNameInput>::hasQualifiedName(this, qualifier, name)
   }
 
   /**
@@ -40,9 +50,30 @@ class Declaration extends DotNet::Declaration, Element, @declaration {
    * }
    * ```
    */
-  string getQualifiedNameWithTypes() {
+  deprecated string getQualifiedNameWithTypes() {
     exists(string qual |
       qual = this.getDeclaringType().getQualifiedName() and
+      if this instanceof NestedType
+      then result = qual + "+" + this.toStringWithTypes()
+      else result = qual + "." + this.toStringWithTypes()
+    )
+  }
+
+  /**
+   * Gets the fully qualified name of this declaration, including types, for example
+   * the fully qualified name with types of `M` on line 3 is `N.C.M(int, string)` in
+   *
+   * ```csharp
+   * namespace N {
+   *   class C {
+   *     void M(int i, string s) { }
+   *   }
+   * }
+   * ```
+   */
+  string getFullyQualifiedNameWithTypes() {
+    exists(string qual |
+      qual = this.getDeclaringType().getFullyQualifiedName() and
       if this instanceof NestedType
       then result = qual + "+" + this.toStringWithTypes()
       else result = qual + "." + this.toStringWithTypes()
@@ -207,8 +238,12 @@ class Member extends DotNet::Member, Modifiable, @member {
 
   override predicate isFile() { Modifiable.super.isFile() }
 
-  final override predicate hasQualifiedName(string namespace, string type, string name) {
+  deprecated final override predicate hasQualifiedName(string namespace, string type, string name) {
     QualifiedName<QualifiedNameInput>::hasQualifiedName(this, namespace, type, name)
+  }
+
+  final override predicate hasFullyQualifiedName(string namespace, string type, string name) {
+    QualifiedName<FullyQualifiedNameInput>::hasQualifiedName(this, namespace, type, name)
   }
 }
 
