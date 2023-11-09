@@ -88,13 +88,13 @@
 
 import csharp
 import ExternalFlowExtensions
-private import AccessPathSyntax
 private import DataFlowDispatch
 private import DataFlowPrivate
 private import DataFlowPublic
+private import FlowSummaryImpl
 private import FlowSummaryImpl::Public
+private import FlowSummaryImpl::Private
 private import FlowSummaryImpl::Private::External
-private import FlowSummaryImplSpecific
 private import semmle.code.csharp.commons.QualifiedName
 private import codeql.mad.ModelValidation as SharedModelVal
 
@@ -380,14 +380,14 @@ Declaration interpretElement(
  * A callable where there exists a MaD sink model that applies to it.
  */
 class SinkCallable extends Callable {
-  SinkCallable() { sinkElement(this, _, _, _) }
+  SinkCallable() { SourceSinkInterpretationInput::sinkElement(this, _, _, _) }
 }
 
 /**
  * A callable where there exists a MaD source model that applies to it.
  */
 class SourceCallable extends Callable {
-  SourceCallable() { sourceElement(this, _, _, _) }
+  SourceCallable() { SourceSinkInterpretationInput::sourceElement(this, _, _, _) }
 }
 
 cached
@@ -398,7 +398,9 @@ private module Cached {
    */
   cached
   predicate sourceNode(Node node, string kind) {
-    exists(InterpretNode n | isSourceNode(n, kind) and n.asNode() = node)
+    exists(SourceSinkInterpretationInput::InterpretNode n |
+      isSourceNode(n, kind) and n.asNode() = node
+    )
   }
 
   /**
@@ -407,7 +409,9 @@ private module Cached {
    */
   cached
   predicate sinkNode(Node node, string kind) {
-    exists(InterpretNode n | isSinkNode(n, kind) and n.asNode() = node)
+    exists(SourceSinkInterpretationInput::InterpretNode n |
+      isSinkNode(n, kind) and n.asNode() = node
+    )
   }
 }
 
@@ -484,4 +488,45 @@ string asPartialNeutralModel(UnboundCallable c) {
         + name + ";" //
         + parameters + ";" //
   )
+}
+
+private class SummarizedCallableAdapter extends SummarizedCallable {
+  string input_;
+  string output_;
+  string kind;
+  string provenance_;
+
+  SummarizedCallableAdapter() {
+    exists(
+      string namespace, string type, boolean subtypes, string name, string signature, string ext
+    |
+      summaryModel(namespace, type, subtypes, name, signature, ext, input_, output_, kind,
+        provenance_) and
+      this = interpretElement(namespace, type, subtypes, name, signature, ext)
+    )
+  }
+
+  override predicate propagatesFlow(string input, string output, boolean preservesValue) {
+    input = input_ and
+    output = output_ and
+    if kind = "value" then preservesValue = true else preservesValue = false
+  }
+
+  override predicate hasProvenance(Provenance provenance) { provenance = provenance_ }
+}
+
+private class NeutralCallableAdapter extends NeutralCallable {
+  string kind;
+  string provenance_;
+
+  NeutralCallableAdapter() {
+    exists(string namespace, string type, string name, string signature |
+      neutralModel(namespace, type, name, signature, kind, provenance_) and
+      this = interpretElement(namespace, type, false, name, signature, "")
+    )
+  }
+
+  override string getKind() { result = kind }
+
+  override predicate hasProvenance(Provenance provenance) { provenance = provenance_ }
 }

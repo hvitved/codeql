@@ -512,7 +512,26 @@ module Make<DF::InputSig DataFlowLang, InputSig<DataFlowLang> Input> {
       abstract predicate required(SummaryComponent head, SummaryComponentStack tail);
     }
 
-    /** A callable with a flow summary. */
+    /**
+     * A callable with a flow summary.
+     *
+     * This interface is not meant to be used directly, instead use the public
+     * `SummarizedCallable` interface. However, _if_ you need to use this, make
+     * sure that that all classes `C` that extend `SummarizedCallableImpl` also
+     * extend `SummarizedCallable`, using the following adapter pattern:
+     *
+     * ```ql
+     * private class CAdapter extends SummarizedCallable instanceof C {
+     *   override predicate propagatesFlow(string input, string output, boolean preservesValue) {
+     *     none()
+     *   }
+     *
+     *   override predicate hasProvenance(Provenance provenance) {
+     *     C.super.hasProvenance(provenance)
+     *   }
+     * }
+     * ```
+     */
     abstract class SummarizedCallableImpl extends SummarizedCallableBaseFinal {
       bindingset[this]
       SummarizedCallableImpl() { any() }
@@ -1624,8 +1643,10 @@ module Make<DF::InputSig DataFlowLang, InputSig<DataFlowLang> Input> {
 
     /** Provides a query predicate for outputting a set of relevant flow summaries. */
     module TestOutput {
+      final private class SummarizedCallableImplFinal = SummarizedCallableImpl;
+
       /** A flow summary to include in the `summary/1` query predicate. */
-      abstract class RelevantSummarizedCallable instanceof SummarizedCallableImpl {
+      abstract class RelevantSummarizedCallable extends SummarizedCallableImplFinal {
         /** Gets the string representation of this callable used by `summary/1`. */
         abstract string getCallableCsv();
 
@@ -1635,8 +1656,6 @@ module Make<DF::InputSig DataFlowLang, InputSig<DataFlowLang> Input> {
         ) {
           super.propagatesFlow(input, output, preservesValue)
         }
-
-        string toString() { result = super.toString() }
       }
 
       /** A model to include in the `neutral/1` query predicate. */

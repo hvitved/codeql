@@ -470,7 +470,6 @@
     "ruby/ql/lib/codeql/ruby/typetracking/internal/SummaryTypeTracker.qll"
   ],
   "AccessPathSyntax": [
-    "csharp/ql/lib/semmle/code/csharp/dataflow/internal/AccessPathSyntax.qll",
     "go/ql/lib/semmle/go/dataflow/internal/AccessPathSyntax.qll",
     "java/ql/lib/semmle/code/java/dataflow/internal/AccessPathSyntax.qll",
     "python/ql/lib/semmle/python/dataflow/new/internal/AccessPathSyntax.qll",

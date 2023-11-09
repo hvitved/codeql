@@ -1,0 +1,4 @@
+ERROR: AccessPathsExternal must implement toString() (validatemodels.ql:13,15-34)
+ERROR: Class must extend or implement at least one type (validatemodels.ql:13,15-34)
+ERROR: Could not resolve module AccessPath (validatemodels.ql:13,43-53)
+ERROR: Could not resolve module semmle.code.csharp.dataflow.internal.AccessPathSyntax (validatemodels.ql:3,8-61)
