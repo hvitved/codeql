@@ -1270,6 +1270,9 @@ module ArgumentNodes {
 
     override predicate argumentOf(DataFlowCall call, ArgumentPosition pos) {
       this.sourceArgumentOf(call.asCall(), pos)
+      or
+      call.(ExplicitErbRenderCall).getViewArgument() = arg and
+      pos.isSelf()
     }
 
     override predicate sourceArgumentOf(CfgNodes::ExprNodes::CallCfgNode call, ArgumentPosition pos) {
@@ -1292,11 +1295,11 @@ module ArgumentNodes {
   }
 
   private class SummaryArgumentNode extends FlowSummaryNode, ArgumentNode {
-    private SummaryCall call_;
+    private FlowSummaryImpl::Private::SummaryNode receiver;
     private ArgumentPosition pos_;
 
     SummaryArgumentNode() {
-      FlowSummaryImpl::Private::summaryArgumentNode(call_.getReceiver(), this.getSummaryNode(), pos_)
+      FlowSummaryImpl::Private::summaryArgumentNode(receiver, this.getSummaryNode(), pos_)
     }
 
     override predicate sourceArgumentOf(CfgNodes::ExprNodes::CallCfgNode call, ArgumentPosition pos) {
@@ -1304,7 +1307,7 @@ module ArgumentNodes {
     }
 
     override predicate argumentOf(DataFlowCall call, ArgumentPosition pos) {
-      call = call_ and pos = pos_
+      call.(SummaryCall).getReceiver() = receiver and pos = pos_
     }
   }
 
@@ -1514,7 +1517,7 @@ module ArgumentNodes {
 import ArgumentNodes
 
 /** A call to `new`. */
-private class NewCall extends DataFlowCall {
+private class NewCall extends NormalCall {
   NewCall() { this.asCall().getExpr().(MethodCall).getMethodName() = "new" }
 }
 
@@ -1699,6 +1702,21 @@ predicate jumpStep(Node pred, Node succ) {
     succ.(FlowSummaryNode).getSummaryNode())
   or
   any(AdditionalJumpStep s).step(pred, succ)
+  or
+  exists(CfgNodes::ExprNodes::MethodCallCfgNode render |
+    )
+  (DataFlow::Node node1, SsaSelfDefinitionNode node2) {    
+    exists(DataFlow::CallNode call, DataFlow::ClassNode view |
+      call.getMethodName() = "render" and
+      call.getArgument(0) = node1 and
+      view.trackInstance().getAValueReachableFromSource() = node1 and
+      exists(ErbFile template |
+        view = getTemplateAssociatedViewClass(template) and node2.getLocation().getFile() = template
+      ) and
+      node2.getSelfScope() instanceof Toplevel and
+      node2.getDefinitionExt() instanceof Ssa::SelfDefinition
+    )
+  }
 }
 
 private ContentSet getArrayContent(int n) {

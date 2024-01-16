@@ -109,18 +109,18 @@ class DataFlowCallable extends TDataFlowCallable {
  * A call. This includes calls from source code, as well as call(back)s
  * inside library callables with a flow summary.
  */
-class DataFlowCall extends TDataFlowCall {
+abstract class DataFlowCall extends TDataFlowCall {
   /** Gets the enclosing callable. */
-  DataFlowCallable getEnclosingCallable() { none() }
+  abstract DataFlowCallable getEnclosingCallable();
 
   /** Gets the underlying source code call, if any. */
-  CfgNodes::ExprNodes::CallCfgNode asCall() { none() }
+  abstract CfgNodes::ExprNodes::CallCfgNode asCall();
 
   /** Gets a textual representation of this call. */
-  string toString() { none() }
+  abstract string toString();
 
   /** Gets the location of this call. */
-  Location getLocation() { none() }
+  abstract Location getLocation();
 
   /**
    * Holds if this element is at the specified location.
@@ -159,12 +159,14 @@ class SummaryCall extends DataFlowCall, TSummaryCall {
 
   override DataFlowCallable getEnclosingCallable() { result.asLibraryCallable() = c }
 
+  override CfgNodes::ExprNodes::CallCfgNode asCall() { none() }
+
   override string toString() { result = "[summary] call to " + receiver + " in " + c }
 
   override EmptyLocation getLocation() { any() }
 }
 
-private class NormalCall extends DataFlowCall, TNormalCall {
+class NormalCall extends DataFlowCall, TNormalCall {
   private CfgNodes::ExprNodes::CallCfgNode c;
 
   NormalCall() { this = TNormalCall(c) }
@@ -176,6 +178,22 @@ private class NormalCall extends DataFlowCall, TNormalCall {
   override string toString() { result = c.toString() }
 
   override Location getLocation() { result = c.getLocation() }
+}
+
+class ExplicitErbRenderCall extends DataFlowCall, TExplicitErbRenderCall {
+  private CfgNodes::ExprNodes::MethodCallCfgNode render;
+
+  ExplicitErbRenderCall() { this = TExplicitErbRenderCall(render) }
+
+  CfgNodes::ExprCfgNode getViewArgument() { result = render.getArgument(0) }
+
+  override CfgNodes::ExprNodes::CallCfgNode asCall() { none() }
+
+  override DataFlowCallable getEnclosingCallable() { result = TCfgScope(render.getScope()) }
+
+  override string toString() { result = "render" }
+
+  override Location getLocation() { result = render.getLocation() }
 }
 
 /** A call for which we want to compute call targets. */
@@ -384,6 +402,9 @@ private module Cached {
       FlowSummaryImpl::Public::SummarizedCallable c, FlowSummaryImpl::Private::SummaryNode receiver
     ) {
       FlowSummaryImpl::Private::summaryCallbackRange(c, receiver)
+    } or
+    TExplicitErbRenderCall(CfgNodes::ExprNodes::MethodCallCfgNode render) {
+      explicitErbRenderCall(_, render)
     }
 
   /**
@@ -695,6 +716,24 @@ private Method lookupInstanceMethodCall(RelevantCall call, string method, boolea
     methodCall(call, pragma[only_bind_into](receiver), pragma[only_bind_into](method)) and
     receiver = trackInstance(tp, exact) and
     result = lookupMethod(tp, pragma[only_bind_into](method), exact)
+  )
+}
+
+private Module getTemplateAssociatedViewClass(ErbFile template) {
+  // template is in same directory as view
+  exists(File viewFile | viewFile = result.getADeclaration().getFile() |
+    template.getParentContainer().getAbsolutePath() =
+      viewFile.getParentContainer().getAbsolutePath() and
+    viewFile.getStem() = template.getStem()
+  )
+}
+
+pragma[nomagic]
+predicate explicitErbRenderCall(Module tp, CfgNodes::ExprNodes::MethodCallCfgNode render) {
+  exists(DataFlow::Node arg |
+    arg = trackInstance(tp, _) and
+    tp = getTemplateAssociatedViewClass(_) and
+    render.getArgument(0) = arg.asExpr()
   )
 }
 
