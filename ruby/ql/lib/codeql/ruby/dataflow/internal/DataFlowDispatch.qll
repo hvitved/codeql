@@ -3,6 +3,7 @@ private import codeql.ruby.CFG
 private import DataFlowPrivate
 private import codeql.ruby.typetracking.internal.TypeTrackingImpl
 private import codeql.ruby.ast.internal.Module as Module
+private import codeql.ruby.ast.internal.Module
 private import FlowSummaryImpl as FlowSummaryImpl
 private import codeql.ruby.dataflow.FlowSummary
 private import codeql.ruby.dataflow.SSA
