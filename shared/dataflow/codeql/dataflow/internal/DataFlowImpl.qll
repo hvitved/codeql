@@ -1136,7 +1136,7 @@ module MakeImpl<InputSig Lang> {
       exists(int b, int j |
         b = branch(arg) and
         j = join(p) and
-        if b.minimum(j) <= Config::fieldFlowBranchLimit()
+        if ( b.minimum(j) <= Config::fieldFlowBranchLimit() || getNodeEnclosingCallable(p).toString() = "render view component")
         then allowsFieldFlow = true
         else allowsFieldFlow = false
       )
