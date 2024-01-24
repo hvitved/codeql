@@ -90,6 +90,4 @@ module TaintedPathLocalConfig implements DataFlow::ConfigSig {
     any(TaintedPathAdditionalTaintStep s).step(n1, n2)
   }
 }
-
-/** Tracks flow from local user input to the creation of a path. */
-module TaintedPathLocalFlow = TaintTracking::Global<TaintedPathLocalConfig>;
+// module TaintedPathLocalFlow = TaintTracking::Global<TaintedPathLocalConfig>;

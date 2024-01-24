@@ -346,6 +346,7 @@ class DataFlowType extends SrcRefType {
 pragma[nomagic]
 predicate typeStrongerThan(DataFlowType t1, DataFlowType t2) { t1.getASourceSupertype+() = t2 }
 
+// predicate typeStrongerThan(DataFlowType t1, DataFlowType t2) { none() }
 pragma[noinline]
 DataFlowType getNodeType(Node n) {
   result = getErasedRepr(n.getTypeBound())
