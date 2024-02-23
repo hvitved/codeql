@@ -4,6 +4,7 @@
  */
 
 private import codeql.util.Location
+private import codeql.util.FileSystem
 
 /** Provides the language-specific input specification. */
 signature module InputSig<LocationSig Location> {
@@ -1132,19 +1133,18 @@ module Make<LocationSig Location, InputSig<Location> Input> {
 
   final class AstCfgNode = AstCfgNodeImpl;
 
+  signature class RelevantNodeSig extends Node {
+    /**
+     * Gets a string used to resolve ties in node and edge ordering.
+     */
+    string getOrderDisambiguation();
+  }
+
   /**
    * Import this module into a `.ql` file of `@kind graph` to render a CFG. The
    * graph is restricted to nodes from `RelevantNode`.
    */
-  module TestOutput {
-    /** A CFG node to include in the output. */
-    abstract class RelevantNode extends Node {
-      /**
-       * Gets a string used to resolve ties in node and edge ordering.
-       */
-      string getOrderDisambiguation() { result = "" }
-    }
-
+  module TestOutput<RelevantNodeSig RelevantNode> {
     /** Holds if `n` is a relevant node in the CFG. */
     query predicate nodes(RelevantNode n, string attr, string val) {
       attr = "semmle.order" and
@@ -1190,6 +1190,56 @@ module Make<LocationSig Location, InputSig<Location> Input> {
             )
         ).toString()
     }
+  }
+
+  signature module ViewCfgQueryInputSig<FileSig File> {
+    string selectedSourceFile();
+
+    string selectedSourceLine();
+
+    string selectedSourceColumn();
+
+    predicate cfgScopeSpan(
+      CfgScope scope, File file, int startLine, int startColumn, int endLine, int endColumn
+    );
+  }
+
+  module ViewCfgQuery<FileSig File, ViewCfgQueryInputSig<File> ViewCfgQueryInput> {
+    private import ViewCfgQueryInput
+
+    bindingset[file, line, column]
+    private CfgScope smallestEnclosingScope(File file, int line, int column) {
+      result =
+        min(CfgScope scope, int startLine, int startColumn, int endLine, int endColumn |
+          cfgScopeSpan(scope, file, startLine, startColumn, endLine, endColumn) and
+          (
+            startLine < line
+            or
+            startLine = line and startColumn <= column
+          ) and
+          (
+            endLine > line
+            or
+            endLine = line and endColumn >= column
+          )
+        |
+          scope order by startLine desc, startColumn desc, endLine, endColumn
+        )
+    }
+
+    private import IdeContextual<File>
+
+    private class RelevantNode extends Node {
+      RelevantNode() {
+        this.getScope() =
+          smallestEnclosingScope(getFileBySourceArchiveName(selectedSourceFile()),
+            selectedSourceLine().toInt(), selectedSourceColumn().toInt())
+      }
+
+      string getOrderDisambiguation() { result = "" }
+    }
+
+    import TestOutput<RelevantNode>
   }
 
   /** Provides a set of consistency queries. */
