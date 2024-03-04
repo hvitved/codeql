@@ -919,8 +919,7 @@ module Flow<LocationSig Location, InputSig<Location> Input> implements OutputSig
     )
   }
 
-  predicate storeStep(ClosureNode node1, CapturedVariable v, ClosureNode node2) {
-    // store v in the closure or in the malloc in case of a relevant constructor call
+  private predicate storeStepClosure(ClosureNode node1, CapturedVariable v, ClosureNode node2) {
     exists(BasicBlock bb, int i, Expr closure |
       synthRead(v, bb, i, _, closure) and
       node1 = TSynthRead(v, bb, i, false)
@@ -929,6 +928,11 @@ module Flow<LocationSig Location, InputSig<Location> Input> implements OutputSig
       or
       node2 = TMallocNode(closure) and hasConstructorCapture(closure, v)
     )
+  }
+
+  predicate storeStep(ClosureNode node1, CapturedVariable v, ClosureNode node2) {
+    // store v in the closure or in the malloc in case of a relevant constructor call
+    storeStepClosure(node1, v, node2)
     or
     // write to v inside the closure body
     exists(BasicBlock bb, int i, VariableWrite vw |
@@ -964,6 +968,8 @@ module Flow<LocationSig Location, InputSig<Location> Input> implements OutputSig
   }
 
   predicate clearsContent(ClosureNode node, CapturedVariable v) {
+    storeStepClosure(_, v, node)
+    or
     exists(BasicBlock bb, int i |
       captureWrite(v, bb, i, false, _) and
       node = TSynthThisQualifier(bb, i, false)

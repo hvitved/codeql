@@ -2891,7 +2891,8 @@ module MakeImpl<InputSig Lang> {
         exists(ContentSet cs |
           PrevStage::readStepCand(_, pragma[only_bind_into](c), _) and
           c = cs.getAReadContent() and
-          clearSet(node, cs)
+          clearSet(node, cs) and
+          not PrevStage::storeStepCand(_, _, c, node, _, _)
         )
       }
 
@@ -3549,6 +3550,14 @@ module MakeImpl<InputSig Lang> {
       }
     }
 
+    final private class FinalContent = Content;
+
+    private class RelevantContent extends FinalContent {
+      RelevantContent() { this = any(AccessPath ap).getHead() }
+    }
+
+    private class ContentOption = Option<RelevantContent>::Option;
+
     abstract private class PathNodeImpl extends TPathNode {
       /** Gets the `FlowState` of this node. */
       abstract FlowState getState();
@@ -3912,11 +3921,12 @@ module MakeImpl<InputSig Lang> {
       PathNodeMid mid, NodeEx node, FlowState state, CallContext cc, SummaryCtx sc, DataFlowType t,
       AccessPath ap
     ) {
-      exists(DataFlowType t0 |
-        pathStep0(mid, node, state, cc, sc, t0, ap) and
+      exists(DataFlowType t0, ContentOption storeContent |
+        pathStep0(mid, node, state, cc, sc, t0, ap, storeContent) and
         Stage5::revFlow(node, state, ap.getApprox()) and
         strengthenType(node, t0, t) and
-        not inBarrier(node, state)
+        not inBarrier(node, state) and
+        not clearsContentEx(node, storeContent.asSome())
       )
     }
 
@@ -3927,17 +3937,19 @@ module MakeImpl<InputSig Lang> {
     pragma[nomagic]
     private predicate pathStep0(
       PathNodeMid mid, NodeEx node, FlowState state, CallContext cc, SummaryCtx sc, DataFlowType t,
-      AccessPath ap
+      AccessPath ap, ContentOption storeContent
     ) {
       exists(NodeEx midnode, FlowState state0, LocalCallContext localCC |
         pathNode(mid, midnode, state0, cc, sc, t, ap, localCC) and
-        localFlowBigStep(midnode, state0, node, state, true, _, localCC)
+        localFlowBigStep(midnode, state0, node, state, true, _, localCC) and
+        storeContent.isNone()
       )
       or
       exists(NodeEx midnode, FlowState state0, LocalCallContext localCC |
         pathNode(mid, midnode, state0, cc, sc, _, ap, localCC) and
         localFlowBigStep(midnode, state0, node, state, false, t, localCC) and
-        ap instanceof AccessPathNil
+        ap instanceof AccessPathNil and
+        storeContent.isNone()
       )
       or
       jumpStepEx(mid.getNodeExOutgoing(), node) and
@@ -3945,7 +3957,8 @@ module MakeImpl<InputSig Lang> {
       cc instanceof CallContextAny and
       sc instanceof SummaryCtxNone and
       t = mid.getType() and
-      ap = mid.getAp()
+      ap = mid.getAp() and
+      storeContent.isNone()
       or
       additionalJumpStep(mid.getNodeExOutgoing(), node) and
       state = mid.getState() and
@@ -3953,35 +3966,45 @@ module MakeImpl<InputSig Lang> {
       sc instanceof SummaryCtxNone and
       mid.getAp() instanceof AccessPathNil and
       t = node.getDataFlowType() and
-      ap = TAccessPathNil()
+      ap = TAccessPathNil() and
+      storeContent.isNone()
       or
       additionalJumpStateStep(mid.getNodeExOutgoing(), mid.getState(), node, state) and
       cc instanceof CallContextAny and
       sc instanceof SummaryCtxNone and
       mid.getAp() instanceof AccessPathNil and
       t = node.getDataFlowType() and
-      ap = TAccessPathNil()
+      ap = TAccessPathNil() and
+      storeContent.isNone()
       or
       exists(Content c, DataFlowType t0, AccessPath ap0 |
         pathStoreStep(mid, node, state, t0, ap0, c, t, cc) and
         ap.isCons(c, t0, ap0) and
-        sc = mid.getSummaryCtx()
+        sc = mid.getSummaryCtx() and
+        storeContent.asSome() = c
       )
       or
       exists(Content c, AccessPath ap0 |
         pathReadStep(mid, node, state, ap0, c, cc) and
         ap0.isCons(c, t, ap) and
-        sc = mid.getSummaryCtx()
+        sc = mid.getSummaryCtx() and
+        storeContent.isNone()
       )
       or
-      pathIntoCallable(mid, node, state, _, cc, sc, _) and t = mid.getType() and ap = mid.getAp()
+      pathIntoCallable(mid, node, state, _, cc, sc, _) and
+      t = mid.getType() and
+      ap = mid.getAp() and
+      storeContent.isNone()
       or
       pathOutOfCallable(mid, node, state, cc) and
       t = mid.getType() and
       ap = mid.getAp() and
-      sc instanceof SummaryCtxNone
+      sc instanceof SummaryCtxNone and
+      storeContent.isNone()
       or
-      pathThroughCallable(mid, node, state, cc, t, ap) and sc = mid.getSummaryCtx()
+      pathThroughCallable(mid, node, state, cc, t, ap) and
+      sc = mid.getSummaryCtx() and
+      storeContent.isNone()
     }
 
     pragma[nomagic]
