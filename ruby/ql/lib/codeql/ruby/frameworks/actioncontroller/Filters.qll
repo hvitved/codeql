@@ -362,6 +362,21 @@ module Filters {
     }
   }
 
+  private import codeql.ruby.dataflow.FlowSummary
+
+  private class Fsdf extends SummarizedCallable {
+    // private ActionControllerActionMethod m;
+    Fsdf() { this = any(Method m).getLocation().toString() }
+
+    override predicate propagatesFlow(string input, string output, boolean preservesValue) {
+      exists(ActionControllerActionMethod m |
+        input = "Argument" + m.getName() and
+        output = "Return" and
+        preservesValue = true
+      )
+    }
+  }
+
   /**
    * Holds if `pred` is called before `succ` in the callback chain for action `action`.
    * `pred` and `succ` may be methods bound to callbacks or controller actions.

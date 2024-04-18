@@ -72,8 +72,8 @@ class ActionControllerClass extends DataFlow::ClassNode {
     // treat it separately in case the `ApplicationController` definition is not in the database.
     this = DataFlow::getConstant("ApplicationController").getADescendentModule()
     or
-    this = actionControllerBaseClass().getADescendentModule() and
-    not exists(DataFlow::ModuleNode m | m = actionControllerBaseClass().asModule() | this = m)
+    this = actionControllerBaseClass().getADescendentModule() //and
+    // not exists(DataFlow::ModuleNode m | m = actionControllerBaseClass().asModule() | this = m)
   }
 
   /**
@@ -121,7 +121,7 @@ class ActionControllerActionMethod extends Method, Http::Server::RequestHandler:
   private ActionControllerClass controllerClass;
 
   ActionControllerActionMethod() {
-    this = controllerClass.getAnInstanceMethod().asCallableAstNode() and not this.isPrivate()
+    this = controllerClass.getAnInstanceMethod().getMethod() and not this.isPrivate()
   }
 
   /**

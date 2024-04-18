@@ -167,16 +167,27 @@ module AccessPath<accessPathRangeSig/1 accessPathRange> {
       not this.length() = sum(int n | | getRawToken(this, n).length() + 1) - 1
     }
 
+    /** Holds if this string is not a syntactically valid access path. */
+    predicate hasNoSyntaxErrors() {
+      // If the lengths match, all characters must haven been included in a token
+      // or seen by the `.` lookahead pattern.
+      this = "" or
+      this.length() = strictsum(int n | | getRawToken(this, n).length() + 1) - 1
+    }
+
     /** Gets the `n`th token on the access path (if there are no syntax errors). */
     AccessPathToken getToken(int n) {
-      result = getRawToken(this, n) and
-      not this.hasSyntaxError()
+      result = getRawToken(this, n) //and
+      // this.hasNoSyntaxErrors()
+      // not this.hasSyntaxError()
     }
 
     /** Gets the number of tokens on the path (if there are no syntax errors). */
     int getNumToken() {
-      result = count(int n | exists(getRawToken(this, n))) and
-      not this.hasSyntaxError()
+      result = 10
+      // result = strictcount(int n | exists(getRawToken(this, n))) //and
+      // this.hasNoSyntaxErrors()
+      // not this.hasSyntaxError()
     }
   }
 

@@ -1143,9 +1143,7 @@ class ModuleNode instanceof Module {
    *
    * Overridden methods are not included.
    */
-  MethodNode getInstanceMethod(string name) {
-    result.asCallableAstNode() = super.getInstanceMethod(name)
-  }
+  MethodNode getInstanceMethod(string name) { result.getMethod() = super.getInstanceMethod(name) }
 
   /**
    * Gets an instance method available in this module, including methods inherited
@@ -1311,13 +1309,13 @@ class LhsExprNode extends ExprNode {
 class StmtSequenceNode extends ExprNode {
   private CfgNodes::ExprNodes::StmtSequenceCfgNode stmtSequenceCfgNode;
 
-  StmtSequenceNode() { this.asExpr() = stmtSequenceCfgNode }
+  StmtSequenceNode() { this.getExprNode() = stmtSequenceCfgNode }
 
   /** Gets the underlying AST node as a `StmtSequence`. */
   StmtSequence asStmtSequenceAstNode() { result = stmtSequenceCfgNode.getExpr() }
 
   /** Gets the last statement in this sequence, if any. */
-  final ExprNode getLastStmt() { result.asExpr() = stmtSequenceCfgNode.getLastStmt() }
+  final ExprNode getLastStmt() { result.getExprNode() = stmtSequenceCfgNode.getLastStmt() }
 }
 
 /**
@@ -1326,7 +1324,7 @@ class StmtSequenceNode extends ExprNode {
 class CallableNode extends StmtSequenceNode {
   private Callable callable;
 
-  CallableNode() { this.asExpr().getExpr() = callable }
+  CallableNode() { this.getExprNode().getExpr() = callable }
 
   /** Gets the underlying AST node as a `Callable`. */
   Callable asCallableAstNode() { result = callable }
@@ -1388,6 +1386,9 @@ class MethodNode extends CallableNode {
 
   /** Gets the underlying AST node for this method. */
   override MethodBase asCallableAstNode() { result = super.asCallableAstNode() }
+
+  /** Gets the underlying AST node for this method. */
+  MethodBase getMethod() { result = this.getExprNode().getExpr() }
 
   /** Gets the name of this method. */
   string getMethodName() { result = this.asCallableAstNode().getName() }
@@ -1537,7 +1538,7 @@ class ConstRef extends LocalSourceNode {
   private TConstLookupScope getLookupScope() {
     result = MkQualifiedLookup(access.getScopeExpr())
     or
-    not exists(this.getExactTarget()) and
+    // not exists(this.getExactTarget()) and
     not exists(access.getScopeExpr()) and
     not access.hasGlobalScope() and
     (

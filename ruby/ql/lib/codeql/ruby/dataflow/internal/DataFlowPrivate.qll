@@ -586,7 +586,8 @@ private module Cached {
     TSynthSplatArgumentShiftNode(CfgNodes::ExprNodes::CallCfgNode c, int splatPos, int n) {
       // we use -1 to represent data at an unknown index
       n in [-1 .. 10] and
-      splatPos = unique(int i | splatArgumentAt(c, i) and i > 0)
+      splatArgumentAt(c, splatPos)
+      // splatPos = unique(int i | splatArgumentAt(c, i) and i > 0)
     } or
     TCaptureNode(VariableCapture::Flow::SynthesizedCaptureNode cn)
 
@@ -700,14 +701,14 @@ private module Cached {
     n instanceof SummaryParameterNode
     or
     // Expressions that can't be reached from another entry definition or expression
-    n instanceof ExprNode and
-    not reachedFromExprOrEntrySsaDef(n)
+    n instanceof ExprNode //and
     or
+    // not reachedFromExprOrEntrySsaDef(n)
     // Ensure all entry SSA definitions are local sources, except those that correspond
     // to parameters (which are themselves local sources)
-    entrySsaDefinition(n) and
-    not LocalFlow::localFlowSsaParamInput(_, n)
+    entrySsaDefinition(n) //and
     or
+    // not LocalFlow::localFlowSsaParamInput(_, n)
     isStoreTargetNode(n)
     or
     TypeTrackingInput::loadStep(_, n, _)
@@ -1589,8 +1590,8 @@ module ArgumentNodes {
     exists(int n |
       exists(ArgumentPosition pos |
         arg.isArgumentOf(call, pos) and
-        pos.isPositional(n) and
-        not exists(int i | splatArgumentAt(call, i) and i < n)
+        pos.isPositional(n) //and
+        // not exists(int i | splatArgumentAt(call, i) and i < n)
       )
     |
       if call instanceof CfgNodes::ExprNodes::ArrayLiteralCfgNode

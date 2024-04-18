@@ -99,7 +99,7 @@ private predicate sourceArgumentPositionMatch(
 ) {
   exists(DataFlowDispatch::ArgumentPosition apos |
     arg.sourceArgumentOf(call, apos) and
-    not apos.isLambdaSelf() and
+    // not apos.isLambdaSelf() and
     DataFlowDispatch::parameterMatch(ppos, apos)
   )
 }
@@ -172,8 +172,8 @@ private module SummaryTypeTrackerInput implements SummaryTypeTracker::Input {
     (
       content.isAnyElement()
       or
-      content.isElementLowerBoundOrUnknown(_)
-      or
+      // or
+      // content.isElementLowerBoundOrUnknown(_)
       content.isElementOfTypeOrUnknown(_)
       or
       content.isSingleton(any(DataFlow::Content::UnknownElementContent c))

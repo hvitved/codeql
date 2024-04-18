@@ -1490,14 +1490,16 @@ class ArgumentPosition extends TArgumentPosition {
 
 pragma[nomagic]
 private predicate parameterPositionIsNotSelf(ParameterPosition ppos) {
-  not ppos.isSelf() and
-  not ppos.isLambdaSelf()
+  none()
+  // not ppos.isSelf() and
+  // not ppos.isLambdaSelf()
 }
 
 pragma[nomagic]
 private predicate argumentPositionIsNotSelf(ArgumentPosition apos) {
-  not apos.isSelf() and
-  not apos.isLambdaSelf()
+  none()
+  // not apos.isSelf() and
+  // not apos.isLambdaSelf()
 }
 
 /** Holds if arguments at position `apos` match parameters at position `ppos`. */

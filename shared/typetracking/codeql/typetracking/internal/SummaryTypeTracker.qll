@@ -142,13 +142,20 @@ module SummaryFlow<Input I> implements Output<I> {
   }
 
   pragma[nomagic]
+  private predicate isLocal(I::SummaryComponent component) {
+    component = I::return() // todo
+    // not component = I::content(_) and
+    // not component = I::withContent(_)
+  }
+
+  pragma[nomagic]
   private predicate hasLoadSummary(
     I::SummarizedCallable callable, I::Content contents, I::SummaryComponentStack input,
     I::SummaryComponentStack output
   ) {
     callable.propagatesFlow(I::push(I::content(contents), input), output, true) and
-    not isNonLocal(input.head()) and
-    not isNonLocal(output.head())
+    isLocal(input.head()) and
+    isLocal(output.head())
   }
 
   pragma[nomagic]
@@ -156,8 +163,8 @@ module SummaryFlow<Input I> implements Output<I> {
     I::SummarizedCallable callable, I::Content contents, I::SummaryComponentStack input,
     I::SummaryComponentStack output
   ) {
-    not isNonLocal(input.head()) and
-    not isNonLocal(output.head()) and
+    isLocal(input.head()) and
+    isLocal(output.head()) and
     (
       callable.propagatesFlow(input, I::push(I::content(contents), output), true)
       or
@@ -178,8 +185,8 @@ module SummaryFlow<Input I> implements Output<I> {
     callable
         .propagatesFlow(I::push(I::content(loadContents), input),
           I::push(I::content(storeContents), output), true) and
-    not isNonLocal(input.head()) and
-    not isNonLocal(output.head())
+    isLocal(input.head()) and
+    isLocal(output.head())
   }
 
   pragma[nomagic]
@@ -190,8 +197,8 @@ module SummaryFlow<Input I> implements Output<I> {
     exists(I::Content content |
       callable.propagatesFlow(I::push(I::withoutContent(content), input), output, true) and
       filter = I::getFilterFromWithoutContentStep(content) and
-      not isNonLocal(input.head()) and
-      not isNonLocal(output.head()) and
+      isLocal(input.head()) and
+      isLocal(output.head()) and
       input != output
     )
   }
@@ -204,8 +211,8 @@ module SummaryFlow<Input I> implements Output<I> {
     exists(I::Content content |
       callable.propagatesFlow(I::push(I::withContent(content), input), output, true) and
       filter = I::getFilterFromWithContentStep(content) and
-      not isNonLocal(input.head()) and
-      not isNonLocal(output.head()) and
+      isLocal(input.head()) and
+      isLocal(output.head()) and
       input != output
     )
   }
@@ -266,7 +273,7 @@ module SummaryFlow<Input I> implements Output<I> {
     I::SummarizedCallable callable, I::SummaryComponent head, I::SummaryComponentStack tail
   ) {
     dependsOnSummaryComponentStackCons(callable, head, tail) and
-    not isNonLocal(head)
+    isLocal(head)
   }
 
   pragma[nomagic]

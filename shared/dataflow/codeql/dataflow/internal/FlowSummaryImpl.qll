@@ -860,9 +860,9 @@ module Make<
      * callable `c`.
      */
     private predicate summaryNodeRange(SummarizedCallable c, SummaryNodeState state) {
-      state.isInputState(c, _) and
-      not parameterReadState(c, state, _)
+      state.isInputState(c, _) //and
       or
+      // not parameterReadState(c, state, _)
       state.isOutputState(c, _)
     }
 
@@ -1363,12 +1363,10 @@ module Make<
       }
 
       private SummaryComponent interpretComponent(AccessPathToken token) {
-        exists(ContentSet c |
-          c = decodeContent(token)
-          or
-          not exists(decodeContent(token)) and
-          c = decodeUnknownContent(token)
-        |
+        exists(ContentSet c | c = decodeContent(token) |
+          // or
+          // not exists(decodeContent(token)) and
+          // c = decodeUnknownContent(token)
           result = SummaryComponent::content(c)
         )
         or
@@ -1384,12 +1382,10 @@ module Make<
         or
         token = "ReturnValue" and result = SummaryComponent::return(getStandardReturnValueKind())
         or
-        exists(ReturnKind rk |
-          rk = decodeReturn(token)
-          or
-          not exists(decodeReturn(token)) and
-          rk = decodeUnknownReturn(token)
-        |
+        exists(ReturnKind rk | rk = decodeReturn(token) |
+          // or
+          // not exists(decodeReturn(token)) and
+          // rk = decodeUnknownReturn(token)
           result = SummaryComponent::return(rk)
         )
         or
@@ -1397,21 +1393,17 @@ module Make<
           parseSynthGlobal(token, sg) and result = SummaryComponent::syntheticGlobal(sg)
         )
         or
-        exists(ContentSet c |
-          c = decodeWithoutContent(token)
-          or
-          not exists(decodeWithoutContent(token)) and
-          c = decodeUnknownWithoutContent(token)
-        |
+        exists(ContentSet c | c = decodeWithoutContent(token) |
+          // or
+          // not exists(decodeWithoutContent(token)) and
+          // c = decodeUnknownWithoutContent(token)
           result = SummaryComponent::withoutContent(c)
         )
         or
-        exists(ContentSet c |
-          c = decodeWithContent(token)
-          or
-          not exists(decodeWithContent(token)) and
-          c = decodeUnknownWithContent(token)
-        |
+        exists(ContentSet c | c = decodeWithContent(token) |
+          // or
+          // not exists(decodeWithContent(token)) and
+          // c = decodeUnknownWithContent(token)
           result = SummaryComponent::withContent(c)
         )
       }
