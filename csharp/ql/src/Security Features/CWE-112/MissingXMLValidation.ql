@@ -15,6 +15,23 @@ import csharp
 import semmle.code.csharp.security.dataflow.MissingXMLValidationQuery
 import MissingXmlValidation::PathGraph
 
+predicate stageStats = MissingXmlValidation::stageStats/10;
+
+predicate results(string s, int i) {
+  s = "edges" and
+  i =
+    strictcount(MissingXmlValidation::PathNode n1, MissingXmlValidation::PathNode n2 |
+      edges(n1, n2, _, _)
+    )
+  or
+  s = "subpaths" and
+  i =
+    strictcount(MissingXmlValidation::PathNode n1, MissingXmlValidation::PathNode n2,
+      MissingXmlValidation::PathNode n3, MissingXmlValidation::PathNode n4 |
+      subpaths(n1, n2, n3, n4)
+    )
+}
+
 from MissingXmlValidation::PathNode source, MissingXmlValidation::PathNode sink
 where MissingXmlValidation::flowPath(source, sink)
 select sink.getNode(), source, sink,

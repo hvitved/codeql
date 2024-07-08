@@ -1,3 +1,5 @@
+WARNING: unused alias 'stageStats' (MissingXMLValidation.ql:18,11-21)
+WARNING: unused predicate 'results' (MissingXMLValidation.ql:20,11-18)
 edges
 | MissingXMLValidation.cs:12:16:12:30 | access to local variable userProvidedXml : String | MissingXMLValidation.cs:16:43:16:57 | access to local variable userProvidedXml : String | provenance |  |
 | MissingXMLValidation.cs:12:16:12:30 | access to local variable userProvidedXml : String | MissingXMLValidation.cs:21:43:21:57 | access to local variable userProvidedXml : String | provenance |  |
