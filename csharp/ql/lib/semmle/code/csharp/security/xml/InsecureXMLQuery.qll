@@ -5,12 +5,41 @@
 import csharp
 private import semmle.code.csharp.commons.TargetFramework
 
-/**
- * Holds if the type `t` is in an assembly that has been compiled against a .NET framework version
- * before the given version.
- */
-bindingset[version]
-private predicate isNetFrameworkBefore(Type t, string version) {
+pragma[nomagic]
+private float getAssemblyVersion(Assembly a) {
+  result = a.getVersion().regexpCapture("([0-9]+\\.[0-9]+).*", 1).toFloat() and
+  // This method is only accurate when we're looking at versions before 4.0.
+  result < 4.0
+}
+
+pragma[nomagic]
+private Version getTargetFrameworkVersion(TargetFrameworkAttribute tfa) {
+  tfa.isNetFramework() and
+  result = tfa.getFrameworkVersion()
+}
+
+private newtype TFrameworkVersion =
+  TFloatVersion(float f) { f = getAssemblyVersion(_) } or
+  TVersionVersion(Version v) { v = getTargetFrameworkVersion(_) }
+
+private class FrameworkVersion extends TFrameworkVersion {
+  float asFlot() { this = TFloatVersion(result) }
+
+  Version asVersion() { this = TVersionVersion(result) }
+
+  bindingset[this, version]
+  pragma[inline_late]
+  predicate isEarlierThan(string version) {
+    this.asFlot() < version.toFloat()
+    or
+    this.asVersion().isEarlierThan(version)
+  }
+
+  string toString() { result = [this.asFlot().toString(), this.asVersion()] }
+}
+
+pragma[nomagic]
+private FrameworkVersion getFrameworkVersion(Type t) {
   // For assemblies compiled against framework versions before 4 the TargetFrameworkAttribute
   // will not be present. In this case, we can revert back to the assembly version, which may not
   // contain full minor version information.
@@ -18,7 +47,7 @@ private predicate isNetFrameworkBefore(Type t, string version) {
     assemblyVersion =
       t.getALocation().(Assembly).getVersion().regexpCapture("([0-9]+\\.[0-9]+).*", 1)
   |
-    assemblyVersion.toFloat() < version.toFloat() and
+    result = TFloatVersion(assemblyVersion.toFloat()) and
     // This method is only accurate when we're looking at versions before 4.0.
     assemblyVersion.toFloat() < 4.0
   )
@@ -28,7 +57,31 @@ private predicate isNetFrameworkBefore(Type t, string version) {
   exists(TargetFrameworkAttribute tfa |
     tfa.hasElement(t) and
     tfa.isNetFramework() and
-    tfa.getFrameworkVersion().isEarlierThan(version)
+    result = TVersionVersion(tfa.getFrameworkVersion())
+  )
+}
+
+/**
+ * Holds if the type `t` is in an assembly that has been compiled against a .NET framework version
+ * before the given version.
+ */
+bindingset[version]
+pragma[inline_late]
+private predicate isNetFrameworkBefore(Type t, string version) {
+  // getFrameworkVersion(t).isEarlierThan(version)
+  // For assemblies compiled against framework versions before 4 the TargetFrameworkAttribute
+  // will not be present. In this case, we can revert back to the assembly version, which may not
+  // contain full minor version information.
+  exists(float assemblyVersion |
+    assemblyVersion = getAssemblyVersion(t.getALocation()) and
+    assemblyVersion < version.toFloat()
+  )
+  or
+  // For 4.0 and above the TargetFrameworkAttribute should be present to provide detailed version
+  // information.
+  exists(TargetFrameworkAttribute tfa |
+    tfa.hasElement(t) and
+    getTargetFrameworkVersion(tfa).isEarlierThan(version)
   )
 }
 
@@ -173,7 +226,7 @@ module XmlReader {
       reason = "DTD processing is enabled by default in versions < 4.0" and
       evidence = this and
       not exists(this.getSettings()) and
-      isNetFrameworkBefore(this.(MethodCall).getTarget().getDeclaringType(), "4.0")
+      isNetFrameworkBefore(this.getTarget().getDeclaringType(), "4.0")
       or
       // bad settings flow here
       exists(ObjectCreation settings |
