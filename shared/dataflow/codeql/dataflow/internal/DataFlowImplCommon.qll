@@ -2352,18 +2352,11 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
     }
   }
 
+  /** Provides the input to `StoreReadMatching`. */
   signature module StoreReadMatchingInputSig {
     class NodeEx {
       string toString();
     }
-
-    class Ap {
-      string toString();
-
-      Content getHead();
-    }
-
-    predicate nodeApRange(NodeEx node, Ap ap);
 
     predicate localValueStep(NodeEx node1, NodeEx node2);
 
@@ -2384,8 +2377,8 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
    * Provides logic for computing compatible and (likely) matching store-read pairs.
    *
    * In order to determine whether a store can be matched with a compatible read, we
-   * check whether the target of a store may reach the source of a read, using simple
-   * data flow.
+   * check whether the target of a store may reach the source of a read, using over-
+   * approximated data flow (no call contexts).
    *
    * The implementation is based on `doublyBoundedFastTC`, and in order to avoid poor
    * performance through recursion, we unroll the recursion manually 4 times, in order to
@@ -2394,33 +2387,22 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
    * Additionally, in order to speed up the join with `doublyBoundedFastTC`, we first
    * compute three pruning steps:
    *
-   * 1. Which contents may have matching read-store pairs (called `contentIsReadAndStored` below).
-   * 2. Which store targets may have a matching read (called `storeMayReachARead` below).
-   * 3. Which reads may have a matching store (called `aStoreMayReachRead` below).
+   * 1. Which _contents_ may have matching read-store pairs (called `contentIsReadAndStored` below).
+   * 2. Which store targets may have _a_ matching read (called `storeMayReachARead` below).
+   * 3. Which reads may have _a_ matching store (called `aStoreMayReachRead` below).
    */
   module StoreReadMatching<StoreReadMatchingInputSig Input> {
     private import Input
 
-    final private class ApFinal = Ap;
-
-    private class ApCons extends ApFinal {
-      ApCons() { exists(this.getHead()) }
-    }
-
     pragma[nomagic]
     private predicate valueStep(NodeEx node1, NodeEx node2) {
-      exists(ApCons ap |
-        nodeApRange(node1, pragma[only_bind_into](ap)) and
-        nodeApRange(node2, pragma[only_bind_into](ap))
-      |
-        localValueStep(node1, node2)
-        or
-        jumpValueStep(node1, node2)
-        or
-        callEdgeArgParam(node1, node2)
-        or
-        callEdgeReturn(node1, node2)
-      )
+      localValueStep(node1, node2)
+      or
+      jumpValueStep(node1, node2)
+      or
+      callEdgeArgParam(node1, node2)
+      or
+      callEdgeReturn(node1, node2)
     }
 
     private signature module StoreReachesReadInputSig {
@@ -2446,43 +2428,35 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
       private predicate enabled() { accessPathConfigLimit() > Prev::iteration() }
 
       private newtype TNodeOrContent =
-        TNodeOrContentNode(NodeEx n, ApCons ap, UsesPrevDeltaInfo usesPrevDelta) {
-          enabled() and
-          nodeApRange(n, ap)
-        } or
-        TNodeOrContentContentStart(Content c) { enabled() and storeContentStep(_, c, _) } or
-        TNodeOrContentContentEnd(Content c) { enabled() and readContentStep(_, c, _) }
+        TNodeOrContentNode(NodeEx n, UsesPrevDeltaInfo usesPrevDelta) { enabled() } or
+        TNodeOrContentStoreContent(Content c) { enabled() and storeContentStep(_, c, _) } or
+        TNodeOrContentReadContent(Content c) { enabled() and readContentStep(_, c, _) }
 
       private class NodeOrContent extends TNodeOrContent {
-        NodeEx asNodeEx(Ap ap, UsesPrevDeltaInfo usesPrevDelta) {
-          this = TNodeOrContentNode(result, ap, usesPrevDelta)
+        NodeEx asNodeEx(UsesPrevDeltaInfo usesPrevDelta) {
+          this = TNodeOrContentNode(result, usesPrevDelta)
         }
 
-        Content asContentStart() { this = TNodeOrContentContentStart(result) }
+        Content asStoreContent() { this = TNodeOrContentStoreContent(result) }
 
-        Content asContentEnd() { this = TNodeOrContentContentEnd(result) }
+        Content asReadContent() { this = TNodeOrContentReadContent(result) }
 
         string toString() {
-          result = this.asContentStart().toString()
+          result = this.asStoreContent().toString()
           or
-          result = this.asContentEnd().toString()
+          result = this.asReadContent().toString()
           or
-          result = this.asNodeEx(_, _).toString()
+          result = this.asNodeEx(_).toString()
         }
       }
-
-      bindingset[ap, result]
-      pragma[inline_late]
-      private Content getHeadInlineLate(Ap ap) { result = ap.getHead() }
 
       pragma[nomagic]
       private predicate step(NodeOrContent node1, NodeOrContent node2) {
         exists(
-          NodeEx n1, NodeEx n2, Ap ap, UsesPrevDeltaInfo usesPrevDelta1,
-          UsesPrevDeltaInfo usesPrevDelta2
+          NodeEx n1, NodeEx n2, UsesPrevDeltaInfo usesPrevDelta1, UsesPrevDeltaInfo usesPrevDelta2
         |
-          n1 = node1.asNodeEx(pragma[only_bind_into](ap), usesPrevDelta1) and
-          n2 = node2.asNodeEx(pragma[only_bind_into](ap), usesPrevDelta2)
+          n1 = node1.asNodeEx(usesPrevDelta1) and
+          n2 = node2.asNodeEx(usesPrevDelta2)
         |
           valueStep(n1, n2) and
           pragma[only_bind_into](pragma[only_bind_out](usesPrevDelta2)) =
@@ -2495,36 +2469,32 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
             pragma[only_bind_into](pragma[only_bind_out](usesPrevDelta1))
         )
         or
-        exists(NodeEx n2, Content c, ApCons ap2, UsesPrevDeltaInfo usesPrevDelta2 |
-          n2 = node2.asNodeEx(ap2, usesPrevDelta2) and
-          c = node1.asContentStart() and
-          c = ap2.getHead() and
+        exists(NodeEx n2, Content c, UsesPrevDeltaInfo usesPrevDelta2 |
+          n2 = node2.asNodeEx(usesPrevDelta2) and
+          c = node1.asStoreContent() and
           storeContentStep(_, c, n2) and
           usesPrevDelta2.toBoolean() = false
         )
         or
-        exists(NodeEx n1, Content c, ApCons ap1, UsesPrevDeltaInfo usesPrevDelta1 |
-          n1 = node1.asNodeEx(ap1, usesPrevDelta1) and
-          c = node2.asContentEnd() and
-          c = ap1.getHead() and
+        exists(NodeEx n1, Content c, UsesPrevDeltaInfo usesPrevDelta1 |
+          n1 = node1.asNodeEx(usesPrevDelta1) and
+          c = node2.asReadContent() and
           readContentStep(n1, c, _) and
           usesPrevDelta1.toBoolean() = true
         )
       }
 
-      private predicate contentIsStored(NodeOrContent c) {
-        storeContentStep(_, c.asContentStart(), _)
-      }
+      private predicate isStoreContent(NodeOrContent c) { exists(c.asStoreContent()) }
 
-      private predicate contentIsRead(NodeOrContent c) { readContentStep(_, c.asContentEnd(), _) }
+      private predicate isReadContent(NodeOrContent c) { exists(c.asReadContent()) }
 
       private predicate contentReachesReadTc(NodeOrContent node1, NodeOrContent node2) =
-        doublyBoundedFastTC(step/2, contentIsStored/1, contentIsRead/1)(node1, node2)
+        doublyBoundedFastTC(step/2, isStoreContent/1, isReadContent/1)(node1, node2)
 
       pragma[nomagic]
       private predicate contentIsReadAndStoredJoin(NodeOrContent c1, NodeOrContent c2, Content c) {
-        c1.asContentStart() = c and
-        c2.asContentEnd() = c
+        c1.asStoreContent() = c and
+        c2.asReadContent() = c
       }
 
       additional predicate contentIsReadAndStored(Content c) {
@@ -2536,10 +2506,9 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
 
       pragma[nomagic]
       private predicate isStoreTarget0(NodeOrContent node, Content c) {
-        exists(Ap ap, UsesPrevDeltaInfo usesPrevDelta |
+        exists(UsesPrevDeltaInfo usesPrevDelta |
           contentIsReadAndStored(c) and
-          storeContentStep(_, c, node.asNodeEx(ap, usesPrevDelta)) and
-          c = getHeadInlineLate(ap) and
+          storeContentStep(_, c, node.asNodeEx(usesPrevDelta)) and
           usesPrevDelta.toBoolean() = false
         )
       }
@@ -2548,10 +2517,9 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
 
       pragma[nomagic]
       private predicate isReadSource0(NodeOrContent node, Content c) {
-        exists(Ap ap, UsesPrevDeltaInfo usesPrevDelta |
+        exists(UsesPrevDeltaInfo usesPrevDelta |
           contentIsReadAndStored(c) and
-          readContentStep(node.asNodeEx(ap, usesPrevDelta), c, _) and
-          c = getHeadInlineLate(ap) and
+          readContentStep(node.asNodeEx(usesPrevDelta), c, _) and
           usesPrevDelta.toBoolean() = true
         )
       }
@@ -2559,12 +2527,12 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
       private predicate isReadSource(NodeOrContent node) { isReadSource0(node, _) }
 
       private predicate storeMayReachAReadTc(NodeOrContent node1, NodeOrContent node2) =
-        doublyBoundedFastTC(step/2, isStoreTarget/1, contentIsRead/1)(node1, node2)
+        doublyBoundedFastTC(step/2, isStoreTarget/1, isReadContent/1)(node1, node2)
 
       pragma[nomagic]
       private predicate storeMayReachAReadJoin(NodeOrContent n1, NodeOrContent n2, Content c) {
         isStoreTarget0(n1, c) and
-        n2.asContentEnd() = c
+        n2.asReadContent() = c
       }
 
       private predicate storeMayReachARead(NodeOrContent node1, Content c) {
@@ -2575,11 +2543,11 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
       }
 
       private predicate aStoreMayReachReadTc(NodeOrContent node1, NodeOrContent node2) =
-        doublyBoundedFastTC(step/2, contentIsStored/1, isReadSource/1)(node1, node2)
+        doublyBoundedFastTC(step/2, isStoreContent/1, isReadSource/1)(node1, node2)
 
       pragma[nomagic]
       private predicate aStoreMayReachReadJoin(NodeOrContent n1, NodeOrContent n2, Content c) {
-        n1.asContentStart() = c and
+        n1.asStoreContent() = c and
         isReadSource0(n2, c)
       }
 
@@ -2599,20 +2567,18 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
 
       pragma[nomagic]
       private predicate storeMayReachReadDeltaJoinLeft(NodeEx node1, Content c, NodeOrContent node2) {
-        exists(Ap ap, UsesPrevDeltaInfo usesPrevDelta |
+        exists(UsesPrevDeltaInfo usesPrevDelta |
           storeMayReachARead(node2, c) and
-          storeContentStep(node1, c, node2.asNodeEx(ap, usesPrevDelta)) and
-          c = getHeadInlineLate(ap) and
+          storeContentStep(node1, c, node2.asNodeEx(usesPrevDelta)) and
           usesPrevDelta.toBoolean() = false
         )
       }
 
       pragma[nomagic]
       private predicate storeMayReachReadDeltaJoinRight(NodeOrContent node1, Content c, NodeEx node2) {
-        exists(Ap ap, UsesPrevDeltaInfo usesPrevDelta |
+        exists(UsesPrevDeltaInfo usesPrevDelta |
           aStoreMayReachRead(node1, c) and
-          readContentStep(node1.asNodeEx(ap, usesPrevDelta), c, node2) and
-          c = getHeadInlineLate(ap) and
+          readContentStep(node1.asNodeEx(usesPrevDelta), c, node2) and
           usesPrevDelta.toBoolean() = true
         )
       }
