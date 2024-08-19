@@ -1535,14 +1535,6 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
           fwdFlow1(_, _, _, _, _, _, t0, t, ap, _) and t0 != t
         }
 
-        bindingset[storeSource, c, readTarget]
-        pragma[inline_late]
-        private predicate storeMayReachReadInlineLate(
-          NodeEx storeSource, Content c, NodeEx readTarget
-        ) {
-          Param::storeMayReachRead(storeSource, c, readTarget)
-        }
-
         pragma[nomagic]
         private predicate fwdFlow0(
           NodeEx node, FlowState state, Cc cc, ParamNodeOption summaryCtx, TypOption argT,
@@ -1731,7 +1723,7 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
           (
             exists(NodeEx storeSource |
               fwdFlowConsCandStoreReadMatchingEnabled(storeSource, t1, ap1, c, t2, ap2) and
-              storeMayReachReadInlineLate(storeSource, c, node2)
+              storeMayReachRead(storeSource, c, node2)
             )
             or
             fwdFlowConsCandStoreReadMatchingDisabled(t1, ap1, c, t2, ap2)
@@ -2276,7 +2268,7 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
           |
             exists(NodeEx readTarget |
               revFlowConsCandStoreReadMatchingEnabled(readTarget, ap0, c, ap) and
-              storeMayReachReadInlineLate(node, c, readTarget)
+              storeMayReachRead(node, c, readTarget)
             )
             or
             revFlowConsCandStoreReadMatchingDisabled(ap0, c, ap)
@@ -3430,6 +3422,27 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
       private module StoreReadMatchingInput implements StoreReadMatchingInputSig {
         class NodeEx = NodeExAlias;
 
+        predicate nodeRange(NodeEx node, boolean fromArg) {
+          exists(PrevStage::Ap ap |
+            PrevStage::revFlowAp(node, ap) and
+            (
+              ap = true
+              or
+              PrevStage::storeStepCand(node, ap, _, _, _, _)
+              or
+              PrevStage::readStepCand(_, _, node)
+            )
+          |
+            exists(PrevStage::Cc cc | PrevStage::fwdFlow(node, _, cc, _, _, _, _, ap, _) |
+              PrevStage::instanceofCcCall(cc) and
+              fromArg = true
+              or
+              PrevStage::instanceofCcNoCall(cc) and
+              fromArg = false
+            )
+          )
+        }
+
         predicate localValueStep(NodeEx node1, NodeEx node2) {
           exists(FlowState state, PrevStage::ApOption returnAp |
             PrevStage::revFlow(node1, pragma[only_bind_into](state), _,
@@ -3442,12 +3455,23 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
 
         predicate jumpValueStep = jumpStepEx/2;
 
-        predicate callEdgeArgParam(NodeEx arg, NodeEx param) {
-          PrevStage::callEdgeArgParam(_, _, arg, param, true, _)
+        pragma[nomagic]
+        private predicate flowThroughOutOfCall(RetNodeEx ret, NodeEx out) {
+          exists(DataFlowCall call, CcCall ccc, ReturnKindExt kind |
+            PrevStage::callEdgeReturn(call, _, ret, kind, out, true, true) and
+            PrevStage::callMayFlowThroughRev(call) and
+            PrevStage::returnMayFlowThrough(ret, _, true, kind) and
+            matchesCall(ccc, call)
+          )
         }
 
-        predicate callEdgeReturn(NodeEx ret, NodeEx out) {
-          PrevStage::callEdgeReturn(_, _, ret, _, out, true, _)
+        predicate callEdgeArgParam(NodeEx arg, NodeEx param) {
+          PrevStage::callEdgeArgParam(_, _, arg, param, true, true)
+        }
+
+        predicate callEdgeReturn(NodeEx ret, NodeEx out, boolean mayFlowThrough) {
+          PrevStage::callEdgeReturn(_, _, ret, _, out, true, true) and
+          if flowThroughOutOfCall(ret, out) then mayFlowThrough = true else mayFlowThrough = false
         }
 
         predicate readContentStep = PrevStage::readStepCand/3;

@@ -2358,13 +2358,15 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
       string toString();
     }
 
+    predicate nodeRange(NodeEx node, boolean fromArg);
+
     predicate localValueStep(NodeEx node1, NodeEx node2);
 
     predicate jumpValueStep(NodeEx node1, NodeEx node2);
 
     predicate callEdgeArgParam(NodeEx arg, NodeEx param);
 
-    predicate callEdgeReturn(NodeEx ret, NodeEx out);
+    predicate callEdgeReturn(NodeEx ret, NodeEx out, boolean mayFlowThrough);
 
     predicate readContentStep(NodeEx node1, Content c, NodeEx node2);
 
@@ -2392,101 +2394,133 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
    * 3. Which reads may have _a_ matching store (called `aStoreMayReachRead` below).
    */
   module StoreReadMatching<StoreReadMatchingInputSig Input> {
+    private import codeql.util.Boolean
     private import Input
-
-    pragma[nomagic]
-    private predicate valueStep(NodeEx node1, NodeEx node2) {
-      localValueStep(node1, node2)
-      or
-      jumpValueStep(node1, node2)
-      or
-      callEdgeArgParam(node1, node2)
-      or
-      callEdgeReturn(node1, node2)
-    }
 
     private signature module StoreReachesReadInputSig {
       int iteration();
 
-      predicate storeMayReachReadDelta(NodeEx storeSource, Content c, NodeEx readTarget);
+      predicate storeMayReachReadDelta(
+        NodeEx storeSource, Content c, NodeEx readTarget, boolean fromArg1, boolean fromArg2
+      );
 
-      predicate storeMayReachReadPrev(NodeEx storeSource, Content c, NodeEx readTarget);
+      predicate storeMayReachReadPrev(
+        NodeEx storeSource, Content c, NodeEx readTarget, boolean fromArg1, boolean fromArg2
+      );
     }
 
-    private signature class UsesPrevDeltaInfoSig {
-      string toString();
+    private newtype TNodeOrContent =
+      TNodeOrContentNode(NodeEx n, Boolean usesPrevDelta, boolean fromArg) { nodeRange(n, fromArg) } or
+      TNodeOrContentStoreContent(Content c) { storeContentStep(_, c, _) } or
+      TNodeOrContentReadContent(Content c) { readContentStep(_, c, _) }
 
-      boolean toBoolean();
+    private class NodeOrContent extends TNodeOrContent {
+      NodeEx asNodeEx(boolean usesPrevDelta, boolean fromArg) {
+        this = TNodeOrContentNode(result, usesPrevDelta, fromArg)
+      }
+
+      Content asStoreContent() { this = TNodeOrContentStoreContent(result) }
+
+      Content asReadContent() { this = TNodeOrContentReadContent(result) }
+
+      string toString() {
+        result = this.asStoreContent().toString()
+        or
+        result = this.asReadContent().toString()
+        or
+        result = this.asNodeEx(_, _).toString()
+      }
     }
 
-    private module StoreReachesRead<
-      StoreReachesReadInputSig Prev, UsesPrevDeltaInfoSig UsesPrevDeltaInfo> implements
+    pragma[nomagic]
+    private predicate stepNodeCommon(
+      NodeOrContent node1, NodeEx n2, boolean usesPrevDelta2, Boolean fromArg2
+    ) {
+      exists(NodeEx n1, boolean fromArg1 | n1 = node1.asNodeEx(usesPrevDelta2, fromArg1) |
+        localValueStep(n1, n2) and
+        fromArg1 = fromArg2
+        or
+        jumpValueStep(n1, n2) and
+        fromArg2 = false
+        or
+        callEdgeArgParam(n1, n2) and
+        fromArg2 = true
+        or
+        exists(boolean mayFlowThrough |
+          callEdgeReturn(n1, n2, mayFlowThrough) and
+          nodeRange(n2, fromArg2)
+        |
+          fromArg1 = false or mayFlowThrough = true
+        )
+      )
+    }
+
+    private module StoreReachesRead<StoreReachesReadInputSig Prev> implements
       StoreReachesReadInputSig
     {
       int iteration() { result = Prev::iteration() + 1 }
 
       private predicate enabled() { accessPathConfigLimit() > Prev::iteration() }
 
-      private newtype TNodeOrContent =
-        TNodeOrContentNode(NodeEx n, UsesPrevDeltaInfo usesPrevDelta) { enabled() } or
-        TNodeOrContentStoreContent(Content c) { enabled() and storeContentStep(_, c, _) } or
-        TNodeOrContentReadContent(Content c) { enabled() and readContentStep(_, c, _) }
+      private predicate usesPrevDelta(Boolean usesPrevDelta) {
+        // in the first iteration there is no previous delta to use
+        if iteration() > 1 then usesPrevDelta = true else any()
+      }
 
-      private class NodeOrContent extends TNodeOrContent {
-        NodeEx asNodeEx(UsesPrevDeltaInfo usesPrevDelta) {
-          this = TNodeOrContentNode(result, usesPrevDelta)
-        }
-
-        Content asStoreContent() { this = TNodeOrContentStoreContent(result) }
-
-        Content asReadContent() { this = TNodeOrContentReadContent(result) }
-
-        string toString() {
-          result = this.asStoreContent().toString()
+      pragma[nomagic]
+      private predicate stepNode(
+        NodeOrContent node1, NodeEx n2, boolean usesPrevDelta2, Boolean fromArg2
+      ) {
+        enabled() and
+        (
+          stepNodeCommon(node1, n2, usesPrevDelta2, fromArg2)
           or
-          result = this.asReadContent().toString()
-          or
-          result = this.asNodeEx(_).toString()
-        }
+          exists(NodeEx n1, boolean usesPrevDelta1, boolean fromArg1 |
+            n1 = node1.asNodeEx(usesPrevDelta1, fromArg1)
+          |
+            Prev::storeMayReachReadDelta(n1, _, n2, fromArg1, fromArg2) and
+            usesPrevDelta2 = true
+            or
+            Prev::storeMayReachReadPrev(n1, _, n2, fromArg1, fromArg2) and
+            usesPrevDelta1 = usesPrevDelta2
+          )
+        )
       }
 
       pragma[nomagic]
       private predicate step(NodeOrContent node1, NodeOrContent node2) {
-        exists(
-          NodeEx n1, NodeEx n2, UsesPrevDeltaInfo usesPrevDelta1, UsesPrevDeltaInfo usesPrevDelta2
-        |
-          n1 = node1.asNodeEx(usesPrevDelta1) and
-          n2 = node2.asNodeEx(usesPrevDelta2)
-        |
-          valueStep(n1, n2) and
-          pragma[only_bind_into](pragma[only_bind_out](usesPrevDelta2)) =
-            pragma[only_bind_into](pragma[only_bind_out](usesPrevDelta1))
-          or
-          Prev::storeMayReachReadDelta(n1, _, n2) and usesPrevDelta2.toBoolean() = true
-          or
-          Prev::storeMayReachReadPrev(n1, _, n2) and
-          pragma[only_bind_into](pragma[only_bind_out](usesPrevDelta2)) =
-            pragma[only_bind_into](pragma[only_bind_out](usesPrevDelta1))
+        exists(NodeEx n2, boolean usesPrevDelta2, boolean fromArg2 |
+          n2 = node2.asNodeEx(usesPrevDelta2, fromArg2) and
+          stepNode(node1, n2, usesPrevDelta2, fromArg2)
         )
         or
-        exists(NodeEx n2, Content c, UsesPrevDeltaInfo usesPrevDelta2 |
-          n2 = node2.asNodeEx(usesPrevDelta2) and
-          c = node1.asStoreContent() and
-          storeContentStep(_, c, n2) and
-          usesPrevDelta2.toBoolean() = false
-        )
-        or
-        exists(NodeEx n1, Content c, UsesPrevDeltaInfo usesPrevDelta1 |
-          n1 = node1.asNodeEx(usesPrevDelta1) and
-          c = node2.asReadContent() and
-          readContentStep(n1, c, _) and
-          usesPrevDelta1.toBoolean() = true
+        enabled() and
+        (
+          exists(NodeEx n2, Content c, boolean usesPrevDelta2 |
+            n2 = node2.asNodeEx(usesPrevDelta2, _) and
+            c = node1.asStoreContent() and
+            storeContentStep(_, c, n2) and
+            usesPrevDelta2 = false
+          )
+          or
+          exists(NodeEx n1, Content c, boolean usesPrevDelta1 |
+            n1 = node1.asNodeEx(usesPrevDelta1, _) and
+            c = node2.asReadContent() and
+            readContentStep(n1, c, _) and
+            usesPrevDelta(usesPrevDelta1)
+          )
         )
       }
 
-      private predicate isStoreContent(NodeOrContent c) { exists(c.asStoreContent()) }
+      private predicate isStoreContent(NodeOrContent c) {
+        enabled() and
+        exists(c.asStoreContent())
+      }
 
-      private predicate isReadContent(NodeOrContent c) { exists(c.asReadContent()) }
+      private predicate isReadContent(NodeOrContent c) {
+        enabled() and
+        exists(c.asReadContent())
+      }
 
       private predicate contentReachesReadTc(NodeOrContent node1, NodeOrContent node2) =
         doublyBoundedFastTC(step/2, isStoreContent/1, isReadContent/1)(node1, node2)
@@ -2498,6 +2532,7 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
       }
 
       additional predicate contentIsReadAndStored(Content c) {
+        enabled() and
         exists(NodeOrContent n1, NodeOrContent n2 |
           contentReachesReadTc(n1, n2) and
           contentIsReadAndStoredJoin(n1, n2, c)
@@ -2506,10 +2541,10 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
 
       pragma[nomagic]
       private predicate isStoreTarget0(NodeOrContent node, Content c) {
-        exists(UsesPrevDeltaInfo usesPrevDelta |
+        exists(boolean usesPrevDelta |
           contentIsReadAndStored(c) and
-          storeContentStep(_, c, node.asNodeEx(usesPrevDelta)) and
-          usesPrevDelta.toBoolean() = false
+          storeContentStep(_, c, node.asNodeEx(usesPrevDelta, _)) and
+          usesPrevDelta = false
         )
       }
 
@@ -2517,10 +2552,10 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
 
       pragma[nomagic]
       private predicate isReadSource0(NodeOrContent node, Content c) {
-        exists(UsesPrevDeltaInfo usesPrevDelta |
+        exists(boolean usesPrevDelta |
           contentIsReadAndStored(c) and
-          readContentStep(node.asNodeEx(usesPrevDelta), c, _) and
-          usesPrevDelta.toBoolean() = true
+          readContentStep(node.asNodeEx(usesPrevDelta, _), c, _) and
+          usesPrevDelta(usesPrevDelta)
         )
       }
 
@@ -2566,93 +2601,99 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
         doublyBoundedFastTC(step/2, isStoreTargetPruned/1, isReadSourcePruned/1)(node1, node2)
 
       pragma[nomagic]
-      private predicate storeMayReachReadDeltaJoinLeft(NodeEx node1, Content c, NodeOrContent node2) {
-        exists(UsesPrevDeltaInfo usesPrevDelta |
-          storeMayReachARead(node2, c) and
-          storeContentStep(node1, c, node2.asNodeEx(usesPrevDelta)) and
-          usesPrevDelta.toBoolean() = false
+      private predicate storeMayReachReadDeltaJoinLeft(
+        NodeEx node1, Content c, NodeOrContent node2, boolean fromArg
+      ) {
+        exists(boolean usesPrevDelta |
+          storeMayReachARead(pragma[only_bind_into](node2), pragma[only_bind_into](c)) and
+          storeContentStep(node1, c, node2.asNodeEx(usesPrevDelta, fromArg)) and
+          usesPrevDelta = false
         )
       }
 
       pragma[nomagic]
-      private predicate storeMayReachReadDeltaJoinRight(NodeOrContent node1, Content c, NodeEx node2) {
-        exists(UsesPrevDeltaInfo usesPrevDelta |
-          aStoreMayReachRead(node1, c) and
-          readContentStep(node1.asNodeEx(usesPrevDelta), c, node2) and
-          usesPrevDelta.toBoolean() = true
+      private predicate storeMayReachReadDeltaJoinRight(
+        NodeOrContent node1, Content c, NodeEx node2, boolean fromArg
+      ) {
+        exists(boolean usesPrevDelta |
+          aStoreMayReachRead(pragma[only_bind_into](node1), pragma[only_bind_into](c)) and
+          readContentStep(node1.asNodeEx(usesPrevDelta, fromArg), c, node2) and
+          usesPrevDelta(usesPrevDelta)
         )
       }
 
       pragma[nomagic]
-      predicate storeMayReachReadDelta(NodeEx storeSource, Content c, NodeEx readTarget) {
+      predicate storeMayReachReadDelta(
+        NodeEx storeSource, Content c, NodeEx readTarget, boolean fromArg1, boolean fromArg2
+      ) {
         exists(NodeOrContent storeTarget, NodeOrContent readSource |
           storeMayReachReadTc(storeTarget, readSource) and
-          storeMayReachReadDeltaJoinLeft(storeSource, c, storeTarget) and
-          storeMayReachReadDeltaJoinRight(readSource, c, readTarget)
+          storeMayReachReadDeltaJoinLeft(storeSource, c, storeTarget, fromArg1) and
+          storeMayReachReadDeltaJoinRight(readSource, c, readTarget, fromArg2)
         ) and
-        not Prev::storeMayReachReadPrev(storeSource, c, readTarget)
+        not Prev::storeMayReachReadPrev(storeSource, c, readTarget, fromArg1, fromArg2)
       }
 
       pragma[nomagic]
-      predicate storeMayReachReadPrev(NodeEx storeSource, Content c, NodeEx readTarget) {
-        Prev::storeMayReachReadPrev(storeSource, c, readTarget)
+      predicate storeMayReachReadPrev(
+        NodeEx storeSource, Content c, NodeEx readTarget, boolean fromArg1, boolean fromArg2
+      ) {
+        Prev::storeMayReachReadPrev(storeSource, c, readTarget, fromArg1, fromArg2)
         or
-        Prev::storeMayReachReadDelta(storeSource, c, readTarget)
+        Prev::storeMayReachReadDelta(storeSource, c, readTarget, fromArg1, fromArg2)
       }
     }
 
     module Iteration0 implements StoreReachesReadInputSig {
       int iteration() { result = 0 }
 
-      predicate storeMayReachReadDelta(NodeEx node1, Content c, NodeEx node2) { none() }
+      predicate storeMayReachReadDelta(
+        NodeEx node1, Content c, NodeEx node2, boolean fromArg1, boolean fromArg2
+      ) {
+        none()
+      }
 
-      predicate storeMayReachReadPrev(NodeEx node1, Content c, NodeEx node2) { none() }
-    }
-
-    // in the first iteration there is no previous delta to use
-    private class UsesPrevDeltaInfoUnit extends Unit {
-      boolean toBoolean() { result = [false, true] }
+      predicate storeMayReachReadPrev(
+        NodeEx node1, Content c, NodeEx node2, boolean fromArg1, boolean fromArg2
+      ) {
+        none()
+      }
     }
 
     private module StoreReachesRead1 implements StoreReachesReadInputSig {
-      private module M = StoreReachesRead<Iteration0, UsesPrevDeltaInfoUnit>;
+      private module M = StoreReachesRead<Iteration0>;
 
       import M
 
-      predicate storeMayReachReadDelta(NodeEx storeSource, Content c, NodeEx readTarget) {
-        M::storeMayReachReadDelta(storeSource, c, readTarget)
+      predicate storeMayReachReadDelta(
+        NodeEx storeSource, Content c, NodeEx readTarget, boolean fromArg1, boolean fromArg2
+      ) {
+        M::storeMayReachReadDelta(storeSource, c, readTarget, fromArg1, fromArg2)
         or
         // special case only needed for the first iteration: a store immediately followed by a read
         exists(NodeEx storeTargetReadSource |
           StoreReachesRead1::contentIsReadAndStored(c) and
           storeContentStep(storeSource, c, storeTargetReadSource) and
           readContentStep(storeTargetReadSource, c, readTarget)
-        )
+        ) and
+        nodeRange(storeSource, fromArg1) and
+        nodeRange(readTarget, fromArg2) and
+        fromArg1 = fromArg2
       }
     }
 
-    private import codeql.util.Boolean
+    private module StoreReachesRead2 = StoreReachesRead<StoreReachesRead1>;
 
-    private class UsesPrevDeltaInfoBoolean extends Boolean {
-      boolean toBoolean() { result = this }
-    }
+    private module StoreReachesRead3 = StoreReachesRead<StoreReachesRead2>;
 
-    private module StoreReachesRead2 =
-      StoreReachesRead<StoreReachesRead1, UsesPrevDeltaInfoBoolean>;
+    private module StoreReachesRead4 = StoreReachesRead<StoreReachesRead3>;
 
-    private module StoreReachesRead3 =
-      StoreReachesRead<StoreReachesRead2, UsesPrevDeltaInfoBoolean>;
-
-    private module StoreReachesRead4 =
-      StoreReachesRead<StoreReachesRead3, UsesPrevDeltaInfoBoolean>;
-
-    private module StoreReachesRead5 =
-      StoreReachesRead<StoreReachesRead4, UsesPrevDeltaInfoBoolean>;
+    private module StoreReachesRead5 = StoreReachesRead<StoreReachesRead4>;
 
     predicate storeMayReachRead(NodeEx storeSource, Content c, NodeEx readTarget) {
-      StoreReachesRead5::storeMayReachReadDelta(storeSource, c, readTarget)
+      StoreReachesRead5::storeMayReachReadDelta(storeSource, c, readTarget, _, _)
       or
-      StoreReachesRead5::storeMayReachReadPrev(storeSource, c, readTarget)
+      StoreReachesRead5::storeMayReachReadPrev(storeSource, c, readTarget, _, _)
     }
   }
 }
