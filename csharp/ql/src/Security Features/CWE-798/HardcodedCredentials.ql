@@ -16,6 +16,8 @@ import csharp
 import semmle.code.csharp.security.dataflow.HardcodedCredentialsQuery
 import HardcodedCredentials::PathGraph
 
+predicate stats = HardcodedCredentials::stageStats/10;
+
 from
   Source source, Sink sink, HardcodedCredentials::PathNode sourcePath,
   HardcodedCredentials::PathNode sinkPath, string value

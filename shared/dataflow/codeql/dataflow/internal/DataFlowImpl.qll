@@ -1719,7 +1719,8 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
           Typ t1, Ap ap1, Typ t2, Ap ap2, Content c, NodeEx node1, NodeEx node2, FlowState state,
           Cc cc, ParamNodeOption summaryCtx, TypOption argT, ApOption argAp
         ) {
-          fwdFlowRead0(t1, ap1, c, node1, node2, state, cc, summaryCtx, argT, argAp) and
+          fwdFlowRead0(pragma[only_bind_into](t1), pragma[only_bind_into](ap1),
+            pragma[only_bind_into](c), node1, node2, state, cc, summaryCtx, argT, argAp) and
           (
             exists(NodeEx storeSource |
               fwdFlowConsCandStoreReadMatchingEnabled(storeSource, t1, ap1, c, t2, ap2) and
@@ -2646,7 +2647,12 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
             abstract Location getLocation();
 
             /** Gets the corresponding `Node`, if any. */
-            Node getNode() { none() }
+            NodeEx getNodeEx() { none() }
+
+            Ap getAp() { none() }
+
+            /** Gets the corresponding `Node`, if any. */
+            final Node getNode() { result = this.getNodeEx().asNode() }
 
             predicate isSource() { none() }
 
@@ -2690,7 +2696,9 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
 
             override Location getLocation() { result = node.getLocation() }
 
-            override Node getNode() { result = node.asNode() }
+            override NodeEx getNodeEx() { result = node }
+
+            override Ap getAp() { result = ap }
 
             override predicate isSource() {
               sourceNode(node, state) and
@@ -2728,8 +2736,9 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
             ParamNodeOption summaryCtx, TypOption argT, ApOption argAp, Typ t, Ap ap,
             boolean allowsFlowThrough
           ) {
-            exists(ApApprox apa, boolean allowsFlowThrough0 |
-              FwdFlowIn<FwdFlowInNoRestriction>::fwdFlowIn(_, arg, _, p, state, outercc, innercc,
+            exists(DataFlowCall call, ApApprox apa, boolean allowsFlowThrough0 |
+              callEdgeArgParam(call, _, arg, p, _, ap) and
+              FwdFlowIn<FwdFlowInNoRestriction>::fwdFlowIn(call, arg, _, p, state, outercc, innercc,
                 summaryCtx, argT, argAp, t, ap, apa, _, allowsFlowThrough0) and
               if PrevStage::parameterMayFlowThrough(p, apa)
               then allowsFlowThrough = allowsFlowThrough0
@@ -2744,6 +2753,10 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
             RetNodeEx ret, ParamNodeEx innerSummaryCtx, Typ innerArgT, Ap innerArgAp,
             ApApprox innerArgApa
           ) {
+            callEdgeReturn(call, _, ret, _, _, _, ap) and
+            callMayFlowThroughRev(call) and
+            returnMayFlowThrough(ret, _, _, _) and
+            matchesCall(ccc, call) and
             fwdFlowThrough0(call, arg, cc, state, ccc, summaryCtx, argT, argAp, t, ap, apa, ret,
               innerSummaryCtx, innerArgT, innerArgAp, innerArgApa)
           }
@@ -2797,6 +2810,7 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
               DataFlowCall call, CcCall ccc, RetNodeEx ret, boolean allowsFieldFlow,
               ApApprox innerArgApa, ApApprox apa
             |
+              callEdgeReturn(call, _, ret, _, node, allowsFieldFlow, ap) and
               fwdFlowThroughStep1(pn1, pn2, pn3, call, cc, state, ccc, summaryCtx, argT, argAp, t,
                 ap, apa, ret, innerArgApa) and
               flowThroughOutOfCall(call, ccc, ret, node, allowsFieldFlow, innerArgApa, apa) and
@@ -2823,14 +2837,17 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
             exists(NodeEx mid, Content c, Typ t0, Ap ap0 |
               pn1 = TStagePathNodeMid(mid, state, cc, summaryCtx, argT, argAp, t0, ap0) and
               fwdFlowStore(mid, t0, ap0, c, t, node, state, cc, summaryCtx, argT, argAp) and
+              storeStepCand(mid, ap0, c, node, _,
+                any(DataFlowType containerType | t = getTyp(containerType))) and
               ap = apCons(c, t0, ap0) and
               label = ""
             )
             or
             // read
-            exists(NodeEx mid, Typ t0, Ap ap0 |
+            exists(NodeEx mid, Typ t0, Ap ap0, Content c |
               pn1 = TStagePathNodeMid(mid, state, cc, summaryCtx, argT, argAp, t0, ap0) and
-              fwdFlowRead(t0, ap0, t, ap, _, mid, node, state, cc, summaryCtx, argT, argAp) and
+              fwdFlowRead(t0, ap0, t, ap, c, mid, node, state, cc, summaryCtx, argT, argAp) and
+              readStepCand(mid, c, node) and
               label = ""
             )
           }
@@ -2917,10 +2934,14 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
             )
             or
             // flow out of a callable
-            exists(RetNodeEx ret, CcNoCall innercc, boolean allowsFieldFlow, ApApprox apa |
+            exists(
+              DataFlowCall call, RetNodeEx ret, CcNoCall innercc, boolean allowsFieldFlow,
+              ApApprox apa
+            |
               pn1 = TStagePathNodeMid(ret, state, innercc, summaryCtx, argT, argAp, t, ap) and
               fwdFlowIntoRet(ret, state, innercc, summaryCtx, argT, argAp, t, ap, apa) and
               fwdFlowOutValidEdge(_, ret, innercc, _, node, cc, apa, allowsFieldFlow) and
+              callEdgeReturn(call, _, ret, _, node, allowsFieldFlow, ap) and
               label = "" and
               if allowsFieldFlow = false then ap instanceof ApNil else any()
             )
@@ -3417,73 +3438,82 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
 
       predicate enableStoreReadMatching() { any() }
 
-      private class NodeExAlias = NodeEx;
+      final private class StagePathNodeFinal = PrevStage::Graph::StagePathNode;
+
+      private predicate step(StagePathNodeFinal pred, StagePathNodeFinal succ) {
+        PrevStage::Graph::edges(pred, succ, _, _)
+        or
+        PrevStage::Graph::subpaths(_, _, pred, succ)
+      }
+
+      private predicate reachesSink(StagePathNodeFinal n) {
+        n.isSink()
+        or
+        exists(StagePathNodeFinal succ |
+          step(n, succ) and
+          reachesSink(succ)
+        )
+      }
+
+      private predicate sourceReaches(StagePathNodeFinal n) {
+        reachesSink(n) and
+        (
+          n.isSource()
+          or
+          exists(StagePathNodeFinal pred |
+            step(pred, n) and
+            sourceReaches(pred)
+          )
+        )
+      }
 
       private module StoreReadMatchingInput implements StoreReadMatchingInputSig {
-        class NodeEx = NodeExAlias;
-
-        predicate nodeRange(NodeEx node, boolean fromArg) {
-          exists(PrevStage::Ap ap |
-            PrevStage::revFlowAp(node, ap) and
+        class PathNode extends StagePathNodeFinal {
+          PathNode() {
+            sourceReaches(this) and
             (
-              ap = true
+              this.getAp() = true
               or
-              PrevStage::storeStepCand(node, ap, _, _, _, _)
+              PrevStage::storeStepCand(this.getNodeEx(), this.getAp(), _, _, _, _)
               or
-              PrevStage::readStepCand(_, _, node)
+              PrevStage::readStepCand(_, _, this.getNodeEx())
             )
-          |
-            exists(PrevStage::Cc cc | PrevStage::fwdFlow(node, _, cc, _, _, _, _, ap, _) |
-              PrevStage::instanceofCcCall(cc) and
-              fromArg = true
-              or
-              PrevStage::instanceofCcNoCall(cc) and
-              fromArg = false
-            )
-          )
+          }
         }
 
-        predicate localValueStep(NodeEx node1, NodeEx node2) {
-          exists(FlowState state, PrevStage::ApOption returnAp |
-            PrevStage::revFlow(node1, pragma[only_bind_into](state), _,
-              pragma[only_bind_into](returnAp), true) and
-            PrevStage::revFlow(node2, pragma[only_bind_into](state), _,
-              pragma[only_bind_into](returnAp), true) and
-            Stage2Param::localStep(node1, state, node2, state, true, _, _, _)
-          )
+        predicate valueStep(PathNode node1, PathNode node2) {
+          (
+            step(node1, node2) and
+            not PrevStage::Graph::subpaths(node1, _, _, node2) and
+            not storeContentStep(node1, _, node2) and
+            not readContentStep(node1, _, node2)
+          ) and
+          node1.getAp() = true and
+          node2.getAp() = true
         }
 
-        predicate jumpValueStep = jumpStepEx/2;
-
-        pragma[nomagic]
-        private predicate flowThroughOutOfCall(RetNodeEx ret, NodeEx out) {
-          exists(DataFlowCall call, CcCall ccc, ReturnKindExt kind |
-            PrevStage::callEdgeReturn(call, _, ret, kind, out, true, true) and
-            PrevStage::callMayFlowThroughRev(call) and
-            PrevStage::returnMayFlowThrough(ret, _, true, kind) and
-            matchesCall(ccc, call)
-          )
+        predicate readContentStep(PathNode node1, Content c, PathNode node2) {
+          step(node1, node2) and
+          node1.getAp() = true and
+          PrevStage::readStepCand(node1.getNodeEx(), c, node2.getNodeEx())
         }
 
-        predicate callEdgeArgParam(NodeEx arg, NodeEx param) {
-          PrevStage::callEdgeArgParam(_, _, arg, param, true, true)
-        }
-
-        predicate callEdgeReturn(NodeEx ret, NodeEx out, boolean mayFlowThrough) {
-          PrevStage::callEdgeReturn(_, _, ret, _, out, true, true) and
-          if flowThroughOutOfCall(ret, out) then mayFlowThrough = true else mayFlowThrough = false
-        }
-
-        predicate readContentStep = PrevStage::readStepCand/3;
-
-        predicate storeContentStep(NodeEx node1, Content c, NodeEx node2) {
-          PrevStage::storeStepCand(node1, _, c, node2, _, _)
+        predicate storeContentStep(PathNode node1, Content c, PathNode node2) {
+          step(node1, node2) and
+          node2.getAp() = true and
+          PrevStage::storeStepCand(node1.getNodeEx(), _, c, node2.getNodeEx(), _, _)
         }
 
         predicate accessPathConfigLimit = Config::accessPathLimit/0;
       }
 
-      predicate storeMayReachRead = StoreReadMatching<StoreReadMatchingInput>::storeMayReachRead/3;
+      predicate storeMayReachRead(NodeEx storeSource, Content c, NodeEx readTarget) {
+        exists(PrevStage::Graph::StagePathNode pn1, PrevStage::Graph::StagePathNode pn2 |
+          StoreReadMatching<StoreReadMatchingInput>::storeMayReachRead(pn1, c, pn2) and
+          storeSource = pn1.getNodeEx() and
+          readTarget = pn2.getNodeEx()
+        )
+      }
     }
 
     private module Stage3 = MkStage<Stage2>::Stage<Stage3Param>;
