@@ -4,6 +4,7 @@
  * A completion represents how a statement or expression terminates.
  */
 
+private import codeql.util.Boolean
 private import codeql.ruby.AST
 private import codeql.ruby.ast.internal.AST
 private import codeql.ruby.ast.internal.Control
@@ -14,8 +15,8 @@ private import SuccessorTypes
 
 private newtype TCompletion =
   TSimpleCompletion() or
-  TBooleanCompletion(boolean b) { b in [false, true] } or
-  TMatchingCompletion(boolean isMatch) { isMatch in [false, true] } or
+  TBooleanCompletion(Boolean b) or
+  TMatchingCompletion(Boolean isMatch) or
   TReturnCompletion() or
   TBreakCompletion() or
   TNextCompletion() or
@@ -87,6 +88,14 @@ private AstNode getARescuableBodyChild() {
  * may raise an exception (in addition to evaluating normally).
  */
 private predicate mayRaise(Call c) { c = getARescuableBodyChild() }
+
+bindingset[n]
+BooleanCompletion booleanCompletion(AstNode n, boolean value) {
+  isBooleanConstant(n, value) and result = TBooleanCompletion(value)
+  or
+  not isBooleanConstant(n, _) and
+  result = TBooleanCompletion(value)
+}
 
 /** A completion of a statement or an expression. */
 abstract class Completion extends TCompletion {
@@ -162,7 +171,7 @@ abstract class Completion extends TCompletion {
 
 /** Holds if node `n` has the Boolean constant value `value`. */
 private predicate isBooleanConstant(AstNode n, boolean value) {
-  mustHaveBooleanCompletion(n) and
+  // mustHaveBooleanCompletion(n) and
   (
     n.(BooleanLiteral).isTrue() and
     value = true
@@ -176,6 +185,7 @@ private predicate isBooleanConstant(AstNode n, boolean value) {
  * Holds if a normal completion of `n` must be a Boolean completion.
  */
 private predicate mustHaveBooleanCompletion(AstNode n) {
+  // none() and
   inBooleanContext(n) and
   not n instanceof NonReturningCall
 }
@@ -185,35 +195,35 @@ private predicate mustHaveBooleanCompletion(AstNode n) {
  * that `n` evaluates to determines a true/false branch successor.
  */
 private predicate inBooleanContext(AstNode n) {
-  exists(ConditionalExpr i |
-    n = i.getCondition()
-    or
-    inBooleanContext(i) and
-    n = i.getBranch(_)
-  )
-  or
-  n = any(ConditionalLoop parent).getCondition()
-  or
-  n = any(InClause parent).getCondition()
-  or
-  exists(LogicalAndExpr parent |
-    n = parent.getLeftOperand()
-    or
-    inBooleanContext(parent) and
-    n = parent.getRightOperand()
-  )
-  or
-  exists(LogicalOrExpr parent |
-    n = parent.getLeftOperand()
-    or
-    inBooleanContext(parent) and
-    n = parent.getRightOperand()
-  )
-  or
-  n = any(NotExpr parent | inBooleanContext(parent)).getOperand()
-  or
-  n = any(StmtSequence parent | inBooleanContext(parent)).getLastStmt()
-  or
+  // exists(ConditionalExpr i |
+  //   n = i.getCondition()
+  //   or
+  //   inBooleanContext(i) and
+  //   n = i.getBranch(_)
+  // )
+  // or
+  // n = any(ConditionalLoop parent).getCondition()
+  // or
+  // n = any(InClause parent).getCondition()
+  // or
+  // exists(LogicalAndExpr parent |
+  //   n = parent.getLeftOperand()
+  //   or
+  //   inBooleanContext(parent) and
+  //   n = parent.getRightOperand()
+  // )
+  // or
+  // exists(LogicalOrExpr parent |
+  //   n = parent.getLeftOperand()
+  //   or
+  //   inBooleanContext(parent) and
+  //   n = parent.getRightOperand()
+  // )
+  // or
+  // n = any(NotExpr parent | inBooleanContext(parent)).getOperand()
+  // or
+  // n = any(StmtSequence parent | inBooleanContext(parent)).getLastStmt()
+  // or
   exists(CaseExpr c, WhenClause w |
     not exists(c.getValue()) and
     c.getABranch() = w

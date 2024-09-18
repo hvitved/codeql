@@ -74,6 +74,26 @@ private module ConditionalCompletionSplitting {
 
     override predicate hasEntry(AstNode pred, AstNode succ, Completion c) {
       succ(pred, succ, c) and
+      (
+        // succ instanceof Ast::NotExpr and
+        last(succ.(Ast::NotExpr).getOperand(), pred, _) and
+        completion.(BooleanCompletion).getDual() = c
+        or
+        // succ instanceof Ast::LogicalAndExpr and
+        last(succ.(Ast::LogicalAndExpr).getAnOperand(), pred, _) and
+        completion = c
+        or
+        last(succ.(Ast::LogicalOrExpr).getAnOperand(), pred, _) and
+        completion = c
+        or
+        // or
+        // succ instanceof Ast::StmtSequence and
+        // completion = c
+        last(succ.(Ast::ConditionalExpr).getBranch(_), pred, _) and
+        completion = c
+      )
+      or
+      succ(pred, succ, c) and
       last(succ, _, completion) and
       (
         last(succ.(Ast::NotExpr).getOperand(), pred, c) and

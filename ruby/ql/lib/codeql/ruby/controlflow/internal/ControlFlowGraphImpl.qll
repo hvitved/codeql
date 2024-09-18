@@ -791,8 +791,8 @@ module Trees {
       child = super.getCondition()
     }
 
-    private predicate lastCondition(AstNode last, BooleanCompletion c, boolean flag) {
-      last(super.getCondition(), last, c) and
+    private predicate lastCondition(AstNode last, boolean flag) {
+      last(super.getCondition(), last, any(SimpleCompletion c)) and
       (
         flag = true and super.hasIfCondition()
         or
@@ -805,7 +805,7 @@ module Trees {
       c.(MatchingCompletion).getValue() = false
       or
       exists(BooleanCompletion bc, boolean flag, MatchingCompletion mc |
-        this.lastCondition(last, bc, flag) and
+        this.lastCondition(last, flag) and
         c =
           any(NestedMatchingCompletion nmc |
             nmc.getInnerCompletion() = bc and nmc.getOuterCompletion() = mc
@@ -842,8 +842,8 @@ module Trees {
       )
       or
       exists(boolean flag |
-        this.lastCondition(pred, c, flag) and
-        c.(BooleanCompletion).getValue() = flag and
+        this.lastCondition(pred, flag) and
+        c = booleanCompletion(pred, flag) and
         first(super.getBody(), succ)
       )
     }
@@ -878,8 +878,8 @@ module Trees {
 
     final override predicate succ(AstNode pred, AstNode succ, Completion c) {
       exists(boolean b |
-        last(super.getCondition(), pred, c) and
-        b = c.(BooleanCompletion).getValue()
+        last(super.getCondition(), pred, any(SimpleCompletion sc)) and
+        c = booleanCompletion(pred, b)
       |
         first(super.getBranch(b), succ)
         or
@@ -899,9 +899,12 @@ module Trees {
     final override predicate first(AstNode first) { first(super.getCondition(), first) }
 
     final override predicate succ(AstNode pred, AstNode succ, Completion c) {
-      last(super.getCondition(), pred, c) and
-      super.entersLoopWhenConditionIs(c.(BooleanCompletion).getValue()) and
-      first(super.getBody(), succ)
+      exists(boolean value |
+        last(super.getCondition(), pred, any(SimpleCompletion sc)) and
+        c = booleanCompletion(pred, value) and
+        super.entersLoopWhenConditionIs(value) and
+        first(super.getBody(), succ)
+      )
       or
       last(super.getBody(), pred, c) and
       first(super.getCondition(), succ) and
@@ -913,8 +916,11 @@ module Trees {
       or
       succ = this and
       (
-        last(super.getCondition(), pred, c) and
-        super.entersLoopWhenConditionIs(c.(BooleanCompletion).getValue().booleanNot())
+        exists(boolean value |
+          last(super.getCondition(), pred, any(SimpleCompletion sc)) and
+          c = booleanCompletion(pred, value) and
+          super.entersLoopWhenConditionIs(value.booleanNot())
+        )
         or
         last(super.getBody(), pred, c) and
         not c.continuesLoop() and
@@ -1086,16 +1092,17 @@ module Trees {
     final override predicate first(AstNode first) { first(super.getLeftOperand(), first) }
 
     final override predicate succ(AstNode pred, AstNode succ, Completion c) {
-      last(super.getLeftOperand(), pred, c) and
-      c instanceof TrueCompletion and
-      first(super.getRightOperand(), succ)
+      last(super.getLeftOperand(), pred, any(SimpleCompletion sc)) and
+      (
+        c = booleanCompletion(pred, true) and
+        first(super.getRightOperand(), succ)
+        or
+        c = booleanCompletion(pred, false) and
+        succ = this
+      )
       or
-      last(super.getLeftOperand(), pred, c) and
-      c instanceof FalseCompletion and
-      succ = this
-      or
-      last(super.getRightOperand(), pred, c) and
-      c instanceof NormalCompletion and
+      last(super.getRightOperand(), pred, any(SimpleCompletion sc)) and
+      c = booleanCompletion(pred, _) and
       succ = this
     }
   }
@@ -1107,8 +1114,9 @@ module Trees {
 
     final override predicate succ(AstNode pred, AstNode succ, Completion c) {
       succ = this and
-      last(super.getOperand(), pred, c) and
-      c instanceof NormalCompletion
+      last(super.getOperand(), pred, any(SimpleCompletion sc)) and
+      c = booleanCompletion(pred, _)
+      // c instanceof NormalCompletion
     }
   }
 
@@ -1118,16 +1126,17 @@ module Trees {
     final override predicate first(AstNode first) { first(super.getLeftOperand(), first) }
 
     final override predicate succ(AstNode pred, AstNode succ, Completion c) {
-      last(super.getLeftOperand(), pred, c) and
-      c instanceof FalseCompletion and
-      first(super.getRightOperand(), succ)
+      last(super.getLeftOperand(), pred, any(SimpleCompletion sc)) and
+      (
+        c = booleanCompletion(pred, false) and
+        first(super.getRightOperand(), succ)
+        or
+        c = booleanCompletion(pred, true) and
+        succ = this
+      )
       or
-      last(super.getLeftOperand(), pred, c) and
-      c instanceof TrueCompletion and
-      succ = this
-      or
-      last(super.getRightOperand(), pred, c) and
-      c instanceof NormalCompletion and
+      last(super.getRightOperand(), pred, any(SimpleCompletion sc)) and
+      c = booleanCompletion(pred, _) and
       succ = this
     }
   }

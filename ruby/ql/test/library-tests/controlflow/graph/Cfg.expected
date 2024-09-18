@@ -1122,8 +1122,8 @@ edges
 | cfg.rb:166:5:166:8 | true | cfg.rb:166:1:166:8 | ... = ... | semmle.label |  |
 | cfg.rb:167:1:167:1 | x | cfg.rb:167:7:167:10 | true | semmle.label |  |
 | cfg.rb:167:1:167:10 | ... = ... | cfg.rb:168:1:168:1 | x | semmle.label |  |
-| cfg.rb:167:5:167:10 | ! ... | cfg.rb:167:1:167:10 | ... = ... | semmle.label |  |
-| cfg.rb:167:7:167:10 | true | cfg.rb:167:5:167:10 | ! ... | semmle.label |  |
+| cfg.rb:167:5:167:10 | [false] ! ... | cfg.rb:167:1:167:10 | ... = ... | semmle.label |  |
+| cfg.rb:167:7:167:10 | true | cfg.rb:167:5:167:10 | [false] ! ... | semmle.label | true |
 | cfg.rb:168:1:168:1 | x | cfg.rb:168:7:168:8 | 42 | semmle.label |  |
 | cfg.rb:168:1:168:8 | ... = ... | cfg.rb:170:1:170:20 | undef ... | semmle.label |  |
 | cfg.rb:168:5:168:8 | - ... | cfg.rb:168:1:168:8 | ... = ... | semmle.label |  |
@@ -1317,26 +1317,32 @@ edges
 | constant_compound_assign.rb:1:1:22:4 | exit constant_compound_assign.rb (normal) | constant_compound_assign.rb:1:1:22:4 | exit constant_compound_assign.rb | semmle.label |  |
 | constant_compound_assign.rb:2:5:3:7 | foo_before | constant_compound_assign.rb:5:5:5:16 | FOO_CONSTANT | semmle.label |  |
 | constant_compound_assign.rb:5:5:5:16 | FOO_CONSTANT | constant_compound_assign.rb:5:5:5:16 | FOO_CONSTANT | semmle.label |  |
-| constant_compound_assign.rb:5:5:5:16 | FOO_CONSTANT | constant_compound_assign.rb:5:18:5:20 | ... \|\| ... | semmle.label | true |
+| constant_compound_assign.rb:5:5:5:16 | FOO_CONSTANT | constant_compound_assign.rb:5:18:5:20 | [true] ... \|\| ... | semmle.label | true |
 | constant_compound_assign.rb:5:5:5:16 | FOO_CONSTANT | constant_compound_assign.rb:5:22:5:24 | 123 | semmle.label | false |
 | constant_compound_assign.rb:5:5:5:24 | ... = ... | constant_compound_assign.rb:7:5:8:7 | foo_after | semmle.label |  |
-| constant_compound_assign.rb:5:18:5:20 | ... \|\| ... | constant_compound_assign.rb:5:5:5:24 | ... = ... | semmle.label |  |
-| constant_compound_assign.rb:5:22:5:24 | 123 | constant_compound_assign.rb:5:18:5:20 | ... \|\| ... | semmle.label |  |
+| constant_compound_assign.rb:5:18:5:20 | [false] ... \|\| ... | constant_compound_assign.rb:5:5:5:24 | ... = ... | semmle.label |  |
+| constant_compound_assign.rb:5:18:5:20 | [true] ... \|\| ... | constant_compound_assign.rb:5:5:5:24 | ... = ... | semmle.label |  |
+| constant_compound_assign.rb:5:22:5:24 | 123 | constant_compound_assign.rb:5:18:5:20 | [false] ... \|\| ... | semmle.label | false |
+| constant_compound_assign.rb:5:22:5:24 | 123 | constant_compound_assign.rb:5:18:5:20 | [true] ... \|\| ... | semmle.label | true |
 | constant_compound_assign.rb:7:5:8:7 | foo_after | constant_compound_assign.rb:11:1:12:3 | top_before | semmle.label |  |
 | constant_compound_assign.rb:11:1:12:3 | top_before | constant_compound_assign.rb:14:1:14:12 | TOP_CONSTANT | semmle.label |  |
 | constant_compound_assign.rb:14:1:14:12 | TOP_CONSTANT | constant_compound_assign.rb:14:1:14:12 | TOP_CONSTANT | semmle.label |  |
-| constant_compound_assign.rb:14:1:14:12 | TOP_CONSTANT | constant_compound_assign.rb:14:14:14:16 | ... \|\| ... | semmle.label | true |
+| constant_compound_assign.rb:14:1:14:12 | TOP_CONSTANT | constant_compound_assign.rb:14:14:14:16 | [true] ... \|\| ... | semmle.label | true |
 | constant_compound_assign.rb:14:1:14:12 | TOP_CONSTANT | constant_compound_assign.rb:14:18:14:20 | 123 | semmle.label | false |
 | constant_compound_assign.rb:14:1:14:20 | ... = ... | constant_compound_assign.rb:16:1:17:3 | top_after | semmle.label |  |
-| constant_compound_assign.rb:14:14:14:16 | ... \|\| ... | constant_compound_assign.rb:14:1:14:20 | ... = ... | semmle.label |  |
-| constant_compound_assign.rb:14:18:14:20 | 123 | constant_compound_assign.rb:14:14:14:16 | ... \|\| ... | semmle.label |  |
+| constant_compound_assign.rb:14:14:14:16 | [false] ... \|\| ... | constant_compound_assign.rb:14:1:14:20 | ... = ... | semmle.label |  |
+| constant_compound_assign.rb:14:14:14:16 | [true] ... \|\| ... | constant_compound_assign.rb:14:1:14:20 | ... = ... | semmle.label |  |
+| constant_compound_assign.rb:14:18:14:20 | 123 | constant_compound_assign.rb:14:14:14:16 | [false] ... \|\| ... | semmle.label | false |
+| constant_compound_assign.rb:14:18:14:20 | 123 | constant_compound_assign.rb:14:14:14:16 | [true] ... \|\| ... | semmle.label | true |
 | constant_compound_assign.rb:16:1:17:3 | top_after | constant_compound_assign.rb:19:1:19:15 | TOP_CONSTANT2 | semmle.label |  |
 | constant_compound_assign.rb:19:1:19:15 | TOP_CONSTANT2 | constant_compound_assign.rb:19:1:19:15 | TOP_CONSTANT2 | semmle.label |  |
-| constant_compound_assign.rb:19:1:19:15 | TOP_CONSTANT2 | constant_compound_assign.rb:19:17:19:19 | ... \|\| ... | semmle.label | true |
+| constant_compound_assign.rb:19:1:19:15 | TOP_CONSTANT2 | constant_compound_assign.rb:19:17:19:19 | [true] ... \|\| ... | semmle.label | true |
 | constant_compound_assign.rb:19:1:19:15 | TOP_CONSTANT2 | constant_compound_assign.rb:19:21:19:23 | 123 | semmle.label | false |
 | constant_compound_assign.rb:19:1:19:23 | ... = ... | constant_compound_assign.rb:21:1:22:3 | top_after2 | semmle.label |  |
-| constant_compound_assign.rb:19:17:19:19 | ... \|\| ... | constant_compound_assign.rb:19:1:19:23 | ... = ... | semmle.label |  |
-| constant_compound_assign.rb:19:21:19:23 | 123 | constant_compound_assign.rb:19:17:19:19 | ... \|\| ... | semmle.label |  |
+| constant_compound_assign.rb:19:17:19:19 | [false] ... \|\| ... | constant_compound_assign.rb:19:1:19:23 | ... = ... | semmle.label |  |
+| constant_compound_assign.rb:19:17:19:19 | [true] ... \|\| ... | constant_compound_assign.rb:19:1:19:23 | ... = ... | semmle.label |  |
+| constant_compound_assign.rb:19:21:19:23 | 123 | constant_compound_assign.rb:19:17:19:19 | [false] ... \|\| ... | semmle.label | false |
+| constant_compound_assign.rb:19:21:19:23 | 123 | constant_compound_assign.rb:19:17:19:19 | [true] ... \|\| ... | semmle.label | true |
 | constant_compound_assign.rb:21:1:22:3 | top_after2 | constant_compound_assign.rb:1:1:22:4 | exit constant_compound_assign.rb (normal) | semmle.label |  |
 | desugar.rb:1:1:3:3 | enter m1 | desugar.rb:1:8:1:8 | x | semmle.label |  |
 | desugar.rb:1:1:3:3 | exit m1 (normal) | desugar.rb:1:1:3:3 | exit m1 | semmle.label |  |
@@ -1613,11 +1619,10 @@ edges
 | ifs.rb:4:24:4:24 | 0 | ifs.rb:4:20:4:24 | ... > ... | semmle.label |  |
 | ifs.rb:4:30:4:38 | [false] ! ... | ifs.rb:4:9:4:38 | [false] ... and ... | semmle.label | false |
 | ifs.rb:4:30:4:38 | [true] ! ... | ifs.rb:4:9:4:38 | [true] ... and ... | semmle.label | true |
-| ifs.rb:4:31:4:38 | [false] ( ... ) | ifs.rb:4:30:4:38 | [true] ! ... | semmle.label | false |
-| ifs.rb:4:31:4:38 | [true] ( ... ) | ifs.rb:4:30:4:38 | [false] ! ... | semmle.label | true |
+| ifs.rb:4:31:4:38 | ( ... ) | ifs.rb:4:30:4:38 | [false] ! ... | semmle.label | true |
+| ifs.rb:4:31:4:38 | ( ... ) | ifs.rb:4:30:4:38 | [true] ! ... | semmle.label | false |
 | ifs.rb:4:32:4:32 | x | ifs.rb:4:37:4:37 | 5 | semmle.label |  |
-| ifs.rb:4:32:4:37 | ... == ... | ifs.rb:4:31:4:38 | [false] ( ... ) | semmle.label | false |
-| ifs.rb:4:32:4:37 | ... == ... | ifs.rb:4:31:4:38 | [true] ( ... ) | semmle.label | true |
+| ifs.rb:4:32:4:37 | ... == ... | ifs.rb:4:31:4:38 | ( ... ) | semmle.label |  |
 | ifs.rb:4:37:4:37 | 5 | ifs.rb:4:32:4:37 | ... == ... | semmle.label |  |
 | ifs.rb:4:39:5:17 | then ... | ifs.rb:4:3:7:35 | elsif ... | semmle.label |  |
 | ifs.rb:5:5:5:17 | call to puts | ifs.rb:4:39:5:17 | then ... | semmle.label |  |
@@ -1675,17 +1680,14 @@ edges
 | ifs.rb:28:13:28:14 | b2 | ifs.rb:28:17:28:18 | b3 | semmle.label |  |
 | ifs.rb:28:17:28:18 | b3 | ifs.rb:29:11:29:12 | b1 | semmle.label |  |
 | ifs.rb:29:3:29:51 | return | ifs.rb:28:1:30:3 | exit m4 (normal) | semmle.label | return |
-| ifs.rb:29:10:29:23 | [false] ( ... ) | ifs.rb:29:41:29:50 | !b2 \|\| !b3 | semmle.label | false |
-| ifs.rb:29:10:29:23 | [true] ( ... ) | ifs.rb:29:28:29:35 | b2 \|\| b3 | semmle.label | true |
+| ifs.rb:29:10:29:23 | ( ... ) | ifs.rb:29:28:29:35 | b2 \|\| b3 | semmle.label | true |
+| ifs.rb:29:10:29:23 | ( ... ) | ifs.rb:29:41:29:50 | !b2 \|\| !b3 | semmle.label | false |
 | ifs.rb:29:10:29:51 | ... ? ... : ... | ifs.rb:29:3:29:51 | return | semmle.label |  |
 | ifs.rb:29:11:29:12 | b1 | ifs.rb:29:16:29:17 | b2 | semmle.label | true |
 | ifs.rb:29:11:29:12 | b1 | ifs.rb:29:21:29:22 | b3 | semmle.label | false |
-| ifs.rb:29:11:29:22 | [false] ... ? ... : ... | ifs.rb:29:10:29:23 | [false] ( ... ) | semmle.label | false |
-| ifs.rb:29:11:29:22 | [true] ... ? ... : ... | ifs.rb:29:10:29:23 | [true] ( ... ) | semmle.label | true |
-| ifs.rb:29:16:29:17 | b2 | ifs.rb:29:11:29:22 | [false] ... ? ... : ... | semmle.label | false |
-| ifs.rb:29:16:29:17 | b2 | ifs.rb:29:11:29:22 | [true] ... ? ... : ... | semmle.label | true |
-| ifs.rb:29:21:29:22 | b3 | ifs.rb:29:11:29:22 | [false] ... ? ... : ... | semmle.label | false |
-| ifs.rb:29:21:29:22 | b3 | ifs.rb:29:11:29:22 | [true] ... ? ... : ... | semmle.label | true |
+| ifs.rb:29:11:29:22 | ... ? ... : ... | ifs.rb:29:10:29:23 | ( ... ) | semmle.label |  |
+| ifs.rb:29:16:29:17 | b2 | ifs.rb:29:11:29:22 | ... ? ... : ... | semmle.label |  |
+| ifs.rb:29:21:29:22 | b3 | ifs.rb:29:11:29:22 | ... ? ... : ... | semmle.label |  |
 | ifs.rb:29:27:29:36 | "b2 \|\| b3" | ifs.rb:29:10:29:51 | ... ? ... : ... | semmle.label |  |
 | ifs.rb:29:28:29:35 | b2 \|\| b3 | ifs.rb:29:27:29:36 | "b2 \|\| b3" | semmle.label |  |
 | ifs.rb:29:40:29:51 | "!b2 \|\| !b3" | ifs.rb:29:10:29:51 | ... ? ... : ... | semmle.label |  |
@@ -1699,28 +1701,20 @@ edges
 | ifs.rb:32:21:32:22 | b4 | ifs.rb:32:25:32:26 | b5 | semmle.label |  |
 | ifs.rb:32:25:32:26 | b5 | ifs.rb:33:10:33:11 | b1 | semmle.label |  |
 | ifs.rb:33:3:33:100 | if ... | ifs.rb:32:1:34:3 | exit m5 (normal) | semmle.label |  |
-| ifs.rb:33:6:33:49 | [false] ( ... ) | ifs.rb:33:79:33:95 | !b2 \|\| !b4 \|\| !b5 | semmle.label | false |
-| ifs.rb:33:6:33:49 | [true] ( ... ) | ifs.rb:33:57:33:70 | b2 \|\| b4 \|\| b5 | semmle.label | true |
-| ifs.rb:33:7:33:48 | [false] if ... | ifs.rb:33:6:33:49 | [false] ( ... ) | semmle.label | false |
-| ifs.rb:33:7:33:48 | [true] if ... | ifs.rb:33:6:33:49 | [true] ( ... ) | semmle.label | true |
+| ifs.rb:33:6:33:49 | ( ... ) | ifs.rb:33:57:33:70 | b2 \|\| b4 \|\| b5 | semmle.label | true |
+| ifs.rb:33:6:33:49 | ( ... ) | ifs.rb:33:79:33:95 | !b2 \|\| !b4 \|\| !b5 | semmle.label | false |
+| ifs.rb:33:7:33:48 | if ... | ifs.rb:33:6:33:49 | ( ... ) | semmle.label |  |
 | ifs.rb:33:10:33:11 | b1 | ifs.rb:33:18:33:19 | b2 | semmle.label | true |
 | ifs.rb:33:10:33:11 | b1 | ifs.rb:33:27:33:28 | b3 | semmle.label | false |
-| ifs.rb:33:13:33:19 | [false] then ... | ifs.rb:33:7:33:48 | [false] if ... | semmle.label | false |
-| ifs.rb:33:13:33:19 | [true] then ... | ifs.rb:33:7:33:48 | [true] if ... | semmle.label | true |
-| ifs.rb:33:18:33:19 | b2 | ifs.rb:33:13:33:19 | [false] then ... | semmle.label | false |
-| ifs.rb:33:18:33:19 | b2 | ifs.rb:33:13:33:19 | [true] then ... | semmle.label | true |
-| ifs.rb:33:21:33:44 | [false] elsif ... | ifs.rb:33:7:33:48 | [false] if ... | semmle.label | false |
-| ifs.rb:33:21:33:44 | [true] elsif ... | ifs.rb:33:7:33:48 | [true] if ... | semmle.label | true |
+| ifs.rb:33:13:33:19 | then ... | ifs.rb:33:7:33:48 | if ... | semmle.label |  |
+| ifs.rb:33:18:33:19 | b2 | ifs.rb:33:13:33:19 | then ... | semmle.label |  |
+| ifs.rb:33:21:33:44 | elsif ... | ifs.rb:33:7:33:48 | if ... | semmle.label |  |
 | ifs.rb:33:27:33:28 | b3 | ifs.rb:33:35:33:36 | b4 | semmle.label | true |
 | ifs.rb:33:27:33:28 | b3 | ifs.rb:33:43:33:44 | b5 | semmle.label | false |
-| ifs.rb:33:30:33:36 | [false] then ... | ifs.rb:33:21:33:44 | [false] elsif ... | semmle.label | false |
-| ifs.rb:33:30:33:36 | [true] then ... | ifs.rb:33:21:33:44 | [true] elsif ... | semmle.label | true |
-| ifs.rb:33:35:33:36 | b4 | ifs.rb:33:30:33:36 | [false] then ... | semmle.label | false |
-| ifs.rb:33:35:33:36 | b4 | ifs.rb:33:30:33:36 | [true] then ... | semmle.label | true |
-| ifs.rb:33:38:33:44 | [false] else ... | ifs.rb:33:21:33:44 | [false] elsif ... | semmle.label | false |
-| ifs.rb:33:38:33:44 | [true] else ... | ifs.rb:33:21:33:44 | [true] elsif ... | semmle.label | true |
-| ifs.rb:33:43:33:44 | b5 | ifs.rb:33:38:33:44 | [false] else ... | semmle.label | false |
-| ifs.rb:33:43:33:44 | b5 | ifs.rb:33:38:33:44 | [true] else ... | semmle.label | true |
+| ifs.rb:33:30:33:36 | then ... | ifs.rb:33:21:33:44 | elsif ... | semmle.label |  |
+| ifs.rb:33:35:33:36 | b4 | ifs.rb:33:30:33:36 | then ... | semmle.label |  |
+| ifs.rb:33:38:33:44 | else ... | ifs.rb:33:21:33:44 | elsif ... | semmle.label |  |
+| ifs.rb:33:43:33:44 | b5 | ifs.rb:33:38:33:44 | else ... | semmle.label |  |
 | ifs.rb:33:51:33:71 | then ... | ifs.rb:33:3:33:100 | if ... | semmle.label |  |
 | ifs.rb:33:56:33:71 | "b2 \|\| b4 \|\| b5" | ifs.rb:33:51:33:71 | then ... | semmle.label |  |
 | ifs.rb:33:57:33:70 | b2 \|\| b4 \|\| b5 | ifs.rb:33:56:33:71 | "b2 \|\| b4 \|\| b5" | semmle.label |  |
@@ -1768,12 +1762,12 @@ edges
 | ifs.rb:54:15:54:16 | b1 | ifs.rb:54:19:54:20 | b2 | semmle.label |  |
 | ifs.rb:54:19:54:20 | b2 | ifs.rb:55:7:55:8 | b1 | semmle.label |  |
 | ifs.rb:55:3:57:5 | if ... | ifs.rb:54:1:58:3 | exit disjunct (normal) | semmle.label |  |
-| ifs.rb:55:6:55:15 | [false] ( ... ) | ifs.rb:55:3:57:5 | if ... | semmle.label | false |
-| ifs.rb:55:6:55:15 | [true] ( ... ) | ifs.rb:56:5:56:19 | self | semmle.label | true |
+| ifs.rb:55:6:55:15 | ( ... ) | ifs.rb:55:3:57:5 | if ... | semmle.label | false |
+| ifs.rb:55:6:55:15 | ( ... ) | ifs.rb:56:5:56:19 | self | semmle.label | true |
 | ifs.rb:55:7:55:8 | b1 | ifs.rb:55:7:55:14 | [true] ... \|\| ... | semmle.label | true |
 | ifs.rb:55:7:55:8 | b1 | ifs.rb:55:13:55:14 | b2 | semmle.label | false |
-| ifs.rb:55:7:55:14 | [false] ... \|\| ... | ifs.rb:55:6:55:15 | [false] ( ... ) | semmle.label | false |
-| ifs.rb:55:7:55:14 | [true] ... \|\| ... | ifs.rb:55:6:55:15 | [true] ( ... ) | semmle.label | true |
+| ifs.rb:55:7:55:14 | [false] ... \|\| ... | ifs.rb:55:6:55:15 | ( ... ) | semmle.label |  |
+| ifs.rb:55:7:55:14 | [true] ... \|\| ... | ifs.rb:55:6:55:15 | ( ... ) | semmle.label |  |
 | ifs.rb:55:13:55:14 | b2 | ifs.rb:55:7:55:14 | [false] ... \|\| ... | semmle.label | false |
 | ifs.rb:55:13:55:14 | b2 | ifs.rb:55:7:55:14 | [true] ... \|\| ... | semmle.label | true |
 | ifs.rb:55:17:56:19 | then ... | ifs.rb:55:3:57:5 | if ... | semmle.label |  |
