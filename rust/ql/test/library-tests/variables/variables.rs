@@ -342,16 +342,18 @@ fn mutate() {
     print_i64(i); // $ read_access=i
 }
 
-fn mutate_param(x : &mut i64) { // x
+fn mutate_param(x : &mut i64) -> &mut i64 { // x
     *x = // $ read_access=x
         *x + // $ read_access=x
         *x; // $ read_access=x
+    return x;
 }
 
 fn mutate_arg() {
     let mut x = 2; // x
-    mutate_param(&mut x); // $ access=x
+    let y = mutate_param(&mut x); // $ access=x
     print_i64(x); // $ read_access=x
+
 }
 
 fn alias() {

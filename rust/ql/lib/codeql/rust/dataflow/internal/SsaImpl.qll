@@ -41,13 +41,13 @@ private Expr withParens(Expr e) {
 
 private predicate isRefTarget(VariableAccess va, Variable v) {
   va = v.getAnAccess() and
-  exists(RefExpr re, Expr arg |
+  exists(ExprStmt es, RefExpr re, Expr arg |
     va = re.getExpr() and // todo: restrict to `mut`
     arg = withParens(re)
   |
-    arg = any(CallExpr ce).getArgList().getAnArg()
+    arg = any(CallExpr ce | es.getExpr() = ce).getArgList().getAnArg()
     or
-    exists(MethodCallExpr mce |
+    exists(MethodCallExpr mce | es.getExpr() = mce |
       arg = mce.getArgList().getAnArg() or
       arg = mce.getReceiver()
     )
