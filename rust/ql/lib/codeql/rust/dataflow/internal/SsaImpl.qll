@@ -43,6 +43,7 @@ private predicate isRefTarget(VariableAccess va, Variable v) {
   va = v.getAnAccess() and
   exists(ExprStmt es, RefExpr re, Expr arg |
     va = re.getExpr() and // todo: restrict to `mut`
+    re.isMut() and
     arg = withParens(re)
   |
     arg = any(CallExpr ce | es.getExpr() = ce).getArgList().getAnArg()
@@ -65,6 +66,7 @@ module SsaInput implements SsaImplCommon::InputSig<Location> {
 
   class ExitBasicBlock = BasicBlocks::ExitBasicBlock;
 
+  /** A variable amenable to SSA construction. */
   class SourceVariable extends Variable {
     SourceVariable() {
       not this.isCaptured() and
@@ -83,7 +85,11 @@ module SsaInput implements SsaImplCommon::InputSig<Location> {
    * `certain` is true if the write definitely occurs.
    */
   predicate variableWrite(BasicBlock bb, int i, SourceVariable v, boolean certain) {
-    variableWriteActual(bb, i, v, _) and
+    (
+      variableWriteActual(bb, i, v, _)
+      or
+      capturedEntryWrite(bb, i, v)
+    ) and
     certain = true
     or
     exists(VariableAccess va |
@@ -216,8 +222,28 @@ private predicate lastRefSkipUncertainReadsExt(DefinitionExt def, BasicBlock bb,
   )
 }
 
+/** Holds if `bb` contains a captured access to variable `v`. */
+pragma[nomagic]
+private predicate hasCapturedVariableAccess(BasicBlock bb, Variable v) {
+  exists(VariableAccess read |
+    read = bb.getANode().getAstNode() and
+    read.isCapture() and
+    read.getVariable() = v
+  )
+}
+
 cached
 private module Cached {
+  /**
+   * Holds if an entry definition is needed for captured variable `v` at index
+   * `i` in entry block `bb`.
+   */
+  cached
+  predicate capturedEntryWrite(EntryBasicBlock bb, int i, Variable v) {
+    hasCapturedVariableAccess(bb.getASuccessor*(), v) and
+    i = -1
+  }
+
   /**
    * Holds if `v` is written at index `i` in basic block `bb`, and the corresponding
    * AST write access is `write`.

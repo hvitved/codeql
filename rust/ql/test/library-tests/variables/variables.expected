@@ -70,17 +70,27 @@ variable
 | variables.rs:338:13:338:13 | i |
 | variables.rs:339:9:339:13 | ref_i |
 | variables.rs:345:17:345:17 | x |
-| variables.rs:352:13:352:13 | x |
-| variables.rs:358:13:358:13 | x |
-| variables.rs:359:9:359:9 | y |
-| variables.rs:366:13:366:13 | x |
-| variables.rs:367:13:367:15 | cap |
-| variables.rs:375:8:375:8 | b |
-| variables.rs:376:13:376:13 | x |
-| variables.rs:385:13:385:14 | b1 |
-| variables.rs:385:24:385:25 | b2 |
-| variables.rs:386:9:386:9 | x |
-| variables.rs:412:13:412:13 | a |
+| variables.rs:352:22:352:22 | x |
+| variables.rs:352:39:352:39 | y |
+| variables.rs:361:13:361:13 | x |
+| variables.rs:362:9:362:9 | y |
+| variables.rs:368:13:368:13 | z |
+| variables.rs:369:9:369:9 | w |
+| variables.rs:381:13:381:13 | x |
+| variables.rs:382:9:382:9 | y |
+| variables.rs:389:13:389:13 | x |
+| variables.rs:390:13:390:15 | cap |
+| variables.rs:399:9:399:9 | x |
+| variables.rs:400:13:400:15 | cap |
+| variables.rs:407:8:407:8 | b |
+| variables.rs:408:13:408:13 | x |
+| variables.rs:417:13:417:14 | b1 |
+| variables.rs:417:24:417:25 | b2 |
+| variables.rs:418:9:418:9 | x |
+| variables.rs:444:13:444:13 | a |
+| variables.rs:452:14:452:14 | x |
+| variables.rs:457:9:457:9 | x |
+| variables.rs:461:9:461:9 | z |
 variableAccess
 | variables.rs:13:15:13:16 | x1 | variables.rs:12:9:12:10 | x1 |
 | variables.rs:18:15:18:16 | x2 | variables.rs:17:13:17:14 | x2 |
@@ -174,38 +184,57 @@ variableAccess
 | variables.rs:346:6:346:6 | x | variables.rs:345:17:345:17 | x |
 | variables.rs:347:10:347:10 | x | variables.rs:345:17:345:17 | x |
 | variables.rs:348:10:348:10 | x | variables.rs:345:17:345:17 | x |
-| variables.rs:353:23:353:23 | x | variables.rs:352:13:352:13 | x |
-| variables.rs:354:15:354:15 | x | variables.rs:352:13:352:13 | x |
-| variables.rs:360:14:360:14 | x | variables.rs:358:13:358:13 | x |
-| variables.rs:361:6:361:6 | y | variables.rs:359:9:359:9 | y |
-| variables.rs:362:15:362:15 | x | variables.rs:358:13:358:13 | x |
-| variables.rs:368:19:368:19 | x | variables.rs:366:13:366:13 | x |
-| variables.rs:369:9:369:9 | x | variables.rs:366:13:366:13 | x |
-| variables.rs:371:5:371:7 | cap | variables.rs:367:13:367:15 | cap |
-| variables.rs:372:15:372:15 | x | variables.rs:366:13:366:13 | x |
-| variables.rs:377:8:377:8 | b | variables.rs:375:8:375:8 | b |
-| variables.rs:378:9:378:9 | x | variables.rs:376:13:376:13 | x |
-| variables.rs:380:9:380:9 | x | variables.rs:376:13:376:13 | x |
-| variables.rs:382:15:382:15 | x | variables.rs:376:13:376:13 | x |
-| variables.rs:387:8:387:9 | b1 | variables.rs:385:13:385:14 | b1 |
-| variables.rs:388:19:388:19 | x | variables.rs:386:9:386:9 | x |
-| variables.rs:390:19:390:19 | x | variables.rs:386:9:386:9 | x |
-| variables.rs:393:8:393:9 | b2 | variables.rs:385:24:385:25 | b2 |
-| variables.rs:394:19:394:19 | x | variables.rs:386:9:386:9 | x |
-| variables.rs:396:19:396:19 | x | variables.rs:386:9:386:9 | x |
-| variables.rs:413:15:413:15 | a | variables.rs:412:13:412:13 | a |
-| variables.rs:414:5:414:5 | a | variables.rs:412:13:412:13 | a |
-| variables.rs:415:15:415:15 | a | variables.rs:412:13:412:13 | a |
-| variables.rs:416:5:416:5 | a | variables.rs:412:13:412:13 | a |
-| variables.rs:417:15:417:15 | a | variables.rs:412:13:412:13 | a |
+| variables.rs:349:12:349:12 | x | variables.rs:345:17:345:17 | x |
+| variables.rs:353:6:353:6 | x | variables.rs:352:22:352:22 | x |
+| variables.rs:354:10:354:10 | x | variables.rs:352:22:352:22 | x |
+| variables.rs:355:10:355:10 | x | variables.rs:352:22:352:22 | x |
+| variables.rs:356:6:356:6 | y | variables.rs:352:39:352:39 | y |
+| variables.rs:357:9:357:9 | x | variables.rs:352:22:352:22 | x |
+| variables.rs:363:27:363:27 | x | variables.rs:361:13:361:13 | x |
+| variables.rs:364:6:364:6 | y | variables.rs:362:9:362:9 | y |
+| variables.rs:366:15:366:15 | x | variables.rs:361:13:361:13 | x |
+| variables.rs:370:19:370:19 | x | variables.rs:361:13:361:13 | x |
+| variables.rs:372:14:372:14 | z | variables.rs:368:13:368:13 | z |
+| variables.rs:373:9:373:9 | w | variables.rs:369:9:369:9 | w |
+| variables.rs:375:7:375:7 | w | variables.rs:369:9:369:9 | w |
+| variables.rs:377:15:377:15 | z | variables.rs:368:13:368:13 | z |
+| variables.rs:383:14:383:14 | x | variables.rs:381:13:381:13 | x |
+| variables.rs:384:6:384:6 | y | variables.rs:382:9:382:9 | y |
+| variables.rs:385:15:385:15 | x | variables.rs:381:13:381:13 | x |
+| variables.rs:391:19:391:19 | x | variables.rs:389:13:389:13 | x |
+| variables.rs:392:9:392:9 | x | variables.rs:389:13:389:13 | x |
+| variables.rs:394:5:394:7 | cap | variables.rs:390:13:390:15 | cap |
+| variables.rs:395:15:395:15 | x | variables.rs:389:13:389:13 | x |
+| variables.rs:401:19:401:19 | x | variables.rs:399:9:399:9 | x |
+| variables.rs:403:5:403:7 | cap | variables.rs:400:13:400:15 | cap |
+| variables.rs:404:15:404:15 | x | variables.rs:399:9:399:9 | x |
+| variables.rs:409:8:409:8 | b | variables.rs:407:8:407:8 | b |
+| variables.rs:410:9:410:9 | x | variables.rs:408:13:408:13 | x |
+| variables.rs:412:9:412:9 | x | variables.rs:408:13:408:13 | x |
+| variables.rs:414:15:414:15 | x | variables.rs:408:13:408:13 | x |
+| variables.rs:419:8:419:9 | b1 | variables.rs:417:13:417:14 | b1 |
+| variables.rs:420:19:420:19 | x | variables.rs:418:9:418:9 | x |
+| variables.rs:422:19:422:19 | x | variables.rs:418:9:418:9 | x |
+| variables.rs:425:8:425:9 | b2 | variables.rs:417:24:417:25 | b2 |
+| variables.rs:426:19:426:19 | x | variables.rs:418:9:418:9 | x |
+| variables.rs:428:19:428:19 | x | variables.rs:418:9:418:9 | x |
+| variables.rs:445:15:445:15 | a | variables.rs:444:13:444:13 | a |
+| variables.rs:446:5:446:5 | a | variables.rs:444:13:444:13 | a |
+| variables.rs:447:15:447:15 | a | variables.rs:444:13:444:13 | a |
+| variables.rs:448:5:448:5 | a | variables.rs:444:13:444:13 | a |
+| variables.rs:449:15:449:15 | a | variables.rs:444:13:444:13 | a |
+| variables.rs:453:16:453:16 | x | variables.rs:452:14:452:14 | x |
+| variables.rs:458:16:458:16 | x | variables.rs:457:9:457:9 | x |
+| variables.rs:459:15:459:15 | x | variables.rs:457:9:457:9 | x |
+| variables.rs:462:16:462:16 | z | variables.rs:461:9:461:9 | z |
 variableWriteAccess
 | variables.rs:19:5:19:6 | x2 | variables.rs:17:13:17:14 | x2 |
 | variables.rs:277:9:277:10 | c2 | variables.rs:270:13:270:14 | c2 |
 | variables.rs:278:9:278:10 | b4 | variables.rs:269:13:269:14 | b4 |
 | variables.rs:279:9:279:11 | a10 | variables.rs:268:13:268:15 | a10 |
-| variables.rs:378:9:378:9 | x | variables.rs:376:13:376:13 | x |
-| variables.rs:380:9:380:9 | x | variables.rs:376:13:376:13 | x |
-| variables.rs:416:5:416:5 | a | variables.rs:412:13:412:13 | a |
+| variables.rs:410:9:410:9 | x | variables.rs:408:13:408:13 | x |
+| variables.rs:412:9:412:9 | x | variables.rs:408:13:408:13 | x |
+| variables.rs:448:5:448:5 | a | variables.rs:444:13:444:13 | a |
 variableReadAccess
 | variables.rs:13:15:13:16 | x1 | variables.rs:12:9:12:10 | x1 |
 | variables.rs:18:15:18:16 | x2 | variables.rs:17:13:17:14 | x2 |
@@ -292,24 +321,39 @@ variableReadAccess
 | variables.rs:346:6:346:6 | x | variables.rs:345:17:345:17 | x |
 | variables.rs:347:10:347:10 | x | variables.rs:345:17:345:17 | x |
 | variables.rs:348:10:348:10 | x | variables.rs:345:17:345:17 | x |
-| variables.rs:354:15:354:15 | x | variables.rs:352:13:352:13 | x |
-| variables.rs:361:6:361:6 | y | variables.rs:359:9:359:9 | y |
-| variables.rs:362:15:362:15 | x | variables.rs:358:13:358:13 | x |
-| variables.rs:368:19:368:19 | x | variables.rs:366:13:366:13 | x |
-| variables.rs:371:5:371:7 | cap | variables.rs:367:13:367:15 | cap |
-| variables.rs:372:15:372:15 | x | variables.rs:366:13:366:13 | x |
-| variables.rs:377:8:377:8 | b | variables.rs:375:8:375:8 | b |
-| variables.rs:382:15:382:15 | x | variables.rs:376:13:376:13 | x |
-| variables.rs:387:8:387:9 | b1 | variables.rs:385:13:385:14 | b1 |
-| variables.rs:388:19:388:19 | x | variables.rs:386:9:386:9 | x |
-| variables.rs:390:19:390:19 | x | variables.rs:386:9:386:9 | x |
-| variables.rs:393:8:393:9 | b2 | variables.rs:385:24:385:25 | b2 |
-| variables.rs:394:19:394:19 | x | variables.rs:386:9:386:9 | x |
-| variables.rs:396:19:396:19 | x | variables.rs:386:9:386:9 | x |
-| variables.rs:413:15:413:15 | a | variables.rs:412:13:412:13 | a |
-| variables.rs:414:5:414:5 | a | variables.rs:412:13:412:13 | a |
-| variables.rs:415:15:415:15 | a | variables.rs:412:13:412:13 | a |
-| variables.rs:417:15:417:15 | a | variables.rs:412:13:412:13 | a |
+| variables.rs:349:12:349:12 | x | variables.rs:345:17:345:17 | x |
+| variables.rs:353:6:353:6 | x | variables.rs:352:22:352:22 | x |
+| variables.rs:354:10:354:10 | x | variables.rs:352:22:352:22 | x |
+| variables.rs:355:10:355:10 | x | variables.rs:352:22:352:22 | x |
+| variables.rs:356:6:356:6 | y | variables.rs:352:39:352:39 | y |
+| variables.rs:357:9:357:9 | x | variables.rs:352:22:352:22 | x |
+| variables.rs:364:6:364:6 | y | variables.rs:362:9:362:9 | y |
+| variables.rs:366:15:366:15 | x | variables.rs:361:13:361:13 | x |
+| variables.rs:373:9:373:9 | w | variables.rs:369:9:369:9 | w |
+| variables.rs:375:7:375:7 | w | variables.rs:369:9:369:9 | w |
+| variables.rs:377:15:377:15 | z | variables.rs:368:13:368:13 | z |
+| variables.rs:384:6:384:6 | y | variables.rs:382:9:382:9 | y |
+| variables.rs:385:15:385:15 | x | variables.rs:381:13:381:13 | x |
+| variables.rs:391:19:391:19 | x | variables.rs:389:13:389:13 | x |
+| variables.rs:394:5:394:7 | cap | variables.rs:390:13:390:15 | cap |
+| variables.rs:395:15:395:15 | x | variables.rs:389:13:389:13 | x |
+| variables.rs:401:19:401:19 | x | variables.rs:399:9:399:9 | x |
+| variables.rs:403:5:403:7 | cap | variables.rs:400:13:400:15 | cap |
+| variables.rs:404:15:404:15 | x | variables.rs:399:9:399:9 | x |
+| variables.rs:409:8:409:8 | b | variables.rs:407:8:407:8 | b |
+| variables.rs:414:15:414:15 | x | variables.rs:408:13:408:13 | x |
+| variables.rs:419:8:419:9 | b1 | variables.rs:417:13:417:14 | b1 |
+| variables.rs:420:19:420:19 | x | variables.rs:418:9:418:9 | x |
+| variables.rs:422:19:422:19 | x | variables.rs:418:9:418:9 | x |
+| variables.rs:425:8:425:9 | b2 | variables.rs:417:24:417:25 | b2 |
+| variables.rs:426:19:426:19 | x | variables.rs:418:9:418:9 | x |
+| variables.rs:428:19:428:19 | x | variables.rs:418:9:418:9 | x |
+| variables.rs:445:15:445:15 | a | variables.rs:444:13:444:13 | a |
+| variables.rs:446:5:446:5 | a | variables.rs:444:13:444:13 | a |
+| variables.rs:447:15:447:15 | a | variables.rs:444:13:444:13 | a |
+| variables.rs:449:15:449:15 | a | variables.rs:444:13:444:13 | a |
+| variables.rs:453:16:453:16 | x | variables.rs:452:14:452:14 | x |
+| variables.rs:459:15:459:15 | x | variables.rs:457:9:457:9 | x |
 variableInitializer
 | variables.rs:12:9:12:10 | x1 | variables.rs:12:14:12:16 | "a" |
 | variables.rs:17:13:17:14 | x2 | variables.rs:17:18:17:18 | 4 |
@@ -338,16 +382,25 @@ variableInitializer
 | variables.rs:330:13:330:13 | a | variables.rs:330:17:330:17 | 0 |
 | variables.rs:338:13:338:13 | i | variables.rs:338:17:338:17 | 1 |
 | variables.rs:339:9:339:13 | ref_i | variables.rs:340:9:340:14 | RefExpr |
-| variables.rs:352:13:352:13 | x | variables.rs:352:17:352:17 | 2 |
-| variables.rs:358:13:358:13 | x | variables.rs:358:17:358:17 | 1 |
-| variables.rs:359:9:359:9 | y | variables.rs:360:9:360:14 | RefExpr |
-| variables.rs:366:13:366:13 | x | variables.rs:366:17:366:18 | 10 |
-| variables.rs:367:13:367:15 | cap | variables.rs:367:19:370:5 | ClosureExpr |
-| variables.rs:376:13:376:13 | x | variables.rs:376:17:376:17 | 1 |
-| variables.rs:386:9:386:9 | x | variables.rs:386:13:386:13 | 1 |
-| variables.rs:412:13:412:13 | a | variables.rs:412:17:412:35 | RecordExpr |
+| variables.rs:361:13:361:13 | x | variables.rs:361:17:361:17 | 2 |
+| variables.rs:362:9:362:9 | y | variables.rs:363:9:363:28 | CallExpr |
+| variables.rs:368:13:368:13 | z | variables.rs:368:17:368:17 | 4 |
+| variables.rs:369:9:369:9 | w | variables.rs:370:9:370:19 | RefExpr |
+| variables.rs:381:13:381:13 | x | variables.rs:381:17:381:17 | 1 |
+| variables.rs:382:9:382:9 | y | variables.rs:383:9:383:14 | RefExpr |
+| variables.rs:389:13:389:13 | x | variables.rs:389:17:389:18 | 10 |
+| variables.rs:390:13:390:15 | cap | variables.rs:390:19:393:5 | ClosureExpr |
+| variables.rs:399:9:399:9 | x | variables.rs:399:13:399:15 | 100 |
+| variables.rs:400:13:400:15 | cap | variables.rs:400:19:402:5 | ClosureExpr |
+| variables.rs:408:13:408:13 | x | variables.rs:408:17:408:17 | 1 |
+| variables.rs:418:9:418:9 | x | variables.rs:418:13:418:13 | 1 |
+| variables.rs:444:13:444:13 | a | variables.rs:444:17:444:35 | RecordExpr |
+| variables.rs:457:9:457:9 | x | variables.rs:457:13:457:14 | 16 |
+| variables.rs:461:9:461:9 | z | variables.rs:461:13:461:14 | 17 |
 capturedVariable
-| variables.rs:366:13:366:13 | x |
+| variables.rs:389:13:389:13 | x |
+| variables.rs:399:9:399:9 | x |
 capturedAccess
-| variables.rs:368:19:368:19 | x |
-| variables.rs:369:9:369:9 | x |
+| variables.rs:391:19:391:19 | x |
+| variables.rs:392:9:392:9 | x |
+| variables.rs:401:19:401:19 | x |

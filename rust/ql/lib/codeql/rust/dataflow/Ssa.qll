@@ -12,7 +12,6 @@ module Ssa {
   private import codeql.rust.controlflow.internal.ControlFlowGraphImpl as CfgImpl
   private import internal.SsaImpl as SsaImpl
 
-  /** A variable amenable to SSA construction. */
   class Variable = SsaImpl::SsaInput::SourceVariable;
 
   /** A static single assignment (SSA) definition. */
@@ -300,5 +299,34 @@ module Ssa {
     final override Location getLocation() {
       result = this.getBasicBlock().getFirstNode().getLocation()
     }
+  }
+
+  /**
+   * An SSA definition inserted at the beginning of a scope to represent a
+   * captured local variable. For example, in
+   *
+   * ```rb
+   * def m x
+   *   y = 0
+   *   x.times do |x|
+   *     y += x
+   *   end
+   *   return y
+   * end
+   * ```
+   *
+   * an entry definition for `y` is inserted at the start of the `do` block.
+   */
+  class CapturedEntryDefinition extends Definition, SsaImpl::WriteDefinition {
+    CapturedEntryDefinition() {
+      exists(BasicBlock bb, int i, Variable v |
+        this.definesAt(v, bb, i) and
+        SsaImpl::capturedEntryWrite(bb, i, v)
+      )
+    }
+
+    final override string toString() { result = "<captured entry> " + this.getSourceVariable() }
+
+    override Location getLocation() { result = this.getBasicBlock().getLocation() }
   }
 }

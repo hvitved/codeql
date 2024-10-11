@@ -342,18 +342,39 @@ fn mutate() {
     print_i64(i); // $ read_access=i
 }
 
-fn mutate_param(x : &mut i64) -> &mut i64 { // x
+fn mutate_param(x : &mut i64) -> &mut i64 {
     *x = // $ read_access=x
         *x + // $ read_access=x
         *x; // $ read_access=x
-    return x;
+    return x; // $ read_access=x
+}
+
+fn mutate_param2<'a>(x : &'a mut i64, y :&mut &'a mut i64) {
+    *x = // $ read_access=x
+        *x + // $ read_access=x
+        *x; // $ read_access=x
+    *y = // $ read_access=y
+        x; // $ read_access=x
 }
 
 fn mutate_arg() {
     let mut x = 2; // x
-    let y = mutate_param(&mut x); // $ access=x
+    let y = // y
+        mutate_param(&mut x); // $ access=x
+    *y = 10; // $ read_access=y
+    // prints 10
     print_i64(x); // $ read_access=x
 
+    let mut z = 4; // z
+    let w = // w
+        &mut &mut x; // $ access=x
+    mutate_param2(
+        &mut z, // $ access=z
+        w // $ read_access=w
+    );
+    **w = 11; // $ read_access=w
+    // prints 11
+    print_i64(z); // $ read_access=z
 }
 
 fn alias() {
@@ -364,11 +385,20 @@ fn alias() {
     print_i64(x); // $ read_access=x
 }
 
-fn capture() {
+fn capture_mut() {
     let mut x = 10; // x
     let mut cap = || {
         print_i64(x); // $ read_access=x
         x += 1; // $ access=x
+    };
+    cap(); // $ read_access=cap
+    print_i64(x); // $ read_access=x
+}
+
+fn capture_immut() {
+    let x = 100; // x
+    let mut cap = || {
+        print_i64(x); // $ read_access=x
     };
     cap(); // $ read_access=cap
     print_i64(x); // $ read_access=x
@@ -419,6 +449,19 @@ fn structs() {
     print_i64(a.my_get()); // $ read_access=a
 }
 
+fn ref_param(x: &i64) {
+    print_i64(*x) // $ read_access=x
+}
+
+fn ref_arg() {
+    let x = 16; // x
+    ref_param(&x); // $ access=x
+    print_i64(x); // $ read_access=x
+
+    let z = 17; // z
+    ref_param(&z); // $ access=z
+}
+
 fn main() {
     immutable_variable();
     mutable_variable();
@@ -446,6 +489,8 @@ fn main() {
     mutate();
     mutate_arg();
     alias();
-    capture();
+    capture_mut();
+    capture_immut();
     structs();
+    ref_arg();
 }

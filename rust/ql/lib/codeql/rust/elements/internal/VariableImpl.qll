@@ -129,6 +129,12 @@ module Impl {
 
     /** Gets the parameter that introduces this variable, if any. */
     Param getParameter() { parameterDeclInScope(result, this, _) }
+
+    /** Hold is this variable is mutable. */
+    predicate isMutable() { this.getPat().isMut() }
+
+    /** Hold is this variable is immutable. */
+    predicate isImmutable() { not this.isMutable() }
   }
 
   /** A path expression that may access a local variable. */
