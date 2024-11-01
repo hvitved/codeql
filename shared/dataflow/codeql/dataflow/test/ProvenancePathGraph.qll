@@ -19,22 +19,39 @@ private signature predicate provenanceSig(string model);
 private module TranslateModels<
   interpretModelForTestSig/2 interpretModelForTest, provenanceSig/1 provenance>
 {
-  private predicate madIds(string madId) {
+  private predicate madIds(QlBuiltins::ExtensionId madId) {
     exists(string model |
       provenance(model) and
-      model.regexpFind("(?<=MaD:)[0-9]*", _, _) = madId
+      model.regexpFind("(?<=MaD:)[0-9]*", _, _) = madId.toString()
     )
   }
 
-  private predicate rankedMadIds(string madId, int r) {
-    madId = rank[r](string madId0 | madIds(madId0) | madId0 order by madId0.toInt())
+  private predicate interpretRelevantModelForTest(int id, string model) {
+    exists(QlBuiltins::ExtensionId madId |
+      madIds(madId) and
+      interpretModelForTest(madId, model) and
+      id = madId.toString().toInt()
+    )
+  }
+
+  // in case multiple models share the same textual representation, collapse them
+  // in the output
+  private predicate interpretRelevantModelForTestMinId(int id, string model) {
+    id = min(int id0 | interpretRelevantModelForTest(id0, model))
+  }
+
+  private predicate rankedMadIds(int madId, int r) {
+    madId =
+      rank[r](int madId0, string model |
+        interpretRelevantModelForTestMinId(madId0, model)
+      |
+        madId0 order by model
+      )
   }
 
   /** Lists the renumbered and pretty-printed models used in the edges relation. */
   predicate models(int r, string model) {
-    exists(QlBuiltins::ExtensionId madId |
-      rankedMadIds(madId.toString(), r) and interpretModelForTest(madId, model)
-    )
+    exists(int madId | rankedMadIds(madId, r) and interpretRelevantModelForTestMinId(madId, model))
   }
 
   private predicate translateModelsPart(string model1, string model2, int i) {
@@ -42,9 +59,9 @@ private module TranslateModels<
     exists(string s | model1.splitAt("MaD:", i) = s |
       model2 = s and i = 0
       or
-      exists(string part, string madId, string rest, int r |
+      exists(string part, int madId, string rest, int r |
         translateModelsPart(model1, part, i - 1) and
-        madId = s.regexpCapture("([0-9]*)(.*)", 1) and
+        madId = s.regexpCapture("([0-9]*)(.*)", 1).toInt() and
         rest = s.regexpCapture("([0-9]*)(.*)", 2) and
         rankedMadIds(madId, r) and
         model2 = part + "MaD:" + r + rest
