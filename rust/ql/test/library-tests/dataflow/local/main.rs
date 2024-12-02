@@ -158,11 +158,11 @@ fn custom_tuple_enum_pattern_match_unqualified() {
     let s1 = A(source(16));
     let s2 = B(2);
     match s1 {
-        A(n) => sink(n), // $ MISSING: hasValueFlow=16
+        A(n) => sink(n), // $ hasValueFlow=16
         B(n) => sink(n),
     }
     match s1 {
-        (A(n) | B(n)) => sink(n), // $ MISSING: hasValueFlow=16
+        (A(n) | B(n)) => sink(n), // $ hasValueFlow=16
     }
     match s2 {
         A(n) => sink(n),
@@ -201,11 +201,11 @@ fn custom_record_enum_pattern_match_unqualified() {
     };
     let s2 = D { field_d: 2 };
     match s1 {
-        C { field_c: n } => sink(n), // $ MISSING: hasValueFlow=18
+        C { field_c: n } => sink(n), // $ hasValueFlow=18
         D { field_d: n } => sink(n),
     }
     match s1 {
-        (C { field_c: n } | D { field_d: n }) => sink(n), // $ MISSING: hasValueFlow=18
+        (C { field_c: n } | D { field_d: n }) => sink(n), // $ hasValueFlow=18
     }
     match s2 {
         C { field_c: n } => sink(n),

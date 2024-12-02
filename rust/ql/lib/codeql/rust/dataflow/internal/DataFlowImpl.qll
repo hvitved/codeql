@@ -777,15 +777,13 @@ module RustDataFlow implements InputSig<Location> {
     exists(CrateOriginOption crate, string path |
       resolveExtendedCanonicalPath(p.getQualifier(), crate, path) and
       v = MkVariantCanonicalPath(crate, path, p.getPart().getNameRef().getText())
+      or
+      exists(string name |
+        not p.hasQualifier() and
+        resolveExtendedCanonicalPath(p, crate, path + "::" + name) and
+        v = MkVariantCanonicalPath(crate, path, name)
+      )
     )
-    or
-    // TODO: Remove once library types are extracted
-    not p.hasQualifier() and
-    v = MkVariantCanonicalPath(_, "crate::std::option::Option", p.getPart().getNameRef().getText())
-    or
-    // TODO: Remove once library types are extracted
-    not p.hasQualifier() and
-    v = MkVariantCanonicalPath(_, "crate::std::result::Result", p.getPart().getNameRef().getText())
   }
 
   /** Holds if `p` destructs an enum variant `v`. */
@@ -1009,12 +1007,12 @@ private module Cached {
       or
       // TODO: Remove once library types are extracted
       crate.isNone() and
-      path = "crate::std::option::Option" and
+      path = "crate::option::Option" and
       name = "Some"
       or
       // TODO: Remove once library types are extracted
       crate.isNone() and
-      path = "crate::std::result::Result" and
+      path = "crate::result::Result" and
       name = ["Ok", "Err"]
     }
 
@@ -1024,11 +1022,11 @@ private module Cached {
       pos in [0 .. v.getVariant().getFieldList().(TupleFieldList).getNumberOfFields() - 1]
       or
       // TODO: Remove once library types are extracted
-      v = MkVariantCanonicalPath(_, "crate::std::option::Option", "Some") and
+      v = MkVariantCanonicalPath(_, "crate::option::Option", "Some") and
       pos = 0
       or
       // TODO: Remove once library types are extracted
-      v = MkVariantCanonicalPath(_, "crate::std::result::Result", ["Ok", "Err"]) and
+      v = MkVariantCanonicalPath(_, "crate::result::Result", ["Ok", "Err"]) and
       pos = 0
     } or
     TVariantFieldContent(VariantCanonicalPath v, string field) {

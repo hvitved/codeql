@@ -284,28 +284,37 @@ localStep
 | main.rs:236:22:236:22 | 2 | main.rs:236:9:236:22 | break ''block 2 |
 | main.rs:238:5:238:5 | a | main.rs:231:38:239:1 | { ... } |
 storeStep
-| main.rs:117:19:117:28 | source(...) | Some | main.rs:117:14:117:29 | Some(...) |
-| main.rs:118:19:118:19 | 2 | Some | main.rs:118:14:118:20 | Some(...) |
-| main.rs:130:19:130:28 | source(...) | Some | main.rs:130:14:130:29 | Some(...) |
 | main.rs:140:29:140:38 | source(...) | A | main.rs:140:14:140:39 | ...::A(...) |
 | main.rs:141:29:141:29 | 2 | B | main.rs:141:14:141:30 | ...::B(...) |
+| main.rs:158:16:158:25 | source(...) | A | main.rs:158:14:158:26 | A(...) |
+| main.rs:159:16:159:16 | 2 | B | main.rs:159:14:159:17 | B(...) |
 | main.rs:180:18:180:27 | source(...) | C | main.rs:179:14:181:5 | ...::C {...} |
 | main.rs:182:41:182:41 | 2 | D | main.rs:182:14:182:43 | ...::D {...} |
-| main.rs:245:27:245:27 | 0 | Some | main.rs:245:22:245:28 | Some(...) |
+| main.rs:200:18:200:27 | source(...) | C | main.rs:199:14:201:5 | C {...} |
+| main.rs:202:27:202:27 | 2 | D | main.rs:202:14:202:29 | D {...} |
 readStep
-| file://:0:0:0:0 | [summary param] self in lang:core::_::<crate::option::Option>::unwrap | Some | file://:0:0:0:0 | [summary] read: Argument[self].Variant[crate::std::option::Option::Some(0)] in lang:core::_::<crate::option::Option>::unwrap |
-| main.rs:33:9:33:15 | TupleStructPat | Some | main.rs:33:14:33:14 | _ |
-| main.rs:120:9:120:15 | TupleStructPat | Some | main.rs:120:14:120:14 | n |
-| main.rs:124:9:124:15 | TupleStructPat | Some | main.rs:124:14:124:14 | n |
+| file://:0:0:0:0 | [summary param] self in lang:core::_::<crate::option::Option>::unwrap | Some | file://:0:0:0:0 | [summary] read: Argument[self].Variant[crate::option::Option::Some(0)] in lang:core::_::<crate::option::Option>::unwrap |
 | main.rs:143:9:143:25 | TupleStructPat | A | main.rs:143:24:143:24 | n |
 | main.rs:144:9:144:25 | TupleStructPat | B | main.rs:144:24:144:24 | n |
 | main.rs:147:10:147:26 | TupleStructPat | A | main.rs:147:25:147:25 | n |
 | main.rs:147:30:147:46 | TupleStructPat | B | main.rs:147:45:147:45 | n |
 | main.rs:150:9:150:25 | TupleStructPat | A | main.rs:150:24:150:24 | n |
 | main.rs:151:9:151:25 | TupleStructPat | B | main.rs:151:24:151:24 | n |
+| main.rs:161:9:161:12 | TupleStructPat | A | main.rs:161:11:161:11 | n |
+| main.rs:162:9:162:12 | TupleStructPat | B | main.rs:162:11:162:11 | n |
+| main.rs:165:10:165:13 | TupleStructPat | A | main.rs:165:12:165:12 | n |
+| main.rs:165:17:165:20 | TupleStructPat | B | main.rs:165:19:165:19 | n |
+| main.rs:168:9:168:12 | TupleStructPat | A | main.rs:168:11:168:11 | n |
+| main.rs:169:9:169:12 | TupleStructPat | B | main.rs:169:11:169:11 | n |
 | main.rs:184:9:184:38 | ...::C {...} | C | main.rs:184:36:184:36 | n |
 | main.rs:185:9:185:38 | ...::D {...} | D | main.rs:185:36:185:36 | n |
 | main.rs:188:10:188:39 | ...::C {...} | C | main.rs:188:37:188:37 | n |
 | main.rs:188:43:188:72 | ...::D {...} | D | main.rs:188:70:188:70 | n |
 | main.rs:191:9:191:38 | ...::C {...} | C | main.rs:191:36:191:36 | n |
 | main.rs:192:9:192:38 | ...::D {...} | D | main.rs:192:36:192:36 | n |
+| main.rs:204:9:204:24 | C {...} | C | main.rs:204:22:204:22 | n |
+| main.rs:205:9:205:24 | D {...} | D | main.rs:205:22:205:22 | n |
+| main.rs:208:10:208:25 | C {...} | C | main.rs:208:23:208:23 | n |
+| main.rs:208:29:208:44 | D {...} | D | main.rs:208:42:208:42 | n |
+| main.rs:211:9:211:24 | C {...} | C | main.rs:211:22:211:22 | n |
+| main.rs:212:9:212:24 | D {...} | D | main.rs:212:22:212:22 | n |
