@@ -19,4 +19,34 @@ module Impl {
    * ```
    */
   class Item extends Generated::Item { }
+
+  private import rust
+  private import codeql.rust.elements.internal.generated.ParentChild
+
+  pragma[nomagic]
+  private Element getItemAncestor(Item item) {
+    result = getImmediateParent(item)
+    or
+    exists(Element mid |
+      mid = getItemAncestor(item) and
+      result = getImmediateParent(mid) and
+      not mid instanceof Item
+    )
+  }
+
+  pragma[nomagic]
+  private Item getImmediateParentItem(Item item) { result = getItemAncestor(item) }
+
+  /** A crate. */
+  class Crate extends File {
+    Crate() { this.getBaseName() = "Cargo.toml" }
+
+    pragma[nomagic]
+    Item getItem() {
+      exists(SourceFile file |
+        file.getFile().getParentContainer() = this.getParentContainer() and
+        file.getAnItem() = result
+      )
+    }
+  }
 }
