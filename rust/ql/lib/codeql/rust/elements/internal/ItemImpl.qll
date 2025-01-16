@@ -37,6 +37,93 @@ module Impl {
   pragma[nomagic]
   private Item getImmediateParentItem(Item item) { result = getItemAncestor(item) }
 
+  private newtype TItemPath =
+    TItemPathNil(SourceFile f) or
+    TItemPathCons(Item head, ItemPath tail) { itemCons(head, tail) }
+
+  abstract private class ItemPath extends TItemPath {
+    abstract string toString();
+
+    abstract Location getLocation();
+  }
+
+  private class ItemPathNil extends ItemPath, TItemPathNil {
+    private SourceFile source;
+
+    ItemPathNil() { this = TItemPathNil(source) }
+
+    private File getFile() { result = source.getFile() }
+
+    override string toString() { result = this.getFile().getRelativePath() }
+
+    override Location getLocation() { result = source.getLocation() }
+  }
+
+  private class ItemPathCons extends ItemPath, TItemPathCons {
+    private Item head;
+    private ItemPath tail;
+
+    ItemPathCons() { this = TItemPathCons(head, tail) }
+
+    override string toString() { result = tail.toString() + "::" + head }
+
+    override Location getLocation() { result = head.getLocation() }
+  }
+
+  private predicate topItem(Item item, ItemPathNil nil) {
+    exists(SourceFile file |
+      item = file.getAnItem() and
+      nil = TItemPathNil(file)
+    )
+  }
+
+  private predicate itemCons(Item head, ItemPath tail) {
+    topItem(head, tail)
+    or
+    exists(Item parent |
+      parent = getImmediateParentItem(head) and
+      tail = getAnItemPath(parent)
+    )
+  }
+
+  ItemPath getAnItemPath(Item i) {
+    exists(ItemPath tail |
+      itemCons(i, tail) and
+      result = TItemPathCons(i, tail)
+    )
+    // exists(ItemPathNil nil |
+    //   topItem(i, nil) and
+    //   result = TItemPathCons(i, nil)
+    // )
+    // or
+    // exists(Item parent |
+    //   parent = getImmediateParentItem(i) and
+    //   result = TItemPathCons(i, getAnItemPath(parent))
+    // )
+  }
+
+  private predicate fileModule(SourceFile f, string name, Folder folder) {
+    exists(File file | file = f.getFile() |
+      file.getBaseName() = name + ".rs" and
+      folder = file.getParentContainer()
+      or
+      exists(Folder encl |
+        file.getBaseName() = "mod.rs" and
+        encl = file.getParentContainer() and
+        name = encl.getBaseName() and
+        folder = encl.getParentContainer()
+      )
+    )
+  }
+
+  private predicate fileImport(Module mod, SourceFile f) {
+    exists(string name |
+      not mod.hasItemList() and
+      name = mod.getName().getText() and
+      fileModule(f, name, mod.getFile().getParentContainer())
+    )
+  }
+
   /** A crate. */
   class Crate extends File {
     Crate() { this.getBaseName() = "Cargo.toml" }
