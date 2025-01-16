@@ -1832,7 +1832,9 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
           cons = traceCons(c, tail)
           or
           exists(ApTrace cons0 |
-            fwdFlowConsCand(t2, cons0, c, t1, tail) and
+            // fwdFlowConsCand(t2, cons0, c, t1, tail) and
+            fwdFlowStore(_, t1, tail, _, c, t2, _, _, _, _, _) and
+            cons0 = traceCons(c, tail) and
             fwdFlowApRepr(cons, cons0)
           )
         }
@@ -3363,7 +3365,7 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
           bindingset[p, state, t, ap, stored]
           pragma[inline_late]
           private SummaryCtxSome mkSummaryCtxSome(
-            ParamNodeEx p, FlowState state, Typ t, Ap ap, TypOption stored
+            ParamNodeEx p, FlowState state, Typ t, ApTrace ap, TypOption stored
           ) {
             result = TSummaryCtxSome(p, state, t, ap, stored)
           }
@@ -4051,6 +4053,7 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
 
       class ApNil = ApproxAccessPathFrontNil;
 
+      // class ApTrace = Ap;
       class ApTrace = ApproxAccessPathFrontTrace;
 
       class ApTraceNil = ApNil;
@@ -4060,6 +4063,7 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
       Typ getTyp(DataFlowType t) { any() }
 
       // Ap apCons(Content c, Ap tail) { result.getAHead() = c and exists(tail) }
+      // ApTrace traceCons(Content c, ApTrace tail) { result.getAHead() = c and exists(tail) }
       bindingset[c, tail]
       ApTrace traceCons(Content c, ApTrace tail) { result.isApproxConsOf(c) and exists(tail) }
 
@@ -4069,6 +4073,9 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
         result.isApproxTailOf(c)
       }
 
+      // ApTrace traceTail(Content c, ApTrace cons) {
+      //   cons = apCons(c, result) and not result instanceof ApNil
+      // }
       bindingset[c, tail]
       Ap apCons(Content c, Ap tail) { result.isApproxConsOf(c) and exists(tail) }
 
@@ -4084,6 +4091,7 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
       pragma[noinline]
       ApHeadContent getTailHeadContent(ApTrace ap) { ap.isTailOf(result) }
 
+      // ApHeadContent getTailHeadContent(ApTrace ap) { none() }
       predicate projectToHeadContent = getContentApproxCached/1;
 
       private module CallContextSensitivityInput implements CallContextSensitivityInputSig {
