@@ -23,25 +23,57 @@ module Impl {
   private import rust
   private import codeql.rust.elements.internal.generated.ParentChild
 
+  private class NamedItem extends Item {
+    private string name;
+
+    NamedItem() {
+      name = this.(Const).getName().getText()
+      or
+      name = this.(Enum).getName().getText()
+      or
+      name = this.(Function).getName().getText()
+      or
+      name = this.(Module).getName().getText()
+      or
+      name = this.(Struct).getName().getText()
+      or
+      name = this.(Trait).getName().getText()
+      or
+      name = this.(Union).getName().getText()
+      or
+      this instanceof Use and
+      name = "(use)"
+    }
+
+    string getName() { result = name }
+  }
+
   pragma[nomagic]
-  private Element getItemAncestor(Item item) {
-    result = getImmediateParent(item)
+  private Element getAnItemDescendant(NamedItem item) {
+    getImmediateParent(result) = item
     or
     exists(Element mid |
-      mid = getItemAncestor(item) and
-      result = getImmediateParent(mid) and
-      not mid instanceof Item
+      mid = getAnItemDescendant(item) and
+      getImmediateParent(result) = mid and
+      not mid instanceof NamedItem
     )
   }
 
   pragma[nomagic]
-  private Item getImmediateParentItem(Item item) { result = getItemAncestor(item) }
+  private NamedItem getImmediateParentItem(NamedItem item) { item = getAnItemDescendant(result) }
 
   private newtype TItemPath =
     TItemPathNil(SourceFile f) or
-    TItemPathCons(Item head, ItemPath tail) { itemCons(head, tail) }
+    TItemPathCons(NamedItem head, ItemPath tail) { itemCons(head, tail) }
 
+  /** A path to an item, rooted at a source file. */
   abstract private class ItemPath extends TItemPath {
+    abstract int length();
+
+    abstract NamedItem getItem(int i);
+
+    abstract ItemPath drop(int i);
+
     abstract string toString();
 
     abstract Location getLocation();
@@ -54,54 +86,71 @@ module Impl {
 
     private File getFile() { result = source.getFile() }
 
+    override int length() { result = 0 }
+
+    override NamedItem getItem(int i) { none() }
+
+    override ItemPath drop(int i) { result = this and i = 0 }
+
     override string toString() { result = this.getFile().getRelativePath() }
 
     override Location getLocation() { result = source.getLocation() }
   }
 
   private class ItemPathCons extends ItemPath, TItemPathCons {
-    private Item head;
+    private NamedItem head;
     private ItemPath tail;
 
     ItemPathCons() { this = TItemPathCons(head, tail) }
+
+    override int length() { result = 1 + tail.length() }
+
+    override NamedItem getItem(int i) {
+      result = tail.getItem(i)
+      or
+      result = head and i = tail.length()
+    }
+
+    override ItemPath drop(int i) {
+      result = this and i = 0
+      or
+      result = tail.drop(i - 1) and i > 0
+    }
 
     override string toString() { result = tail.toString() + "::" + head }
 
     override Location getLocation() { result = head.getLocation() }
   }
 
-  private predicate topItem(Item item, ItemPathNil nil) {
+  private predicate topItem(NamedItem item, ItemPathNil nil) {
     exists(SourceFile file |
       item = file.getAnItem() and
       nil = TItemPathNil(file)
     )
   }
 
-  private predicate itemCons(Item head, ItemPath tail) {
+  private predicate itemCons(NamedItem head, ItemPath tail) {
     topItem(head, tail)
     or
-    exists(Item parent |
+    exists(NamedItem parent |
       parent = getImmediateParentItem(head) and
       tail = getAnItemPath(parent)
     )
+    or
+    fileImportCons(_, tail, _, head)
+    or
+    useImport(_, tail, head, _)
   }
 
-  ItemPath getAnItemPath(Item i) {
-    exists(ItemPath tail |
-      itemCons(i, tail) and
-      result = TItemPathCons(i, tail)
-    )
-    // exists(ItemPathNil nil |
-    //   topItem(i, nil) and
-    //   result = TItemPathCons(i, nil)
+  ItemPath getAnItemPath(NamedItem i) {
+    // exists(ItemPath tail |
+    //   itemCons(i, tail) and
+    //   result = TItemPathCons(i, tail)
     // )
-    // or
-    // exists(Item parent |
-    //   parent = getImmediateParentItem(i) and
-    //   result = TItemPathCons(i, getAnItemPath(parent))
-    // )
+    result = TItemPathCons(i, _)
   }
 
+  /** Holds if `f` is available as `mod name;` inside `folder`. */
   private predicate fileModule(SourceFile f, string name, Folder folder) {
     exists(File file | file = f.getFile() |
       file.getBaseName() = name + ".rs" and
@@ -116,24 +165,116 @@ module Impl {
     )
   }
 
-  private predicate fileImport(Module mod, SourceFile f) {
+  /** Holds if `m` is a `mod name;` item importing file `f`. */
+  private predicate fileImport(Module m, SourceFile f) {
     exists(string name |
-      not mod.hasItemList() and
-      name = mod.getName().getText() and
-      fileModule(f, name, mod.getFile().getParentContainer())
+      not m.hasItemList() and
+      name = m.getName().getText() and
+      fileModule(f, name, m.getFile().getParentContainer())
     )
   }
 
-  /** A crate. */
-  class Crate extends File {
-    Crate() { this.getBaseName() = "Cargo.toml" }
-
-    pragma[nomagic]
-    Item getItem() {
-      exists(SourceFile file |
-        file.getFile().getParentContainer() = this.getParentContainer() and
-        file.getAnItem() = result
-      )
-    }
+  private predicate fileImportCons(Module mod, ItemPath modPath, ItemPath target, NamedItem head) {
+    exists(SourceFile f |
+      fileImport(mod, f) and
+      getAnItemPath(mod) = modPath and
+      target = TItemPathCons(head, TItemPathNil(f))
+    )
+    or
+    exists(ItemPath tail |
+      fileImportCons(mod, TItemPathCons(head, modPath), tail, _) and
+      target = TItemPathCons(head, tail)
+    )
   }
+
+  // pragma[nomagic]
+  // private string getItemName(Item item) {
+  //   result = item.(Const).getName().getText()
+  //   or
+  //   result = item.(Enum).getName().getText()
+  //   or
+  //   result = item.(Function).getName().getText()
+  //   or
+  //   result = item.(Module).getName().getText()
+  //   or
+  //   result = item.(Struct).getName().getText()
+  //   or
+  //   result = item.(Trait).getName().getText()
+  //   or
+  //   result = item.(Union).getName().getText()
+  // }
+  private ItemPath resolvePath(Path path) {
+    exists(ItemPath enclPath |
+      exists(NamedItem encl, NamedItem head |
+        getAnItemDescendant(encl) = path and
+        enclPath = getAnItemPath(encl).drop(_) and
+        not exists(path.getQualifier()) and
+        result = TItemPathCons(head, enclPath) and
+        head.getName() = path.getPart().getNameRef().getText()
+      )
+    )
+    or
+    exists(ItemPath q, NamedItem head |
+      q = resolvePath(path.getQualifier()) and
+      result = TItemPathCons(head, q) and
+      head.getName() = path.getPart().getNameRef().getText()
+    )
+  }
+
+  /** Holds if `m` is a `mod name;` item importing file `f`. */
+  private predicate useImport(Use use, ItemPath usePath, Item head, ItemPath usedPath) {
+    exists(UseTree tree, Path path, ItemPath ip |
+      tree = use.getUseTree() and
+      path = tree.getPath() and
+      ip = resolvePath(path) and
+      getAnItemPath(use) = TItemPathCons(_, usePath) and
+      exists(Item i |
+        ip = getAnItemPath(i) and
+        if i instanceof Module
+        then usedPath = TItemPathCons(head, ip)
+        else (
+          usedPath = ip and
+          head = i
+        )
+      |
+        not exists(tree.getUseTreeList())
+        // todo: handle `getUseTreeList`
+      )
+    )
+    or
+    exists(ItemPath usePathMid, Item mid, ItemPath usedPathMid |
+      useImport(use, usePathMid, mid, usedPathMid) and
+      usePath = TItemPathCons(mid, usePathMid) and
+      usedPath = TItemPathCons(head, usedPathMid)
+    )
+    // exists(string name |
+    //   not m.hasItemList() and
+    //   name = m.getName().getText() and
+    //   fileModule(f, name, m.getFile().getParentContainer())
+    // )
+  }
+
+  private predicate fileImportCons_(Module mod, ItemPath modPath, ItemPath target, Item head) {
+    exists(SourceFile f |
+      fileImport(mod, f) and
+      getAnItemPath(mod) = modPath and
+      target = TItemPathCons(head, TItemPathNil(f))
+    )
+    or
+    exists(ItemPath tail |
+      fileImportCons_(mod, TItemPathCons(head, modPath), tail, _) and
+      target = TItemPathCons(head, tail)
+    )
+  }
+  // /** A crate. */
+  // class Crate extends File {
+  //   Crate() { this.getBaseName() = "Cargo.toml" }
+  //   pragma[nomagic]
+  //   Item getItem() {
+  //     exists(SourceFile file |
+  //       file.getFile().getParentContainer() = this.getParentContainer() and
+  //       file.getAnItem() = result
+  //     )
+  //   }
+  // }
 }

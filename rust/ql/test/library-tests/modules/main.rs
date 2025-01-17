@@ -8,7 +8,7 @@ mod my2;
 
 use my2::*;
 
-use my2::nested2::nested3::nested4::*;
+use my2::nested2::nested3::nested4::f;
 
 mod m1 {}
 
