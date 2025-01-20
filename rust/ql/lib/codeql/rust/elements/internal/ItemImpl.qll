@@ -45,6 +45,28 @@ module Impl {
       name = "(use)"
     }
 
+    Visibility getVisibility() {
+      result = this.(Const).getVisibility()
+      or
+      result = this.(Enum).getVisibility()
+      or
+      result = this.(Function).getVisibility()
+      or
+      result = this.(Module).getVisibility()
+      or
+      result = this.(Struct).getVisibility()
+      or
+      result = this.(Trait).getVisibility()
+      or
+      result = this.(Union).getVisibility()
+      or
+      result = this.(Use).getVisibility()
+    }
+
+    bindingset[this]
+    pragma[inline_late]
+    predicate isPublic() { exists(this.getVisibility()) }
+
     string getName() { result = name }
   }
 
@@ -70,6 +92,8 @@ module Impl {
   abstract private class ItemPath extends TItemPath {
     abstract int length();
 
+    abstract NamedItem getHead();
+
     abstract NamedItem getItem(int i);
 
     abstract ItemPath drop(int i);
@@ -88,6 +112,8 @@ module Impl {
 
     override int length() { result = 0 }
 
+    override NamedItem getHead() { none() }
+
     override NamedItem getItem(int i) { none() }
 
     override ItemPath drop(int i) { result = this and i = 0 }
@@ -104,6 +130,8 @@ module Impl {
     ItemPathCons() { this = TItemPathCons(head, tail) }
 
     override int length() { result = 1 + tail.length() }
+
+    override NamedItem getHead() { result = head }
 
     override NamedItem getItem(int i) {
       result = tail.getItem(i)
@@ -137,17 +165,18 @@ module Impl {
       tail = getAnItemPath(parent)
     )
     or
-    fileImportCons(_, tail, _, head)
+    fileImport(_, tail, head, _)
     or
     useImport(_, tail, head, _)
   }
 
+  pragma[nomagic]
   ItemPath getAnItemPath(NamedItem i) {
-    // exists(ItemPath tail |
-    //   itemCons(i, tail) and
-    //   result = TItemPathCons(i, tail)
-    // )
-    result = TItemPathCons(i, _)
+    exists(ItemPath tail, SourceFile f |
+      result = TItemPathCons(i, tail) and
+      tail.drop(_) = TItemPathNil(f) and
+      f.getFile() = i.getFile()
+    )
   }
 
   /** Holds if `f` is available as `mod name;` inside `folder`. */
@@ -174,41 +203,41 @@ module Impl {
     )
   }
 
-  private predicate fileImportCons(Module mod, ItemPath modPath, ItemPath target, NamedItem head) {
-    exists(SourceFile f |
-      fileImport(mod, f) and
-      getAnItemPath(mod) = modPath and
-      target = TItemPathCons(head, TItemPathNil(f))
-    )
-    or
-    exists(ItemPath tail |
-      fileImportCons(mod, TItemPathCons(head, modPath), tail, _) and
-      target = TItemPathCons(head, tail)
+  /**
+   * Holds if `mod` is a `mod name;` item resulting in the item path
+   * `head::modPath` being valid. The new path is valid because
+   * `filePath` is valid within the file that gets imported.
+   */
+  private predicate fileImport(Module mod, ItemPath modPath, NamedItem head, ItemPath filePath) {
+    head.isPublic() and
+    (
+      exists(SourceFile f |
+        fileImport(mod, f) and
+        getAnItemPath(mod) = modPath and
+        filePath = TItemPathCons(head, TItemPathNil(f))
+      )
+      or
+      exists(ItemPath modPathTail, NamedItem modPathHead, ItemPath filePathTail |
+        fileImport(mod, modPathTail, modPathHead, filePathTail) and
+        modPath = TItemPathCons(modPathHead, modPathTail) and
+        filePath = TItemPathCons(head, filePathTail)
+      )
     )
   }
 
-  // pragma[nomagic]
-  // private string getItemName(Item item) {
-  //   result = item.(Const).getName().getText()
-  //   or
-  //   result = item.(Enum).getName().getText()
-  //   or
-  //   result = item.(Function).getName().getText()
-  //   or
-  //   result = item.(Module).getName().getText()
-  //   or
-  //   result = item.(Struct).getName().getText()
-  //   or
-  //   result = item.(Trait).getName().getText()
-  //   or
-  //   result = item.(Union).getName().getText()
-  // }
+  private ItemPath getAnItemPath_(ItemPath ip) {
+    result = ip
+    or
+    result = TItemPathCons(any(Use u), ip)
+  }
+
   private ItemPath resolvePath(Path path) {
     exists(ItemPath enclPath |
       exists(NamedItem encl, NamedItem head |
         getAnItemDescendant(encl) = path and
-        enclPath = getAnItemPath(encl).drop(_) and
+        enclPath = getAnItemPath_(getAnItemPath(encl).drop(_)) and
         not exists(path.getQualifier()) and
+        not path = any(UseTreeList list).getAUseTree().getPath() and // todo
         result = TItemPathCons(head, enclPath) and
         head.getName() = path.getPart().getNameRef().getText()
       )
@@ -216,54 +245,42 @@ module Impl {
     or
     exists(ItemPath q, NamedItem head |
       q = resolvePath(path.getQualifier()) and
-      result = TItemPathCons(head, q) and
+      result = TItemPathCons(head, getAnItemPath_(q)) and
       head.getName() = path.getPart().getNameRef().getText()
     )
   }
 
-  /** Holds if `m` is a `mod name;` item importing file `f`. */
-  private predicate useImport(Use use, ItemPath usePath, Item head, ItemPath usedPath) {
-    exists(UseTree tree, Path path, ItemPath ip |
-      tree = use.getUseTree() and
-      path = tree.getPath() and
-      ip = resolvePath(path) and
-      getAnItemPath(use) = TItemPathCons(_, usePath) and
-      exists(Item i |
-        ip = getAnItemPath(i) and
-        if i instanceof Module
-        then usedPath = TItemPathCons(head, ip)
-        else (
-          usedPath = ip and
-          head = i
-        )
-      |
-        not exists(tree.getUseTreeList())
-        // todo: handle `getUseTreeList`
-      )
-    )
-    or
-    exists(ItemPath usePathMid, Item mid, ItemPath usedPathMid |
-      useImport(use, usePathMid, mid, usedPathMid) and
-      usePath = TItemPathCons(mid, usePathMid) and
-      usedPath = TItemPathCons(head, usedPathMid)
-    )
-    // exists(string name |
-    //   not m.hasItemList() and
-    //   name = m.getName().getText() and
-    //   fileModule(f, name, m.getFile().getParentContainer())
-    // )
-  }
+  Item resolveItem(Path path) { result = resolvePath(path).getHead() }
 
-  private predicate fileImportCons_(Module mod, ItemPath modPath, ItemPath target, Item head) {
-    exists(SourceFile f |
-      fileImport(mod, f) and
-      getAnItemPath(mod) = modPath and
-      target = TItemPathCons(head, TItemPathNil(f))
-    )
-    or
-    exists(ItemPath tail |
-      fileImportCons_(mod, TItemPathCons(head, modPath), tail, _) and
-      target = TItemPathCons(head, tail)
+  /** Holds if `m` is a `mod name;` item importing file `f`. */
+  pragma[nomagic]
+  private predicate useImport(Use use, ItemPath usePath, NamedItem head, ItemPath usedPath) {
+    // imported item must be `pub`
+    head.isPublic() and
+    (
+      exists(UseTree tree, Path path, ItemPath ip |
+        tree = use.getUseTree() and
+        path = tree.getPath() and
+        ip = resolvePath(path) and
+        getAnItemPath(use) = usePath and // TItemPathCons(_, usePath) and
+        not exists(tree.getUseTreeList()) and
+        // todo: handle `getUseTreeList`
+        exists(Item i |
+          ip = getAnItemPath(i) and
+          if i instanceof Module
+          then usedPath = TItemPathCons(head, ip)
+          else (
+            usedPath = ip and
+            head = i
+          )
+        )
+      )
+      or
+      exists(ItemPath usePathMid, Item mid, ItemPath usedPathMid |
+        useImport(use, usePathMid, mid, usedPathMid) and
+        usePath = TItemPathCons(mid, usePathMid) and
+        usedPath = TItemPathCons(head, usedPathMid)
+      )
     )
   }
   // /** A crate. */

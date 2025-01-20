@@ -1,10 +1,41 @@
+mod
 | lib.rs:1:1:1:7 | mod my |
 | main.rs:1:1:1:7 | mod my |
 | main.rs:7:1:7:8 | mod my2 |
 | main.rs:13:1:13:9 | mod m1 |
 | my2/mod.rs:1:1:1:16 | mod nested2 |
-| my2/nested2.rs:1:1:7:1 | mod nested3 |
-| my2/nested2.rs:2:5:6:5 | mod nested4 |
+| my2/nested2.rs:1:1:11:1 | mod nested3 |
+| my2/nested2.rs:2:5:10:5 | mod nested4 |
 | my.rs:1:1:1:15 | mod nested |
-| my/nested.rs:1:1:15:1 | mod nested1 |
-| my/nested.rs:2:5:10:5 | mod nested2 |
+| my/nested.rs:1:1:17:1 | mod nested1 |
+| my/nested.rs:2:5:11:5 | mod nested2 |
+resolveItem
+| main.rs:3:5:3:6 | my | main.rs:1:1:1:7 | mod my |
+| main.rs:5:5:5:6 | my | main.rs:1:1:1:7 | mod my |
+| main.rs:5:5:5:14 | ...::nested | my.rs:1:1:1:15 | mod nested |
+| main.rs:9:5:9:7 | my2 | main.rs:7:1:7:8 | mod my2 |
+| main.rs:11:5:11:7 | my2 | main.rs:7:1:7:8 | mod my2 |
+| main.rs:11:5:11:16 | ...::nested2 | my2/mod.rs:1:1:1:16 | mod nested2 |
+| main.rs:11:5:11:25 | ...::nested3 | my2/nested2.rs:1:1:11:1 | mod nested3 |
+| main.rs:11:5:11:34 | ...::nested4 | my2/nested2.rs:2:5:10:5 | mod nested4 |
+| main.rs:16:5:16:6 | my | main.rs:1:1:1:7 | mod my |
+| main.rs:16:5:16:14 | ...::nested | my.rs:1:1:1:15 | mod nested |
+| main.rs:17:5:17:6 | my | main.rs:1:1:1:7 | mod my |
+| main.rs:17:5:17:9 | ...::f | my.rs:5:1:7:1 | fn f |
+| main.rs:18:5:18:11 | nested2 | my2/mod.rs:1:1:1:16 | mod nested2 |
+| main.rs:18:5:18:20 | ...::nested3 | my2/nested2.rs:1:1:11:1 | mod nested3 |
+| main.rs:18:5:18:29 | ...::nested4 | my2/nested2.rs:2:5:10:5 | mod nested4 |
+| main.rs:18:5:18:32 | ...::f | my2/nested2.rs:3:9:5:9 | fn f |
+| main.rs:19:5:19:5 | f | my.rs:5:1:7:1 | fn f |
+| main.rs:21:5:21:5 | h | my.rs:9:1:12:1 | fn h |
+| my2/mod.rs:5:5:5:11 | nested2 | my2/mod.rs:1:1:1:16 | mod nested2 |
+| my2/mod.rs:5:5:5:20 | ...::nested3 | my2/nested2.rs:1:1:11:1 | mod nested3 |
+| my2/mod.rs:5:5:5:29 | ...::nested4 | my2/nested2.rs:2:5:10:5 | mod nested4 |
+| my2/mod.rs:5:5:5:32 | ...::f | my2/nested2.rs:3:9:5:9 | fn f |
+| my.rs:3:5:3:10 | nested | my.rs:1:1:1:15 | mod nested |
+| my/nested.rs:9:13:9:13 | f | my/nested.rs:3:9:5:9 | fn f |
+| my/nested.rs:15:9:15:15 | nested2 | my/nested.rs:2:5:11:5 | mod nested2 |
+| my/nested.rs:15:9:15:18 | ...::f | my/nested.rs:3:9:5:9 | fn f |
+| my/nested.rs:21:5:21:11 | nested1 | my/nested.rs:1:1:17:1 | mod nested1 |
+| my/nested.rs:21:5:21:20 | ...::nested2 | my/nested.rs:2:5:11:5 | mod nested2 |
+| my/nested.rs:21:5:21:23 | ...::f | my/nested.rs:3:9:5:9 | fn f |

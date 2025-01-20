@@ -1,9 +1,12 @@
 pub mod nested;
 
+use nested::g;
+
 pub fn f() {
-    println!("my.rs: f");
+    println!("my.rs::f");
 }
 
-fn g() {
-    f();
+pub fn h() {
+    println!("my.rs::h");
+    g();
 }
