@@ -84,99 +84,64 @@ module Impl {
   pragma[nomagic]
   private NamedItem getImmediateParentItem(NamedItem item) { item = getAnItemDescendant(result) }
 
-  private newtype TItemPath =
-    TItemPathNil(SourceFile f) or
-    TItemPathCons(NamedItem head, ItemPath tail) { itemCons(head, tail) }
-
-  /** A path to an item, rooted at a source file. */
-  abstract private class ItemPath extends TItemPath {
-    abstract int length();
-
-    abstract NamedItem getHead();
-
-    abstract NamedItem getItem(int i);
-
-    abstract ItemPath drop(int i);
-
-    abstract string toString();
-
-    abstract Location getLocation();
-  }
-
-  private class ItemPathNil extends ItemPath, TItemPathNil {
-    private SourceFile source;
-
-    ItemPathNil() { this = TItemPathNil(source) }
-
-    private File getFile() { result = source.getFile() }
-
-    override int length() { result = 0 }
-
-    override NamedItem getHead() { none() }
-
-    override NamedItem getItem(int i) { none() }
-
-    override ItemPath drop(int i) { result = this and i = 0 }
-
-    override string toString() { result = this.getFile().getRelativePath() }
-
-    override Location getLocation() { result = source.getLocation() }
-  }
-
-  private class ItemPathCons extends ItemPath, TItemPathCons {
-    private NamedItem head;
-    private ItemPath tail;
-
-    ItemPathCons() { this = TItemPathCons(head, tail) }
-
-    override int length() { result = 1 + tail.length() }
-
-    override NamedItem getHead() { result = head }
-
-    override NamedItem getItem(int i) {
-      result = tail.getItem(i)
+  pragma[nomagic]
+  private NamedItem getItemAncestorNonModule(NamedItem item) {
+    (
+      result = getImmediateParentItem(item)
       or
-      result = head and i = tail.length()
-    }
-
-    override ItemPath drop(int i) {
-      result = this and i = 0
-      or
-      result = tail.drop(i - 1) and i > 0
-    }
-
-    override string toString() { result = tail.toString() + "::" + head }
-
-    override Location getLocation() { result = head.getLocation() }
-  }
-
-  private predicate topItem(NamedItem item, ItemPathNil nil) {
-    exists(SourceFile file |
-      item = file.getAnItem() and
-      nil = TItemPathNil(file)
+      exists(NamedItem mid |
+        mid = getItemAncestorNonModule(item) and
+        result = getImmediateParentItem(mid) and
+        not mid instanceof Module
+      )
     )
-  }
-
-  private predicate itemCons(NamedItem head, ItemPath tail) {
-    topItem(head, tail)
-    or
-    exists(NamedItem parent |
-      parent = getImmediateParentItem(head) and
-      tail = getAnItemPath(parent)
-    )
-    or
-    fileImport(_, tail, head, _)
-    or
-    useImport(_, tail, head, _)
   }
 
   pragma[nomagic]
-  ItemPath getAnItemPath(NamedItem i) {
-    exists(ItemPath tail, SourceFile f |
-      result = TItemPathCons(i, tail) and
-      tail.drop(_) = TItemPathNil(f) and
-      f.getFile() = i.getFile()
-    )
+  private Module getImmediateParentModule(NamedItem item) {
+    result = getItemAncestorNonModule(item)
+  }
+
+  private predicate sourceFileEdge(SourceFile f, NamedItem item) { item = f.getAnItem() }
+
+  pragma[nomagic]
+  private predicate sourceFileEdge(SourceFile f, string name, NamedItem item) {
+    (
+      sourceFileEdge(f, item)
+      or
+      exists(Use use |
+        sourceFileEdge(f, _, use) and
+        itemEdge(use, item)
+      )
+    ) and
+    name = item.getName()
+  }
+
+  pragma[nomagic]
+  private predicate itemEdge(NamedItem item1, NamedItem item2) {
+    item1 = getImmediateParentItem(item2)
+    or
+    fileImportEdge(item1, item2)
+    or
+    useImportEdge(item1, item2)
+  }
+
+  pragma[nomagic]
+  private predicate itemEdge(NamedItem item1, string name, NamedItem item2) {
+    (
+      itemEdge(item1, item2)
+      or
+      exists(Use use |
+        itemEdge(item1, _, use) and
+        itemEdge(use, item2)
+      )
+    ) and
+    name = item2.getName()
+    or
+    name = "super" and
+    if item1 instanceof Module
+    then item2 = getImmediateParentModule(item1)
+    else item2 = getImmediateParentModule(getImmediateParentModule(item1))
   }
 
   /** Holds if `f` is available as `mod name;` inside `folder`. */
@@ -198,6 +163,12 @@ module Impl {
   private predicate fileImport(Module m, SourceFile f) {
     exists(string name |
       not m.hasItemList() and
+      // TODO: handle
+      // ```
+      // #[path = "foo.rs"]
+      // mod bar;
+      // ```
+      not m.getAnAttr().getMeta().getPath().getPart().getNameRef().getText() = "path" and
       name = m.getName().getText() and
       fileModule(f, name, m.getFile().getParentContainer())
     )
@@ -208,79 +179,56 @@ module Impl {
    * `head::modPath` being valid. The new path is valid because
    * `filePath` is valid within the file that gets imported.
    */
-  private predicate fileImport(Module mod, ItemPath modPath, NamedItem head, ItemPath filePath) {
-    head.isPublic() and
-    (
-      exists(SourceFile f |
-        fileImport(mod, f) and
-        getAnItemPath(mod) = modPath and
-        filePath = TItemPathCons(head, TItemPathNil(f))
-      )
+  private predicate fileImportEdge(Module mod, NamedItem item) {
+    item.isPublic() and
+    exists(SourceFile f |
+      fileImport(mod, f) and
+      sourceFileEdge(f, item)
+    )
+  }
+
+  pragma[nomagic]
+  private predicate rootPath(Path path, string name, SourceFile f, NamedItem scope) {
+    exists(NamedItem encl |
+      f.getAnItem() = getImmediateParentItem*(scope) and
+      getAnItemDescendant(encl) = path and
+      scope = [encl, getImmediateParentModule(encl).(NamedItem)] and
+      not exists(path.getQualifier()) and
+      not path = any(UseTreeList list).getAUseTree().getPath() and // todo
+      name = path.getPart().getNameRef().getText()
+    )
+  }
+
+  pragma[nomagic]
+  Item resolveItem(Path path) {
+    exists(SourceFile f, NamedItem encl, string name | rootPath(path, name, f, encl) |
+      itemEdge(encl, name, result)
       or
-      exists(ItemPath modPathTail, NamedItem modPathHead, ItemPath filePathTail |
-        fileImport(mod, modPathTail, modPathHead, filePathTail) and
-        modPath = TItemPathCons(modPathHead, modPathTail) and
-        filePath = TItemPathCons(head, filePathTail)
-      )
-    )
-  }
-
-  private ItemPath getAnItemPath_(ItemPath ip) {
-    result = ip
-    or
-    result = TItemPathCons(any(Use u), ip)
-  }
-
-  private ItemPath resolvePath(Path path) {
-    exists(ItemPath enclPath |
-      exists(NamedItem encl, NamedItem head |
-        getAnItemDescendant(encl) = path and
-        enclPath = getAnItemPath_(getAnItemPath(encl).drop(_)) and
-        not exists(path.getQualifier()) and
-        not path = any(UseTreeList list).getAUseTree().getPath() and // todo
-        result = TItemPathCons(head, enclPath) and
-        head.getName() = path.getPart().getNameRef().getText()
-      )
+      sourceFileEdge(f, name, result)
     )
     or
-    exists(ItemPath q, NamedItem head |
-      q = resolvePath(path.getQualifier()) and
-      result = TItemPathCons(head, getAnItemPath_(q)) and
-      head.getName() = path.getPart().getNameRef().getText()
+    exists(Item q |
+      q = resolveItem(path.getQualifier()) and
+      itemEdge(q, path.getPart().getNameRef().getText(), result)
     )
   }
-
-  Item resolveItem(Path path) { result = resolvePath(path).getHead() }
 
   /** Holds if `m` is a `mod name;` item importing file `f`. */
   pragma[nomagic]
-  private predicate useImport(Use use, ItemPath usePath, NamedItem head, ItemPath usedPath) {
+  private predicate useImportEdge(Use use, NamedItem item) {
     // imported item must be `pub`
-    head.isPublic() and
-    (
-      exists(UseTree tree, Path path, ItemPath ip |
-        tree = use.getUseTree() and
-        path = tree.getPath() and
-        ip = resolvePath(path) and
-        getAnItemPath(use) = usePath and // TItemPathCons(_, usePath) and
-        not exists(tree.getUseTreeList()) and
-        // todo: handle `getUseTreeList`
-        exists(Item i |
-          ip = getAnItemPath(i) and
-          if i instanceof Module
-          then usedPath = TItemPathCons(head, ip)
-          else (
-            usedPath = ip and
-            head = i
-          )
-        )
-      )
-      or
-      exists(ItemPath usePathMid, Item mid, ItemPath usedPathMid |
-        useImport(use, usePathMid, mid, usedPathMid) and
-        usePath = TItemPathCons(mid, usePathMid) and
-        usedPath = TItemPathCons(head, usedPathMid)
-      )
+    item.isPublic() and
+    exists(UseTree tree, Path path, NamedItem used |
+      tree = use.getUseTree() and
+      path = tree.getPath() and
+      used = resolveItem(path) and
+      // todo: handle `getUseTreeList`
+      not exists(tree.getUseTreeList()) and
+      if used instanceof Module
+      then
+        // glob import
+        itemEdge(used, item)
+      else item = used
     )
   }
   // /** A crate. */
