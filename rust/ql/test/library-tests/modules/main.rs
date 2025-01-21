@@ -25,6 +25,14 @@ mod m1 {
             f();
             super::f();
         }
+
+        pub mod m3 {
+            use super::f;
+            pub fn h() {
+                println!("main.rs::m1::m2::m3::h");
+                f();
+            }
+        }
     }
 }
 
@@ -36,6 +44,9 @@ fn h() {
     struct Foo {}
 
     fn f() {
+        use m1::m2::g;
+        g();
+
         struct Foo {}
         println!("main.rs::h::f");
         let _ = Foo {};
@@ -50,6 +61,10 @@ fn i() {
     let _ = Foo {};
 }
 
+use my2::nested2 as my2_nested2_alias;
+
+use my2_nested2_alias::nested3::{nested4::f as f_alias, nested4::g as g_alias, nested4::*};
+
 fn main() {
     my::nested::nested1::nested2::f();
     my::f();
@@ -58,5 +73,8 @@ fn main() {
     g();
     h();
     m1::m2::g();
+    m1::m2::m3::h();
     h();
+    f_alias();
+    g_alias();
 }

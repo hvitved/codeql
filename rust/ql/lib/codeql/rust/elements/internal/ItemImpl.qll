@@ -106,37 +106,29 @@ module Impl {
 
   pragma[nomagic]
   private predicate sourceFileEdge(SourceFile f, string name, NamedItem item) {
-    (
-      sourceFileEdge(f, item)
-      or
-      exists(Use use |
-        sourceFileEdge(f, _, use) and
-        itemEdge(use, item)
-      )
-    ) and
+    sourceFileEdge(f, item) and
     name = item.getName()
-  }
-
-  pragma[nomagic]
-  private predicate itemEdge(NamedItem item1, NamedItem item2) {
-    item1 = getImmediateParentItem(item2)
     or
-    fileImportEdge(item1, item2)
-    or
-    useImportEdge(item1, item2)
+    exists(Use use |
+      sourceFileEdge(f, use) and
+      itemEdge(use, name, item)
+    )
   }
 
   pragma[nomagic]
   private predicate itemEdge(NamedItem item1, string name, NamedItem item2) {
-    (
-      itemEdge(item1, item2)
-      or
-      exists(Use use |
-        itemEdge(item1, _, use) and
-        itemEdge(use, item2)
-      )
-    ) and
+    item1 = getImmediateParentItem(item2) and
     name = item2.getName()
+    or
+    fileImportEdge(item1, item2) and
+    name = item2.getName()
+    or
+    useImportEdge(item1, name, item2)
+    or
+    exists(Use use |
+      itemEdge(item1, _, use) and
+      itemEdge(use, name, item2)
+    )
     or
     name = "super" and
     if item1 instanceof Module
@@ -188,47 +180,134 @@ module Impl {
   }
 
   pragma[nomagic]
-  private predicate rootPath(Path path, string name, SourceFile f, NamedItem scope) {
-    exists(NamedItem encl |
-      f.getAnItem() = getImmediateParentItem*(scope) and
-      getAnItemDescendant(encl) = path and
-      scope = [encl, getImmediateParentModule(encl).(NamedItem)] and
-      not exists(path.getQualifier()) and
-      not path = any(UseTreeList list).getAUseTree().getPath() and // todo
-      name = path.getPart().getNameRef().getText()
+  private predicate rootPath(Path path, string name) {
+    not exists(path.getQualifier()) and
+    not path = any(UseTreeList list).getAUseTree().getPath() and // todo
+    name = path.getPart().getNameRef().getText()
+  }
+
+  pragma[nomagic]
+  private predicate useTreeIsGlobImport(UseTree use) {
+    // todo: the extractor should provide this information
+    use.getLocation() != use.getPath().getLocation() and
+    not use.hasUseTreeList() and
+    not use.hasRename()
+  }
+
+  private predicate useTreeDeclares(UseTree tree, string name) {
+    not useTreeIsGlobImport(tree) and
+    not exists(tree.getUseTreeList()) and
+    (
+      name = tree.getRename().getName().getText()
+      or
+      not tree.hasRename() and
+      name = tree.getPath().getPart().getNameRef().getText()
+    )
+    or
+    exists(UseTree mid |
+      useTreeDeclares(mid, name) and
+      mid = tree.getUseTreeList().getAUseTree()
     )
   }
 
   pragma[nomagic]
-  Item resolveItem(Path path) {
-    exists(SourceFile f, NamedItem encl, string name | rootPath(path, name, f, encl) |
+  private predicate declares(NamedItem item, string name) {
+    exists(NamedItem child | getImmediateParentItem(child) = item |
+      child.getName() = name
+      or
+      useTreeDeclares(child.(Use).getUseTree(), name)
+    )
+  }
+
+  pragma[nomagic]
+  private predicate rootPath(Path path, string name, NamedItem scope) {
+    rootPath(path, name) and
+    getAnItemDescendant(scope) = path
+    or
+    exists(NamedItem mid |
+      rootPath(path, name, mid) and
+      not mid instanceof Module and
+      scope = getImmediateParentItem(mid) and
+      not declares(mid, name)
+    )
+  }
+
+  pragma[nomagic]
+  private Item resolveSourceFileEdge(Path path, string name, NamedItem scope) {
+    rootPath(path, pragma[only_bind_into](name), scope) and
+    exists(SourceFile f |
+      f.getAnItem() = [scope, getImmediateParentItem*(scope.(Module))] and
+      sourceFileEdge(f, pragma[only_bind_into](name), result)
+    )
+  }
+
+  pragma[nomagic]
+  NamedItem resolveItem(Path path) {
+    exists(NamedItem encl, string name |
+      rootPath(path, name, encl) and
       itemEdge(encl, name, result)
       or
-      sourceFileEdge(f, name, result)
+      result = resolveSourceFileEdge(path, name, encl) and
+      not declares(encl, name)
     )
     or
     exists(Item q |
       q = resolveItem(path.getQualifier()) and
       itemEdge(q, path.getPart().getNameRef().getText(), result)
     )
+    or
+    result = resolveUseTreeListItem(_, _, path)
   }
 
-  /** Holds if `m` is a `mod name;` item importing file `f`. */
+  private predicate isUseTreeSubPath(UseTree tree, Path path) {
+    path = tree.getPath()
+    or
+    exists(Path mid |
+      isUseTreeSubPath(tree, mid) and
+      path = mid.getQualifier()
+    )
+  }
+
   pragma[nomagic]
-  private predicate useImportEdge(Use use, NamedItem item) {
-    // imported item must be `pub`
-    item.isPublic() and
-    exists(UseTree tree, Path path, NamedItem used |
-      tree = use.getUseTree() and
-      path = tree.getPath() and
-      used = resolveItem(path) and
-      // todo: handle `getUseTreeList`
+  NamedItem resolveUseTreeListItem(Use use, UseTree tree, Path path) {
+    exists(UseTree midTree, NamedItem mid |
+      mid = resolveUseTreeListItem(use, midTree) and
+      tree = midTree.getUseTreeList().getAUseTree() and
+      isUseTreeSubPath(tree, path) and
+      not exists(path.getQualifier()) and
+      itemEdge(mid, path.getPart().getNameRef().getText(), result)
+    )
+    or
+    exists(NamedItem mid |
+      mid = resolveUseTreeListItem(use, tree, path.getQualifier()) and
+      itemEdge(mid, path.getPart().getNameRef().getText(), result)
+    )
+  }
+
+  pragma[nomagic]
+  NamedItem resolveUseTreeListItem(Use use, UseTree tree) {
+    tree = use.getUseTree() and
+    result = resolveItem(tree.getPath())
+    or
+    result = resolveUseTreeListItem(use, tree, tree.getPath())
+  }
+
+  /** Holds if `use` imports `item` as `name`. */
+  pragma[nomagic]
+  private predicate useImportEdge(Use use, string name, NamedItem item) {
+    exists(UseTree tree, NamedItem used |
+      used = resolveUseTreeListItem(use, tree) and
       not exists(tree.getUseTreeList()) and
-      if used instanceof Module
+      if useTreeIsGlobImport(tree)
       then
         // glob import
-        itemEdge(used, item)
+        itemEdge(used, name, item)
       else item = used
+    |
+      not tree.hasRename() and
+      name = item.getName()
+      or
+      name = tree.getRename().getName().getText()
     )
   }
   // /** A crate. */
