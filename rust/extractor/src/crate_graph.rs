@@ -184,6 +184,7 @@ fn emit_module_children(
 }
 
 fn emit_reexport(
+    crate_graph: &CrateGraph,
     db: &dyn HirDatabase,
     trap: &mut TrapFile,
     uses: &mut HashMap<String, trap::Label<generated::Item>>,
@@ -245,7 +246,7 @@ fn emit_reexport(
                 rename,
                 use_tree_list: None,
             });
-            let visibility = emit_visibility(db, trap, Visibility::Public);
+            let visibility = emit_visibility(crate_graph, db, trap, Visibility::Public);
             uses.insert(
                 key,
                 trap.emit(generated::Use {
@@ -277,7 +278,7 @@ fn emit_module_items(
             import: Some(import),
         }) = def.values
         {
-            emit_reexport(db, trap, &mut uses, import, name.as_str());
+            emit_reexport(crate_graph, db, trap, &mut uses, import, name.as_str());
         }
         if let Some(ra_ap_hir_def::per_ns::Item {
             def: value,
@@ -330,7 +331,7 @@ fn emit_module_items(
         {
             // TODO: handle ExternCrate as well?
             if let Some(import) = import.import_or_glob() {
-                emit_reexport(db, trap, &mut uses, import, name.as_str());
+                emit_reexport(crate_graph, db, trap, &mut uses, import, name.as_str());
             }
         }
         if let Some(ra_ap_hir_def::per_ns::Item {
