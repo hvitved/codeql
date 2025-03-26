@@ -23,15 +23,17 @@ module Impl {
    */
   class UseTree extends Generated::UseTree {
     override string toStringImpl() {
-      result =
-        this.getPath().toStringImpl() +
-          any(string list | if this.hasUseTreeList() then list = "::{...}" else list = "") +
-          any(string glob | if this.isGlob() then glob = "::*" else glob = "") +
-          any(string rename |
-            rename = " as " + this.getRename().getName().getText()
-            or
-            rename = "" and not this.hasRename()
-          )
+      result = strictconcat(int i | | this.toStringPart(i) order by i)
+    }
+
+    private string toStringPart(int index) {
+      result = this.getPath().toStringImpl() and index = 0
+      or
+      result = "::{...}" and this.hasUseTreeList() and index = 1
+      or
+      result = "::*" and this.isGlob() and index = 2
+      or
+      result = " as " + this.getRename().getName().getText() and index = 3
     }
   }
 }

@@ -206,11 +206,17 @@ fn emit_reexport(
                 PathKind::Plain => (),
                 PathKind::Super(0) => path_components.push("self".to_owned()),
                 PathKind::Super(n) => {
-                    path_components.extend(std::iter::repeat_n("parent".to_owned(), n.into()));
+                    path_components.extend(std::iter::repeat_n("super".to_owned(), n.into()));
                 }
                 PathKind::Crate => path_components.push("crate".to_owned()),
                 PathKind::Abs => path_components.push("".to_owned()),
-                PathKind::DollarCrate(_) => path_components.push("$crate".to_owned()),
+                PathKind::DollarCrate(crate_id) => {
+                    let crate_name = crate_graph[crate_id]
+                        .display_name
+                        .as_ref()
+                        .map(|x| x.canonical_name().to_string());
+                    path_components.push(crate_name.unwrap_or("crate".to_owned()));
+                }
             }
             path_components.extend(path.segments().iter().map(|x| x.as_str().to_owned()));
             match kind {
