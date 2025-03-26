@@ -44,6 +44,7 @@ lib.rs:
 #-----|  -> use ...::canonicalize
 #-----|  -> use ...::copy
 #-----|  -> use ...::create_dir
+#-----|  -> use ...::create_dir as mkdir
 #-----|  -> use ...::create_dir_all
 #-----|  -> use ...::exists
 #-----|  -> use ...::hard_link
@@ -91,6 +92,8 @@ lib.rs:
 #-----| use ...::copy
 
 #-----| use ...::create_dir
+
+#-----| use ...::create_dir as mkdir
 
 #-----| use ...::create_dir_all
 

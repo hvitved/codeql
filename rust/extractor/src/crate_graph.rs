@@ -224,16 +224,16 @@ fn emit_reexport(
                 ImportKind::Glob => path_components.push(name.to_owned()),
                 ImportKind::TypeOnly => path_components.push("self".to_owned()),
             };
-            let key = path_components.join("::");
-            // prevent duplicate imports
-            if uses.contains_key(&key) {
-                return;
-            }
 
             let alias = alias.map(|alias| match alias {
                 ImportAlias::Underscore => "_".to_owned(),
                 ImportAlias::Alias(name) => name.as_str().to_owned(),
             });
+            let key = format!(
+                "{} as {}",
+                path_components.join("::"),
+                alias.as_ref().unwrap_or(&"".to_owned())
+            );
             let rename = alias.map(|name| {
                 let name = Some(trap.emit(generated::Name {
                     id: trap::TrapId::Star,
@@ -244,6 +244,10 @@ fn emit_reexport(
                     name,
                 })
             });
+            // prevent duplicate imports
+            if uses.contains_key(&key) {
+                return;
+            }
             let path = make_qualified_path(trap, path_components);
             let use_tree = trap.emit(generated::UseTree {
                 id: trap::TrapId::Star,
