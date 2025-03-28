@@ -116,7 +116,7 @@ abstract class ItemNode extends Locatable {
   }
 
   pragma[nomagic]
-  private ItemNode getASuccessorRec(string name) {
+  ItemNode getASuccessorRec(string name) {
     sourceFileEdge(this, name, result)
     or
     this = result.getImmediateParent() and
@@ -175,13 +175,17 @@ abstract class ItemNode extends Locatable {
   ItemNode getASuccessor(string name) {
     result = this.getASuccessorRec(name)
     or
+    preludeEdge(this, name, result)
+    or
     name = "super" and
     if this instanceof Module or this instanceof SourceFile
     then result = this.getImmediateParentModule()
     else result = this.getImmediateParentModule().getImmediateParentModule()
     or
     name = "self" and
-    if this instanceof Module then result = this else result = this.getImmediateParentModule()
+    if this instanceof Module or this instanceof Enum
+    then result = this
+    else result = this.getImmediateParentModule()
     or
     name = "Self" and
     this = result.(ImplOrTraitItemNode).getAnItemInSelfScope()
@@ -319,7 +323,7 @@ private class VariantItemNode extends ItemNode instanceof Variant {
     result = super.getEnum().getGenericParamList().getTypeParam(i)
   }
 
-  override Visibility getVisibility() { result = Variant.super.getVisibility() }
+  override Visibility getVisibility() { result = super.getEnum().getVisibility() }
 }
 
 class FunctionItemNode extends AssocItemNode instanceof Function {
@@ -730,6 +734,18 @@ private class RelevantPath extends Path {
     not this = any(UseTreeList list).getAUseTree().getPath() and
     name = this.getText()
   }
+
+  string toStringFull() {
+    this.isUnqualified(result)
+    or
+    result = this.getQualifier().(RelevantPath).toStringFull() + "::" + this.getText()
+  }
+}
+
+private predicate blah(ItemNode i) {
+  i instanceof SourceFileItemNode
+  or
+  i = any(CrateItemNode c).getModuleNode()
 }
 
 /**
@@ -752,7 +768,7 @@ private predicate unqualifiedPathLookup(RelevantPath p, string name, Namespace n
       // nested modules do not have unqualified access to items from outer modules,
       // except for items declared at top-level in the source file
       if mid instanceof Module
-      then encl0.(SourceFileItemNode) = mid.getImmediateParent+()
+      then encl0 = mid.getImmediateParent+() and blah(encl0)
       else encl0 = mid.getImmediateParent()
     )
   |
@@ -960,13 +976,25 @@ private predicate useImportEdge(Use use, string name, ItemNode item) {
   )
 }
 
+private predicate preludeEdge(SourceFile f, string name, ItemNode i) {
+  exists(Crate c, ModuleItemNode mod, ModuleItemNode prelude, ModuleItemNode rust2024 |
+    f = any(Crate c0 | c = c0.getDependency(_)).getASourceFile() and
+    c.getName() = "core" and
+    mod = c.getModule() and
+    prelude = mod.getASuccessor("prelude") and
+    rust2024 = prelude.getASuccessor("rust_2024") and
+    i = rust2024.getASuccessor(name) and
+    not i instanceof Use
+  )
+}
+
 /** Provides predicates for debugging the path resolution implementation. */
 private module Debug {
   private Locatable getRelevantLocatable() {
     exists(string filepath, int startline, int startcolumn, int endline, int endcolumn |
       result.getLocation().hasLocationInfo(filepath, startline, startcolumn, endline, endcolumn) and
       filepath.matches("%/main.rs") and
-      startline = 1
+      startline = 240
     )
   }
 

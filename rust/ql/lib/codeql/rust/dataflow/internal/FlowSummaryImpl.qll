@@ -66,9 +66,16 @@ module Input implements InputSig<Location, RustDataFlow> {
     exists(Content c | cs = TSingletonContentSet(c) |
       result = "Field" and
       (
-        exists(Addressable a, int pos |
+        exists(Addressable a, int pos, string prefix |
           // TODO: calculate in QL
-          arg = a.getExtendedCanonicalPath() + "(" + pos + ")"
+          arg = prefix + "(" + pos + ")" and
+          (
+            prefix = a.getExtendedCanonicalPath()
+            or
+            a = getOptionVariant(_, prefix)
+            or
+            a = getResultVariant(_, prefix)
+          )
         |
           c.(TupleFieldContent).isStructField(a, pos)
           or
@@ -83,11 +90,6 @@ module Input implements InputSig<Location, RustDataFlow> {
           or
           c.(StructFieldContent).isVariantField(a, field)
         )
-        or
-        c =
-          any(VariantInLibTupleFieldContent v |
-            arg = v.getExtendedCanonicalPath() + "(" + v.getPosition() + ")"
-          )
         or
         exists(int pos |
           c = TTuplePositionContent(pos) and
