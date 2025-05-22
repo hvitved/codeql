@@ -10,6 +10,7 @@
  */
 
 private import codeql.util.Location
+private import codeql.util.Option
 
 /** Provides the input to `Make1`. */
 signature module InputSig1<LocationSig Location> {
@@ -822,6 +823,12 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
       bindingset[dpos]
       predicate accessDeclarationPositionMatch(AccessPosition apos, DeclarationPosition dpos);
 
+      class DeclarationType {
+        string toString();
+      }
+
+      DeclarationType getDeclarationType(Declaration d);
+
       /**
        * Holds if matching an inferred type `t` at `path` inside an access at `apos`
        * against the declaration `target` means that the type should be adjusted to
@@ -837,9 +844,9 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
        * the inferred type of `42` is `int`, but it should be adjusted to `int?`
        * when matching against `M`.
        */
-      bindingset[apos, target, path, t]
+      bindingset[apos, dt, path, t]
       default predicate adjustAccessType(
-        AccessPosition apos, Declaration target, TypePath path, Type t, TypePath pathAdj, Type tAdj
+        AccessPosition apos, DeclarationType dt, TypePath path, Type t, TypePath pathAdj, Type tAdj
       ) {
         pathAdj = path and
         tAdj = t
@@ -855,19 +862,123 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
     module Matching<MatchingInputSig Input> {
       private import Input
 
+      pragma[nomagic]
+      private DeclarationType getDeclarationType(
+        Access a, Declaration target, DeclarationPosition dpos, TypePath pathToTypeParam,
+        TypeParameter tp
+      ) {
+        not exists(getTypeArgument(a, target, tp, _)) and
+        target = a.getTarget() and
+        result = getDeclarationType(target) and
+        tp = target.getDeclaredType(dpos, pathToTypeParam)
+      }
+
+      pragma[nomagic]
+      private DeclarationType getDeclarationType(
+        Access a, Declaration target, DeclarationPosition dpos
+      ) {
+        result = getDeclarationType(a, target, dpos, _, _)
+      }
+
       /**
        * Holds if `a` targets `target` and the type for `apos` at `path` in `a`
        * is `t` after adjustment by `target`.
        */
       pragma[nomagic]
       private predicate adjustedAccessType(
-        Access a, AccessPosition apos, Declaration target, TypePath path, Type t
+        Access a, DeclarationPosition dpos, DeclarationType dt, TypePath path, Type t
       ) {
-        target = a.getTarget() and
-        exists(TypePath path0, Type t0 |
-          t0 = a.getInferredType(apos, path0) and
-          adjustAccessType(apos, target, path0, t0, path, t)
+        exists(Declaration target, AccessPosition apos |
+          target = a.getTarget() and
+          exists(TypePath path0, Type t0 |
+            t0 = a.getInferredType(apos, path0) and
+            accessDeclarationPositionMatch(apos, dpos) and
+            // dt = getDeclaredRootType(a, target, dpos) and
+            dt = getDeclarationType(target) and
+            adjustAccessType(apos, dt, path0, t0, path, t)
+          )
         )
+      }
+
+      /**
+       * Holds if `a` targets `target` and the type for `apos` at `path` in `a`
+       * is `t` after adjustment by `target`.
+       */
+      pragma[nomagic]
+      private predicate adjustedAccessType1(Access a, DeclarationType dt, TypePath path1, Type t) {
+        exists(Declaration target, AccessPosition apos |
+          exists(TypePath path0, Type t0 |
+            t0 = a.getInferredType(apos, path0) and
+            target = a.getTarget() and
+            dt = getDeclarationType(target) and
+            // accessDeclarationPositionMatch(apos, dpos) and
+            // dt = getDeclaredRootType(a, target, dpos, pathToParam, _) and
+            adjustAccessType(apos, dt, path0, t0, path1, t)
+          )
+        )
+      }
+
+      pragma[nomagic]
+      private predicate foo(
+        Access a, AccessPosition apos, DeclarationType dt, TypePath pathToTypeParam, TypePath path,
+        Type t
+      ) {
+        // exists(Declaration target, AccessPosition apos |
+        //   exists(TypePath path0, Type t0 |
+        //     t0 = a.getInferredType(apos, path0) and
+        //     accessDeclarationPositionMatch(apos, dpos) and
+        //     dt = getDeclaredRootType(a, target, dpos, pathToParam, _) and
+        //     adjustAccessType(apos, dpos, dt, path0, t0, pathToParam.appendInverse(path), t)
+        //   )
+        // )
+        // adjustedAccessType1(a, dpos, dt, pathToParam, pathToParam.appendInverse(path), t)
+        exists(Declaration target, DeclarationPosition dpos |
+          t = a.getInferredType(apos, path) and
+          dt = getDeclarationType(target) and
+          accessDeclarationPositionMatch(apos, dpos) and
+          target.getDeclaredType(dpos, pathToTypeParam) instanceof TypeParameter
+          // adjustAccessTypeLate(apos, dpos, dt, path0, t0, pathToParam.appendInverse(path), t)
+        )
+      }
+
+      pragma[nomagic]
+      private predicate bar(
+        Access a, DeclarationType dt, TypePath pathToParam, Type t, TypePath path
+      ) {
+        exists(AccessPosition apos, TypePath path0, Type t0 |
+          foo(a, apos, dt, pathToParam, path0, t0) and
+          adjustAccessType(apos, dt, path0, t0, path, t)
+        )
+      }
+
+      /**
+       * Holds if `a` targets `target` and the type for `apos` at `path` in `a`
+       * is `t` after adjustment by `target`.
+       */
+      pragma[nomagic]
+      private predicate adjustedAccessType2(
+        Access a, DeclarationType dt, TypePath pathToParam, TypePath path, Type t
+      ) {
+        // exists(Declaration target, AccessPosition apos |
+        //   exists(TypePath path0, Type t0 |
+        //     t0 = a.getInferredType(apos, path0) and
+        //     accessDeclarationPositionMatch(apos, dpos) and
+        //     dt = getDeclaredRootType(a, target, dpos, pathToParam, _) and
+        //     adjustAccessType(apos, dpos, dt, path0, t0, pathToParam.appendInverse(path), t)
+        //   )
+        // )
+        // adjustedAccessType1(a, dpos, dt, pathToParam, pathToParam.appendInverse(path), t)
+        // exists(Declaration target, AccessPosition apos |
+        //   exists(TypePath path0, Type t0 |
+        //     t0 = a.getInferredType(apos, path0) and
+        //     accessDeclarationPositionMatch(apos, dpos) and
+        //     dt = getDeclaredRootType(a, target, dpos, pathToParam, _) and
+        //     adjustAccessTypeLate(apos, dpos, dt, path0, t0, pathToParam.appendInverse(path), t)
+        //   )
+        // )
+        // foo(a, apos, dpos, dt, pathToParam, path0, t0) and
+        // adjustAccessType(apos, dpos, dt, path0, t0, pathToParam.appendInverse(path), t)
+        bar(a, dt, pathToParam, t, pathToParam.appendInverse(path))
       }
 
       /**
@@ -888,19 +999,34 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
         )
       }
 
+      pragma[nomagic]
+      private DeclarationType getDeclarationType2(
+        Access a, DeclarationPosition dpos_, TypePath pathToTypeParam_, DeclarationPosition dpos,
+        TypePath pathToTypeParam, TypeParameter tp
+      ) {
+        exists(Declaration target |
+          result = getDeclarationType(a, target, dpos_, pathToTypeParam_, tp) and
+          tp = target.getDeclaredType(dpos, pathToTypeParam)
+        )
+      }
+
       /**
        * Holds if the type `t` at `path` of `a` matches the type parameter `tp`
        * of `target`.
        */
       pragma[nomagic]
       private predicate directTypeMatch(
-        Access a, Declaration target, TypePath path, Type t, TypeParameter tp
+        Access a, TypePath path, Type t, DeclarationPosition dpos, TypePath pathToTypeParam,
+        TypeParameter tp
       ) {
-        not exists(getTypeArgument(a, target, tp, _)) and
-        exists(AccessPosition apos, DeclarationPosition dpos, TypePath pathToTypeParam |
-          tp = target.getDeclaredType(dpos, pathToTypeParam) and
-          accessDeclarationPositionMatch(apos, dpos) and
-          adjustedAccessType(a, apos, target, pathToTypeParam.appendInverse(path), t)
+        // exists(Type dt, DeclarationPosition dpos_, TypePath pathToTypeParam_ |
+        //   dt = getDeclaredRootType2(a, dpos_, pathToTypeParam_, dpos, pathToTypeParam, tp) and
+        //   // adjustedAccessType(a, dpos_, dt, pathToTypeParam_.appendInverse(path), t)
+        //   adjustedAccessType2(a, dpos_, dt, pathToTypeParam_, path, t)
+        // )
+        exists(DeclarationPosition dpos_, DeclarationType dt, TypePath pathToTypeParam_ |
+          dt = getDeclarationType2(a, dpos_, pathToTypeParam_, dpos, pathToTypeParam, tp) and
+          adjustedAccessType(a, dpos_, dt, pathToTypeParam_.appendInverse(path), t)
         )
       }
 
@@ -911,7 +1037,8 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
          */
         private predicate relevantAccess(Access a, AccessPosition apos, Type base) {
           exists(Declaration target, DeclarationPosition dpos |
-            adjustedAccessType(a, apos, target, _, _) and
+            target = a.getTarget() and
+            // adjustedAccessType(a, apos, target, _, _) and
             accessDeclarationPositionMatch(apos, dpos) and
             declarationBaseType(target, dpos, base, _, _)
           )
@@ -1147,14 +1274,20 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
        */
       pragma[nomagic]
       private predicate baseTypeMatch(
-        Access a, Declaration target, TypePath path, Type t, TypeParameter tp
+        Access a, TypePath path, Type t, DeclarationPosition dpos, TypePath pathToTypeParam,
+        TypeParameter tp
       ) {
-        not exists(getTypeArgument(a, target, tp, _)) and
-        target = a.getTarget() and
-        exists(AccessPosition apos, DeclarationPosition dpos, Type base, TypePath pathToTypeParam |
-          accessBaseType(a, apos, base, pathToTypeParam.appendInverse(path), t) and
-          declarationBaseType(target, dpos, base, pathToTypeParam, tp) and
-          accessDeclarationPositionMatch(apos, dpos)
+        exists(Declaration target |
+          not exists(getTypeArgument(a, target, tp, _)) and
+          tp = target.getDeclaredType(dpos, pathToTypeParam) and
+          target = a.getTarget() and
+          exists(
+            AccessPosition apos, Type base, DeclarationPosition dpos_, TypePath pathToTypeParam_
+          |
+            accessBaseType(a, apos, base, pathToTypeParam_.appendInverse(path), t) and
+            declarationBaseType(target, dpos_, base, pathToTypeParam_, tp) and
+            accessDeclarationPositionMatch(apos, dpos_)
+          )
         )
       }
 
@@ -1165,10 +1298,14 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
        */
       pragma[nomagic]
       private predicate explicitTypeMatch(
-        Access a, Declaration target, TypePath path, Type t, TypeParameter tp
+        Access a, TypePath path, Type t, DeclarationPosition dpos, TypePath pathToTypeParam,
+        TypeParameter tp
       ) {
-        target = a.getTarget() and
-        t = getTypeArgument(a, target, tp, path)
+        exists(Declaration target |
+          target = a.getTarget() and
+          t = getTypeArgument(a, target, tp, path) and
+          tp = target.getDeclaredType(dpos, pathToTypeParam)
+        )
       }
 
       /**
@@ -1208,38 +1345,40 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
 
       pragma[nomagic]
       private predicate typeConstraintBaseTypeMatch(
-        Access a, Declaration target, TypePath path, Type t, TypeParameter tp
+        Access a, TypePath path, Type t, DeclarationPosition dpos, TypePath pathToTp_,
+        TypeParameter tp
       ) {
-        not exists(getTypeArgument(a, target, tp, _)) and
-        target = a.getTarget() and
-        exists(
-          Type constraint, AccessPosition apos, DeclarationPosition dpos, TypePath pathToTp,
-          TypePath pathToTp2
-        |
-          accessDeclarationPositionMatch(apos, dpos) and
-          typeParameterConstraintHasTypeParameter(target, dpos, pathToTp2, _, constraint, pathToTp,
-            tp) and
-          AccessConstraint::satisfiesConstraintTypeMention(a, apos, pathToTp2, constraint,
-            pathToTp.appendInverse(path), t)
+        exists(Declaration target, TypePath pathToTp, DeclarationPosition dpos_ |
+          not exists(getTypeArgument(a, target, tp, _)) and
+          target = a.getTarget() and
+          tp = target.getDeclaredType(dpos, pathToTp_) and
+          exists(Type constraint, AccessPosition apos, TypePath pathToTp2, TypeParameter tp2 |
+            accessDeclarationPositionMatch(apos, dpos_) and
+            typeParameterConstraintHasTypeParameter(target, dpos_, pathToTp2, tp2, constraint,
+              pathToTp, tp) and
+            AccessConstraint::satisfiesConstraintTypeMention(a, apos, pathToTp2, constraint,
+              pathToTp.appendInverse(path), t)
+          )
         )
       }
 
       pragma[inline]
       private predicate typeMatch(
-        Access a, Declaration target, TypePath path, Type t, TypeParameter tp
+        Access a, TypePath path, Type t, DeclarationPosition dpos, TypePath pathToTypeParam,
+        TypeParameter tp
       ) {
         // A type given at the access corresponds directly to the type parameter
         // at the target.
-        explicitTypeMatch(a, target, path, t, tp)
+        explicitTypeMatch(a, path, t, dpos, pathToTypeParam, tp)
         or
         // We can infer the type of `tp` from one of the access positions
-        directTypeMatch(a, target, path, t, tp)
+        directTypeMatch(a, path, t, dpos, pathToTypeParam, tp)
         or
         // We can infer the type of `tp` by going up the type hiearchy
-        baseTypeMatch(a, target, path, t, tp)
+        baseTypeMatch(a, path, t, dpos, pathToTypeParam, tp)
         or
         // We can infer the type of `tp` by a type constraint
-        typeConstraintBaseTypeMatch(a, target, path, t, tp)
+        typeConstraintBaseTypeMatch(a, path, t, dpos, pathToTypeParam, tp)
       }
 
       /**
@@ -1284,10 +1423,10 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
       Type inferAccessType(Access a, AccessPosition apos, TypePath path) {
         exists(DeclarationPosition dpos | accessDeclarationPositionMatch(apos, dpos) |
           // A suffix of `path` leads to a type parameter in the target
-          exists(Declaration target, TypePath prefix, TypeParameter tp, TypePath suffix |
-            tp = target.getDeclaredType(pragma[only_bind_into](dpos), prefix) and
+          exists(TypePath prefix, TypeParameter tp, TypePath suffix |
+            // tp = target.getDeclaredType(pragma[only_bind_into](dpos), prefix) and
             path = prefix.append(suffix) and
-            typeMatch(a, target, suffix, result, tp)
+            typeMatch(a, suffix, result, dpos, prefix, tp)
           )
           or
           // `path` corresponds directly to a concrete type in the declaration

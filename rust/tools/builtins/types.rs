@@ -23,3 +23,6 @@ pub struct isize;
 // floating-point types
 pub struct f32;
 pub struct f64;
+
+pub struct ();
+// The unit type

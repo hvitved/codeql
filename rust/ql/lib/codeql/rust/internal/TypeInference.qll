@@ -6,6 +6,7 @@ private import Type
 private import Type as T
 private import TypeMention
 private import codeql.typeinference.internal.TypeInference
+private import codeql.util.Unit
 private import codeql.rust.frameworks.stdlib.Stdlib
 private import codeql.rust.frameworks.stdlib.Bultins as Builtins
 
@@ -451,6 +452,10 @@ private module StructExprMatchingInput implements MatchingInputSig {
   predicate accessDeclarationPositionMatch(AccessPosition apos, DeclarationPosition dpos) {
     apos = dpos
   }
+
+  class DeclarationType = Unit;
+
+  DeclarationType getDeclarationType(Declaration decl) { exists(decl) and exists(result) }
 }
 
 private module StructExprMatching = Matching<StructExprMatchingInput>;
@@ -701,48 +706,66 @@ private module CallExprBaseMatchingInput implements MatchingInputSig {
     dpos.isReturn()
   }
 
-  bindingset[apos, target, path, t]
+  private newtype TDeclarationType =
+    TIsRef() or
+    TIsNotRef()
+
+  class DeclarationType extends TDeclarationType {
+    string toString() {
+      this = TIsRef() and
+      result = "is reference"
+      or
+      this = TIsNotRef() and
+      result = "is not reference"
+    }
+
+    predicate isNone() { none() }
+  }
+
+  DeclarationType getDeclarationType(Declaration decl) {
+    if decl.getParameterType(TSelfDeclarationPosition(), TypePath::nil()) = TRefType()
+    then result = TIsRef()
+    else result = TIsNotRef()
+  }
+
+  bindingset[apos, dt, path, t]
   pragma[inline_late]
   predicate adjustAccessType(
-    AccessPosition apos, Declaration target, TypePath path, Type t, TypePath pathAdj, Type tAdj
+    AccessPosition apos, DeclarationType dt, TypePath path, Type t, TypePath pathAdj, Type tAdj
   ) {
     if apos.isSelf()
     then
-      exists(Type selfParamType |
-        selfParamType = target.getParameterType(TSelfDeclarationPosition(), TypePath::nil())
-      |
-        if selfParamType = TRefType()
+      if dt = TIsRef()
+      then
+        if t != TRefType() and path.isEmpty()
         then
-          if t != TRefType() and path.isEmpty()
-          then
-            // adjust for implicit borrow
-            pathAdj.isEmpty() and
-            tAdj = TRefType()
-            or
-            // adjust for implicit borrow
-            pathAdj = TypePath::singleton(TRefTypeParameter()) and
-            tAdj = t
-          else
-            if path.isCons(TRefTypeParameter(), _)
-            then
-              pathAdj = path and
-              tAdj = t
-            else (
-              // adjust for implicit borrow
-              not (t = TRefType() and path.isEmpty()) and
-              pathAdj = TypePath::cons(TRefTypeParameter(), path) and
-              tAdj = t
-            )
-        else (
-          // adjust for implicit deref
-          path.isCons(TRefTypeParameter(), pathAdj) and
-          tAdj = t
+          // adjust for implicit borrow
+          pathAdj.isEmpty() and
+          tAdj = TRefType()
           or
-          not path.isCons(TRefTypeParameter(), _) and
-          not (t = TRefType() and path.isEmpty()) and
-          pathAdj = path and
+          // adjust for implicit borrow
+          pathAdj = TypePath::singleton(TRefTypeParameter()) and
           tAdj = t
-        )
+        else
+          if path.isCons(TRefTypeParameter(), _)
+          then
+            pathAdj = path and
+            tAdj = t
+          else (
+            // adjust for implicit borrow
+            not (t = TRefType() and path.isEmpty()) and
+            pathAdj = TypePath::cons(TRefTypeParameter(), path) and
+            tAdj = t
+          )
+      else (
+        // adjust for implicit deref
+        path.isCons(TRefTypeParameter(), pathAdj) and
+        tAdj = t
+        or
+        not path.isCons(TRefTypeParameter(), _) and
+        not (t = TRefType() and path.isEmpty()) and
+        pathAdj = path and
+        tAdj = t
       )
     else (
       pathAdj = path and
@@ -870,12 +893,16 @@ private module FieldExprMatchingInput implements MatchingInputSig {
     apos = dpos
   }
 
-  bindingset[apos, target, path, t]
+  class DeclarationType = Unit;
+
+  DeclarationType getDeclarationType(Declaration decl) { exists(decl) and exists(result) }
+
+  bindingset[apos, dt, path, t]
   pragma[inline_late]
   predicate adjustAccessType(
-    AccessPosition apos, Declaration target, TypePath path, Type t, TypePath pathAdj, Type tAdj
+    AccessPosition apos, DeclarationType dt, TypePath path, Type t, TypePath pathAdj, Type tAdj
   ) {
-    exists(target) and
+    exists(dt) and
     if apos.isSelf()
     then
       // adjust for implicit deref
