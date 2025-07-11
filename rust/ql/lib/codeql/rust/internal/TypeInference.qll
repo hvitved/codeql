@@ -798,6 +798,13 @@ private module CallExprBaseMatchingInput implements MatchingInputSig {
     Declaration getTarget() {
       result = resolveMethodCallTarget(this) // mutual recursion; resolving method calls requires resolving types and vice versa
       or
+      this =
+        any(FunctionCallExpr fce |
+          fce.hasTrait() and
+          result = fce.getResolvedFunction()
+        )
+      or
+      not this.(FunctionCallExpr).hasTrait() and
       result = resolveFunctionCallTarget(this) // potential mutual recursion; resolving some associated function calls requires resolving types
     }
   }
