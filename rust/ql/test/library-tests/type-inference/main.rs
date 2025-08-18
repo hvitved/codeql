@@ -909,19 +909,19 @@ mod generic_enum {
 }
 
 mod method_supertraits {
-    #[derive(Debug)]
+    #[derive(Debug, Clone, Copy)]
     struct MyThing<A> {
         a: A,
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone, Copy)]
     struct MyThing2<A> {
         a: A,
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone, Copy)]
     struct S1;
-    #[derive(Debug)]
+    #[derive(Debug, Clone, Copy)]
     struct S2;
 
     trait MyTrait1<Tr1> {
@@ -929,16 +929,16 @@ mod method_supertraits {
         fn m1(self) -> Tr1;
     }
 
-    trait MyTrait2<Tr2>: MyTrait1<Tr2> {
+    trait MyTrait2<Tr2>: MyTrait1<Tr2> + Copy {
         #[rustfmt::skip]
-        fn m2(self) -> Tr2
+        fn m2(&self) -> Tr2
         where
             Self: Sized,
         {
             if 3 > 2 { // $ target=gt
                 self.m1() // $ target=MyTrait1::m1
             } else {
-                Self::m1(self) // $ target=MyTrait1::m1
+                Self::m1(*self) // $ target=deref target=MyTrait1::m1
             }
         }
     }
@@ -952,7 +952,7 @@ mod method_supertraits {
             if 3 > 2 { // $ target=gt
                 self.m2().a // $ target=m2 $ fieldof=MyThing
             } else {
-                Self::m2(self).a // $ target=m2 fieldof=MyThing
+                Self::m2(&self).a // $ target=m2 fieldof=MyThing
             }
         }
     }
@@ -964,7 +964,7 @@ mod method_supertraits {
         }
     }
 
-    impl<T> MyTrait2<T> for MyThing<T> {}
+    impl<T: Copy> MyTrait2<T> for MyThing<T> {}
 
     impl<T> MyTrait1<MyThing<T>> for MyThing2<T> {
         // MyThing2::m1
@@ -973,9 +973,9 @@ mod method_supertraits {
         }
     }
 
-    impl<T> MyTrait2<MyThing<T>> for MyThing2<T> {}
+    impl<T: Copy> MyTrait2<MyThing<T>> for MyThing2<T> {}
 
-    impl<T> MyTrait3<T> for MyThing2<T> {}
+    impl<T: Copy> MyTrait3<T> for MyThing2<T> {}
 
     fn call_trait_m1<T1, T2: MyTrait1<T1>>(x: T2) -> T1 {
         x.m1() // $ target=MyTrait1::m1
@@ -2558,12 +2558,11 @@ pub mod exec {
 pub mod path_buf {
     // a highly simplified model of `PathBuf::canonicalize`
 
-    pub struct Path {
-    }
+    pub struct Path {}
 
     impl Path {
         pub const fn new() -> Path {
-            Path { }
+            Path {}
         }
 
         pub fn canonicalize(&self) -> Result<PathBuf, ()> {
@@ -2571,12 +2570,11 @@ pub mod path_buf {
         }
     }
 
-    pub struct PathBuf {
-    }
+    pub struct PathBuf {}
 
     impl PathBuf {
         pub const fn new() -> PathBuf {
-            PathBuf { }
+            PathBuf {}
         }
     }
 
@@ -2587,7 +2585,7 @@ pub mod path_buf {
         #[inline]
         fn deref(&self) -> &Path {
             // (very much not a real implementation)
-            static path : Path = Path::new(); // $ target=new
+            static path: Path = Path::new(); // $ target=new
             &path
         }
     }
