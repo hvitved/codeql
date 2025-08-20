@@ -22,4 +22,5 @@ dataExtensions:
   - semmle/javascript/frameworks/**/*.model.yml
   - semmle/javascript/security/domains/**/*.model.yml
   - ext/*.model.yml
+  - semmle/javascript/internal/lsp_comparison/*.yml
 warnOnImplicitThis: true
