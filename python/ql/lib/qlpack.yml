@@ -18,4 +18,5 @@ dependencies:
 dataExtensions:
   - semmle/python/frameworks/**/*.model.yml
   - ext/*.model.yml
+  - semmle/python/internal/lsp_comparison/*.yml
 warnOnImplicitThis: true

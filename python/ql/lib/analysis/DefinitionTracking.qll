@@ -60,7 +60,7 @@ private predicate jump_to_defn(ControlFlowNode use, Definition defn) {
 }
 
 /* Prefer class and functions to class-expressions and function-expressions. */
-private predicate preferred_jump_to_defn(Expr use, Definition def) {
+predicate preferred_jump_to_defn(Expr use, Definition def) {
   not use instanceof ClassExpr and
   not use instanceof FunctionExpr and
   jump_to_defn(use.getAFlowNode(), def)
