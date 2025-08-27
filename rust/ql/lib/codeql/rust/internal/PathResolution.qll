@@ -726,7 +726,7 @@ class ImplItemNode extends ImplOrTraitItemNode instanceof Impl {
   }
 }
 
-private class ImplTraitTypeReprItemNode extends TypeItemNode instanceof ImplTraitTypeRepr {
+class ImplTraitTypeReprItemNode extends TypeItemNode instanceof ImplTraitTypeRepr {
   pragma[nomagic]
   Path getABoundPath() {
     result = super.getTypeBoundList().getABound().getTypeRepr().(PathTypeRepr).getPath()
@@ -831,6 +831,8 @@ class TraitItemNode extends ImplOrTraitItemNode, TypeItemNode instanceof Trait {
 
   pragma[nomagic]
   ItemNode resolveABound() { result = resolvePath(this.getABoundPath()) }
+
+  predicate hasLoop() { this.resolveABound+() = this }
 
   override AssocItemNode getAnAssocItem() { result = this.getADescendant() }
 
