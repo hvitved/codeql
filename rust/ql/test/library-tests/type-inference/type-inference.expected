@@ -888,8 +888,6 @@ inferType
 | main.rs:119:13:119:13 | y |  | main.rs:99:5:102:5 | MyThing |
 | main.rs:119:17:119:40 | MyThing {...} |  | main.rs:99:5:102:5 | MyThing |
 | main.rs:119:34:119:38 | false |  | {EXTERNAL LOCATION} | bool |
-| main.rs:120:13:120:13 | b |  | {EXTERNAL LOCATION} | bool |
-| main.rs:120:17:120:40 | ...::trait_method(...) |  | {EXTERNAL LOCATION} | bool |
 | main.rs:120:39:120:39 | y |  | main.rs:99:5:102:5 | MyThing |
 | main.rs:137:15:137:18 | SelfParam |  | main.rs:125:5:128:5 | MyThing |
 | main.rs:137:15:137:18 | SelfParam | A | main.rs:130:5:131:14 | S1 |
@@ -2003,8 +2001,6 @@ inferType
 | main.rs:953:17:953:25 | self.m2() | A | main.rs:946:20:946:22 | Tr3 |
 | main.rs:953:17:953:27 | ... .a |  | main.rs:946:20:946:22 | Tr3 |
 | main.rs:954:20:956:13 | { ... } |  | main.rs:946:20:946:22 | Tr3 |
-| main.rs:955:17:955:31 | ...::m2(...) |  | main.rs:912:5:915:5 | MyThing |
-| main.rs:955:17:955:31 | ...::m2(...) | A | main.rs:946:20:946:22 | Tr3 |
 | main.rs:955:17:955:33 | ... .a |  | main.rs:946:20:946:22 | Tr3 |
 | main.rs:955:26:955:30 | &self |  | file://:0:0:0:0 | & |
 | main.rs:955:26:955:30 | &self | &T | main.rs:946:5:958:5 | Self [trait MyTrait3] |
@@ -2414,21 +2410,16 @@ inferType
 | main.rs:1212:18:1212:27 | MacroExpr |  | {EXTERNAL LOCATION} | Arguments |
 | main.rs:1212:26:1212:27 | x3 |  | main.rs:1163:5:1167:5 | MyOption |
 | main.rs:1214:17:1214:18 | x4 |  | main.rs:1163:5:1167:5 | MyOption |
-| main.rs:1214:17:1214:18 | x4 | T | main.rs:1198:5:1199:13 | S |
 | main.rs:1214:22:1214:36 | ...::new(...) |  | main.rs:1163:5:1167:5 | MyOption |
-| main.rs:1214:22:1214:36 | ...::new(...) | T | main.rs:1198:5:1199:13 | S |
 | main.rs:1215:23:1215:29 | &mut x4 |  | file://:0:0:0:0 | & |
 | main.rs:1215:23:1215:29 | &mut x4 | &T | main.rs:1163:5:1167:5 | MyOption |
-| main.rs:1215:23:1215:29 | &mut x4 | &T.T | main.rs:1198:5:1199:13 | S |
 | main.rs:1215:28:1215:29 | x4 |  | main.rs:1163:5:1167:5 | MyOption |
-| main.rs:1215:28:1215:29 | x4 | T | main.rs:1198:5:1199:13 | S |
 | main.rs:1215:32:1215:32 | S |  | main.rs:1198:5:1199:13 | S |
 | main.rs:1216:18:1216:23 | "{:?}\\n" |  | file://:0:0:0:0 | & |
 | main.rs:1216:18:1216:23 | "{:?}\\n" | &T | {EXTERNAL LOCATION} | str |
 | main.rs:1216:18:1216:27 | FormatArgsExpr |  | {EXTERNAL LOCATION} | Arguments |
 | main.rs:1216:18:1216:27 | MacroExpr |  | {EXTERNAL LOCATION} | Arguments |
 | main.rs:1216:26:1216:27 | x4 |  | main.rs:1163:5:1167:5 | MyOption |
-| main.rs:1216:26:1216:27 | x4 | T | main.rs:1198:5:1199:13 | S |
 | main.rs:1218:13:1218:14 | x5 |  | main.rs:1163:5:1167:5 | MyOption |
 | main.rs:1218:13:1218:14 | x5 | T | main.rs:1163:5:1167:5 | MyOption |
 | main.rs:1218:13:1218:14 | x5 | T.T | main.rs:1198:5:1199:13 | S |
@@ -3696,11 +3687,13 @@ inferType
 | main.rs:1834:13:1834:14 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1834:13:1834:14 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1834:13:1834:14 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1834:13:1834:14 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1834:13:1834:14 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1834:18:1834:36 | Vec2 {...} |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1834:18:1834:36 | Vec2 {...} |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1834:18:1834:36 | Vec2 {...} |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1834:18:1834:36 | Vec2 {...} |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1834:18:1834:36 | Vec2 {...} |  | file://:0:0:0:0 | & |
 | main.rs:1834:18:1834:36 | Vec2 {...} |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1834:28:1834:28 | 1 |  | {EXTERNAL LOCATION} | i32 |
 | main.rs:1834:28:1834:28 | 1 |  | {EXTERNAL LOCATION} | i64 |
@@ -3710,11 +3703,13 @@ inferType
 | main.rs:1835:13:1835:14 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1835:13:1835:14 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1835:13:1835:14 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1835:13:1835:14 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1835:13:1835:14 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1835:18:1835:36 | Vec2 {...} |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1835:18:1835:36 | Vec2 {...} |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1835:18:1835:36 | Vec2 {...} |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1835:18:1835:36 | Vec2 {...} |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1835:18:1835:36 | Vec2 {...} |  | file://:0:0:0:0 | & |
 | main.rs:1835:18:1835:36 | Vec2 {...} |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1835:28:1835:28 | 3 |  | {EXTERNAL LOCATION} | i32 |
 | main.rs:1835:28:1835:28 | 3 |  | {EXTERNAL LOCATION} | i64 |
@@ -3725,279 +3720,328 @@ inferType
 | main.rs:1838:23:1838:24 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1838:23:1838:24 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1838:23:1838:24 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1838:23:1838:24 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1838:23:1838:24 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1838:23:1838:30 | ... == ... |  | {EXTERNAL LOCATION} | bool |
 | main.rs:1838:29:1838:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1838:29:1838:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1838:29:1838:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1838:29:1838:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1838:29:1838:30 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1838:29:1838:30 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1839:13:1839:19 | vec2_ne |  | {EXTERNAL LOCATION} | bool |
 | main.rs:1839:23:1839:24 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1839:23:1839:24 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1839:23:1839:24 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1839:23:1839:24 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1839:23:1839:24 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1839:23:1839:24 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1839:23:1839:30 | ... != ... |  | {EXTERNAL LOCATION} | bool |
 | main.rs:1839:29:1839:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1839:29:1839:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1839:29:1839:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1839:29:1839:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1839:29:1839:30 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1839:29:1839:30 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1840:13:1840:19 | vec2_lt |  | {EXTERNAL LOCATION} | bool |
 | main.rs:1840:23:1840:24 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1840:23:1840:24 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1840:23:1840:24 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1840:23:1840:24 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1840:23:1840:24 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1840:23:1840:24 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1840:23:1840:29 | ... < ... |  | {EXTERNAL LOCATION} | bool |
 | main.rs:1840:28:1840:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1840:28:1840:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1840:28:1840:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1840:28:1840:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1840:28:1840:29 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1840:28:1840:29 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1841:13:1841:19 | vec2_le |  | {EXTERNAL LOCATION} | bool |
 | main.rs:1841:23:1841:24 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1841:23:1841:24 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1841:23:1841:24 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1841:23:1841:24 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1841:23:1841:24 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1841:23:1841:24 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1841:23:1841:30 | ... <= ... |  | {EXTERNAL LOCATION} | bool |
 | main.rs:1841:29:1841:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1841:29:1841:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1841:29:1841:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1841:29:1841:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1841:29:1841:30 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1841:29:1841:30 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1842:13:1842:19 | vec2_gt |  | {EXTERNAL LOCATION} | bool |
 | main.rs:1842:23:1842:24 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1842:23:1842:24 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1842:23:1842:24 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1842:23:1842:24 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1842:23:1842:24 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1842:23:1842:24 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1842:23:1842:29 | ... > ... |  | {EXTERNAL LOCATION} | bool |
 | main.rs:1842:28:1842:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1842:28:1842:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1842:28:1842:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1842:28:1842:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1842:28:1842:29 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1842:28:1842:29 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1843:13:1843:19 | vec2_ge |  | {EXTERNAL LOCATION} | bool |
 | main.rs:1843:23:1843:24 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1843:23:1843:24 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1843:23:1843:24 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1843:23:1843:24 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1843:23:1843:24 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1843:23:1843:24 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1843:23:1843:30 | ... >= ... |  | {EXTERNAL LOCATION} | bool |
 | main.rs:1843:29:1843:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1843:29:1843:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1843:29:1843:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1843:29:1843:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1843:29:1843:30 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1843:29:1843:30 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1846:13:1846:20 | vec2_add |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1846:24:1846:25 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1846:24:1846:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1846:24:1846:25 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1846:24:1846:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1846:24:1846:25 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1846:24:1846:25 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1846:24:1846:30 | ... + ... |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1846:29:1846:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1846:29:1846:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1846:29:1846:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1846:29:1846:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1846:29:1846:30 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1846:29:1846:30 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1847:13:1847:20 | vec2_sub |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1847:24:1847:25 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1847:24:1847:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1847:24:1847:25 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1847:24:1847:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1847:24:1847:25 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1847:24:1847:25 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1847:24:1847:30 | ... - ... |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1847:29:1847:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1847:29:1847:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1847:29:1847:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1847:29:1847:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1847:29:1847:30 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1847:29:1847:30 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1848:13:1848:20 | vec2_mul |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1848:24:1848:25 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1848:24:1848:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1848:24:1848:25 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1848:24:1848:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1848:24:1848:25 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1848:24:1848:25 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1848:24:1848:30 | ... * ... |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1848:29:1848:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1848:29:1848:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1848:29:1848:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1848:29:1848:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1848:29:1848:30 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1848:29:1848:30 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1849:13:1849:20 | vec2_div |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1849:24:1849:25 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1849:24:1849:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1849:24:1849:25 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1849:24:1849:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1849:24:1849:25 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1849:24:1849:25 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1849:24:1849:30 | ... / ... |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1849:29:1849:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1849:29:1849:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1849:29:1849:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1849:29:1849:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1849:29:1849:30 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1849:29:1849:30 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1850:13:1850:20 | vec2_rem |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1850:24:1850:25 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1850:24:1850:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1850:24:1850:25 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1850:24:1850:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1850:24:1850:25 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1850:24:1850:25 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1850:24:1850:30 | ... % ... |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1850:29:1850:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1850:29:1850:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1850:29:1850:30 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1850:29:1850:30 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1850:29:1850:30 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1850:29:1850:30 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1853:17:1853:31 | vec2_add_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1853:17:1853:31 | vec2_add_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1853:17:1853:31 | vec2_add_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1853:17:1853:31 | vec2_add_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1853:17:1853:31 | vec2_add_assign |  | file://:0:0:0:0 | & |
 | main.rs:1853:17:1853:31 | vec2_add_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1853:35:1853:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1853:35:1853:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1853:35:1853:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1853:35:1853:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1853:35:1853:36 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1853:35:1853:36 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1854:9:1854:23 | vec2_add_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1854:9:1854:23 | vec2_add_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1854:9:1854:23 | vec2_add_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1854:9:1854:23 | vec2_add_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1854:9:1854:23 | vec2_add_assign |  | file://:0:0:0:0 | & |
 | main.rs:1854:9:1854:23 | vec2_add_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1854:9:1854:29 | ... += ... |  | file://:0:0:0:0 | () |
 | main.rs:1854:28:1854:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1854:28:1854:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1854:28:1854:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1854:28:1854:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1854:28:1854:29 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1854:28:1854:29 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1856:17:1856:31 | vec2_sub_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1856:17:1856:31 | vec2_sub_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1856:17:1856:31 | vec2_sub_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1856:17:1856:31 | vec2_sub_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1856:17:1856:31 | vec2_sub_assign |  | file://:0:0:0:0 | & |
 | main.rs:1856:17:1856:31 | vec2_sub_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1856:35:1856:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1856:35:1856:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1856:35:1856:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1856:35:1856:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1856:35:1856:36 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1856:35:1856:36 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1857:9:1857:23 | vec2_sub_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1857:9:1857:23 | vec2_sub_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1857:9:1857:23 | vec2_sub_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1857:9:1857:23 | vec2_sub_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1857:9:1857:23 | vec2_sub_assign |  | file://:0:0:0:0 | & |
 | main.rs:1857:9:1857:23 | vec2_sub_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1857:9:1857:29 | ... -= ... |  | file://:0:0:0:0 | () |
 | main.rs:1857:28:1857:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1857:28:1857:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1857:28:1857:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1857:28:1857:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1857:28:1857:29 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1857:28:1857:29 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1859:17:1859:31 | vec2_mul_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1859:17:1859:31 | vec2_mul_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1859:17:1859:31 | vec2_mul_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1859:17:1859:31 | vec2_mul_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1859:17:1859:31 | vec2_mul_assign |  | file://:0:0:0:0 | & |
 | main.rs:1859:17:1859:31 | vec2_mul_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1859:35:1859:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1859:35:1859:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1859:35:1859:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1859:35:1859:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1859:35:1859:36 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1859:35:1859:36 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1860:9:1860:23 | vec2_mul_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1860:9:1860:23 | vec2_mul_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1860:9:1860:23 | vec2_mul_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1860:9:1860:23 | vec2_mul_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1860:9:1860:23 | vec2_mul_assign |  | file://:0:0:0:0 | & |
 | main.rs:1860:9:1860:23 | vec2_mul_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1860:9:1860:29 | ... *= ... |  | file://:0:0:0:0 | () |
 | main.rs:1860:28:1860:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1860:28:1860:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1860:28:1860:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1860:28:1860:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1860:28:1860:29 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1860:28:1860:29 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1862:17:1862:31 | vec2_div_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1862:17:1862:31 | vec2_div_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1862:17:1862:31 | vec2_div_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1862:17:1862:31 | vec2_div_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1862:17:1862:31 | vec2_div_assign |  | file://:0:0:0:0 | & |
 | main.rs:1862:17:1862:31 | vec2_div_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1862:35:1862:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1862:35:1862:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1862:35:1862:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1862:35:1862:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1862:35:1862:36 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1862:35:1862:36 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1863:9:1863:23 | vec2_div_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1863:9:1863:23 | vec2_div_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1863:9:1863:23 | vec2_div_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1863:9:1863:23 | vec2_div_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1863:9:1863:23 | vec2_div_assign |  | file://:0:0:0:0 | & |
 | main.rs:1863:9:1863:23 | vec2_div_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1863:9:1863:29 | ... /= ... |  | file://:0:0:0:0 | () |
 | main.rs:1863:28:1863:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1863:28:1863:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1863:28:1863:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1863:28:1863:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1863:28:1863:29 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1863:28:1863:29 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1865:17:1865:31 | vec2_rem_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1865:17:1865:31 | vec2_rem_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1865:17:1865:31 | vec2_rem_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1865:17:1865:31 | vec2_rem_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1865:17:1865:31 | vec2_rem_assign |  | file://:0:0:0:0 | & |
 | main.rs:1865:17:1865:31 | vec2_rem_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1865:35:1865:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1865:35:1865:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1865:35:1865:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1865:35:1865:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1865:35:1865:36 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1865:35:1865:36 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1866:9:1866:23 | vec2_rem_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1866:9:1866:23 | vec2_rem_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1866:9:1866:23 | vec2_rem_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1866:9:1866:23 | vec2_rem_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1866:9:1866:23 | vec2_rem_assign |  | file://:0:0:0:0 | & |
 | main.rs:1866:9:1866:23 | vec2_rem_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1866:9:1866:29 | ... %= ... |  | file://:0:0:0:0 | () |
 | main.rs:1866:28:1866:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1866:28:1866:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1866:28:1866:29 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1866:28:1866:29 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1866:28:1866:29 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1866:28:1866:29 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1869:13:1869:23 | vec2_bitand |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1869:27:1869:28 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1869:27:1869:28 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1869:27:1869:28 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1869:27:1869:28 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1869:27:1869:28 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1869:27:1869:28 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1869:27:1869:33 | ... & ... |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1869:32:1869:33 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1869:32:1869:33 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1869:32:1869:33 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1869:32:1869:33 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1869:32:1869:33 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1869:32:1869:33 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1870:13:1870:22 | vec2_bitor |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1870:26:1870:27 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1870:26:1870:27 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1870:26:1870:27 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1870:26:1870:27 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1870:26:1870:27 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1870:26:1870:27 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1870:26:1870:32 | ... \| ... |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1870:31:1870:32 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1870:31:1870:32 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1870:31:1870:32 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1870:31:1870:32 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1870:31:1870:32 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1870:31:1870:32 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1871:13:1871:23 | vec2_bitxor |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1871:27:1871:28 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1871:27:1871:28 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1871:27:1871:28 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1871:27:1871:28 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1871:27:1871:28 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1871:27:1871:28 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1871:27:1871:33 | ... ^ ... |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1871:32:1871:33 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1871:32:1871:33 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1871:32:1871:33 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1871:32:1871:33 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1871:32:1871:33 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1871:32:1871:33 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1872:13:1872:20 | vec2_shl |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1872:24:1872:25 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1872:24:1872:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1872:24:1872:25 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1872:24:1872:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1872:24:1872:25 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1872:24:1872:25 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1872:24:1872:33 | ... << ... |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1872:30:1872:33 | 1u32 |  | {EXTERNAL LOCATION} | u32 |
@@ -4006,6 +4050,7 @@ inferType
 | main.rs:1873:24:1873:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1873:24:1873:25 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1873:24:1873:25 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1873:24:1873:25 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1873:24:1873:25 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1873:24:1873:33 | ... >> ... |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1873:30:1873:33 | 1u32 |  | {EXTERNAL LOCATION} | u32 |
@@ -4013,79 +4058,94 @@ inferType
 | main.rs:1876:17:1876:34 | vec2_bitand_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1876:17:1876:34 | vec2_bitand_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1876:17:1876:34 | vec2_bitand_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1876:17:1876:34 | vec2_bitand_assign |  | file://:0:0:0:0 | & |
 | main.rs:1876:17:1876:34 | vec2_bitand_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1876:38:1876:39 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1876:38:1876:39 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1876:38:1876:39 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1876:38:1876:39 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1876:38:1876:39 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1876:38:1876:39 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1877:9:1877:26 | vec2_bitand_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1877:9:1877:26 | vec2_bitand_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1877:9:1877:26 | vec2_bitand_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1877:9:1877:26 | vec2_bitand_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1877:9:1877:26 | vec2_bitand_assign |  | file://:0:0:0:0 | & |
 | main.rs:1877:9:1877:26 | vec2_bitand_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1877:9:1877:32 | ... &= ... |  | file://:0:0:0:0 | () |
 | main.rs:1877:31:1877:32 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1877:31:1877:32 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1877:31:1877:32 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1877:31:1877:32 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1877:31:1877:32 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1877:31:1877:32 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1879:17:1879:33 | vec2_bitor_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1879:17:1879:33 | vec2_bitor_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1879:17:1879:33 | vec2_bitor_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1879:17:1879:33 | vec2_bitor_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1879:17:1879:33 | vec2_bitor_assign |  | file://:0:0:0:0 | & |
 | main.rs:1879:17:1879:33 | vec2_bitor_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1879:37:1879:38 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1879:37:1879:38 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1879:37:1879:38 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1879:37:1879:38 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1879:37:1879:38 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1879:37:1879:38 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1880:9:1880:25 | vec2_bitor_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1880:9:1880:25 | vec2_bitor_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1880:9:1880:25 | vec2_bitor_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1880:9:1880:25 | vec2_bitor_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1880:9:1880:25 | vec2_bitor_assign |  | file://:0:0:0:0 | & |
 | main.rs:1880:9:1880:25 | vec2_bitor_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1880:9:1880:31 | ... \|= ... |  | file://:0:0:0:0 | () |
 | main.rs:1880:30:1880:31 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1880:30:1880:31 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1880:30:1880:31 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1880:30:1880:31 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1880:30:1880:31 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1880:30:1880:31 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1882:17:1882:34 | vec2_bitxor_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1882:17:1882:34 | vec2_bitxor_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1882:17:1882:34 | vec2_bitxor_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1882:17:1882:34 | vec2_bitxor_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1882:17:1882:34 | vec2_bitxor_assign |  | file://:0:0:0:0 | & |
 | main.rs:1882:17:1882:34 | vec2_bitxor_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1882:38:1882:39 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1882:38:1882:39 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1882:38:1882:39 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1882:38:1882:39 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1882:38:1882:39 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1882:38:1882:39 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1883:9:1883:26 | vec2_bitxor_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1883:9:1883:26 | vec2_bitxor_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1883:9:1883:26 | vec2_bitxor_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1883:9:1883:26 | vec2_bitxor_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1883:9:1883:26 | vec2_bitxor_assign |  | file://:0:0:0:0 | & |
 | main.rs:1883:9:1883:26 | vec2_bitxor_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1883:9:1883:32 | ... ^= ... |  | file://:0:0:0:0 | () |
 | main.rs:1883:31:1883:32 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1883:31:1883:32 | v2 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1883:31:1883:32 | v2 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1883:31:1883:32 | v2 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1883:31:1883:32 | v2 |  | file://:0:0:0:0 | & |
 | main.rs:1883:31:1883:32 | v2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1885:17:1885:31 | vec2_shl_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1885:17:1885:31 | vec2_shl_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1885:17:1885:31 | vec2_shl_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1885:17:1885:31 | vec2_shl_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1885:17:1885:31 | vec2_shl_assign |  | file://:0:0:0:0 | & |
 | main.rs:1885:17:1885:31 | vec2_shl_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1885:35:1885:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1885:35:1885:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1885:35:1885:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1885:35:1885:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1885:35:1885:36 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1885:35:1885:36 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1886:9:1886:23 | vec2_shl_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1886:9:1886:23 | vec2_shl_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1886:9:1886:23 | vec2_shl_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1886:9:1886:23 | vec2_shl_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1886:9:1886:23 | vec2_shl_assign |  | file://:0:0:0:0 | & |
 | main.rs:1886:9:1886:23 | vec2_shl_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1886:9:1886:32 | ... <<= ... |  | file://:0:0:0:0 | () |
 | main.rs:1886:29:1886:32 | 1u32 |  | {EXTERNAL LOCATION} | u32 |
@@ -4093,16 +4153,19 @@ inferType
 | main.rs:1888:17:1888:31 | vec2_shr_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1888:17:1888:31 | vec2_shr_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1888:17:1888:31 | vec2_shr_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1888:17:1888:31 | vec2_shr_assign |  | file://:0:0:0:0 | & |
 | main.rs:1888:17:1888:31 | vec2_shr_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1888:35:1888:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1888:35:1888:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1888:35:1888:36 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1888:35:1888:36 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1888:35:1888:36 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1888:35:1888:36 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1889:9:1889:23 | vec2_shr_assign |  | {EXTERNAL LOCATION} | Self [trait PartialEq] |
 | main.rs:1889:9:1889:23 | vec2_shr_assign |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1889:9:1889:23 | vec2_shr_assign |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1889:9:1889:23 | vec2_shr_assign |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1889:9:1889:23 | vec2_shr_assign |  | file://:0:0:0:0 | & |
 | main.rs:1889:9:1889:23 | vec2_shr_assign |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1889:9:1889:32 | ... >>= ... |  | file://:0:0:0:0 | () |
 | main.rs:1889:29:1889:32 | 1u32 |  | {EXTERNAL LOCATION} | u32 |
@@ -4112,6 +4175,7 @@ inferType
 | main.rs:1892:25:1892:26 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1892:25:1892:26 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1892:25:1892:26 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1892:25:1892:26 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1892:25:1892:26 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1893:13:1893:20 | vec2_not |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1893:24:1893:26 | ! ... |  | main.rs:1537:5:1542:5 | Vec2 |
@@ -4119,6 +4183,7 @@ inferType
 | main.rs:1893:25:1893:26 | v1 |  | {EXTERNAL LOCATION} | Rhs |
 | main.rs:1893:25:1893:26 | v1 |  | {EXTERNAL LOCATION} | Self [trait PartialOrd] |
 | main.rs:1893:25:1893:26 | v1 |  | {EXTERNAL LOCATION} | Rhs |
+| main.rs:1893:25:1893:26 | v1 |  | file://:0:0:0:0 | & |
 | main.rs:1893:25:1893:26 | v1 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1896:13:1896:24 | default_vec2 |  | main.rs:1537:5:1542:5 | Vec2 |
 | main.rs:1896:28:1896:45 | ...::default(...) |  | main.rs:1537:5:1542:5 | Vec2 |
@@ -4364,10 +4429,7 @@ inferType
 | main.rs:2076:18:2076:18 | S |  | main.rs:2037:5:2038:13 | S |
 | main.rs:2077:9:2077:11 | vec |  | main.rs:2046:5:2049:5 | MyVec |
 | main.rs:2077:9:2077:11 | vec | T | main.rs:2037:5:2038:13 | S |
-| main.rs:2077:9:2077:14 | vec[0] |  | main.rs:2037:5:2038:13 | S |
-| main.rs:2077:9:2077:20 | ... .foo() |  | main.rs:2037:5:2038:13 | S |
 | main.rs:2077:13:2077:13 | 0 |  | {EXTERNAL LOCATION} | i32 |
-| main.rs:2077:13:2077:13 | 0 |  | {EXTERNAL LOCATION} | usize |
 | main.rs:2079:13:2079:14 | xs |  | file://:0:0:0:0 | [] |
 | main.rs:2079:13:2079:14 | xs | [T;...] | main.rs:2037:5:2038:13 | S |
 | main.rs:2079:21:2079:21 | 1 |  | {EXTERNAL LOCATION} | i32 |
@@ -5090,13 +5152,11 @@ inferType
 | main.rs:2426:18:2426:48 | ...::method(...) |  | main.rs:2391:5:2391:20 | S1 |
 | main.rs:2426:18:2426:48 | ...::method(...) | T | main.rs:2393:5:2394:14 | S2 |
 | main.rs:2426:35:2426:47 | ...::default(...) |  | main.rs:2391:5:2391:20 | S1 |
-| main.rs:2426:35:2426:47 | ...::default(...) | T | main.rs:2393:5:2394:14 | S2 |
 | main.rs:2427:13:2427:14 | x5 |  | main.rs:2391:5:2391:20 | S1 |
 | main.rs:2427:13:2427:14 | x5 | T | main.rs:2393:5:2394:14 | S2 |
 | main.rs:2427:18:2427:42 | ...::method(...) |  | main.rs:2391:5:2391:20 | S1 |
 | main.rs:2427:18:2427:42 | ...::method(...) | T | main.rs:2393:5:2394:14 | S2 |
 | main.rs:2427:29:2427:41 | ...::default(...) |  | main.rs:2391:5:2391:20 | S1 |
-| main.rs:2427:29:2427:41 | ...::default(...) | T | main.rs:2393:5:2394:14 | S2 |
 | main.rs:2428:13:2428:14 | x6 |  | main.rs:2412:5:2412:27 | S4 |
 | main.rs:2428:13:2428:14 | x6 | T4 | main.rs:2393:5:2394:14 | S2 |
 | main.rs:2428:18:2428:45 | S4::<...>(...) |  | main.rs:2412:5:2412:27 | S4 |
@@ -7011,9 +7071,10 @@ inferType
 testFailures
 | dyn_type.rs:104:16:104:29 | "".to_string() | Unexpected result: target=to_string |
 | loop/main.rs:12:20:12:34 | //... | Missing result: target=foo |
+| main.rs:120:43:120:87 | //... | Missing result: type=b:bool |
+| main.rs:955:35:955:64 | //... | Missing result: fieldof=MyThing |
 | main.rs:1330:26:1330:44 | "Hello".to_string() | Unexpected result: target=to_string |
 | main.rs:1433:44:1433:62 | //... | Missing result: target=default |
-| main.rs:1434:34:1434:49 | //... | Missing result: target=flip |
 | main.rs:1435:33:1435:53 | //... | Missing result: type=flag:MyFlag |
 | main.rs:1838:23:1838:30 | ... == ... | Unexpected result: target=eq |
 | main.rs:1839:23:1839:30 | ... != ... | Unexpected result: target=ne |
@@ -7021,7 +7082,14 @@ testFailures
 | main.rs:1841:23:1841:30 | ... <= ... | Unexpected result: target=le |
 | main.rs:1842:23:1842:29 | ... > ... | Unexpected result: target=gt |
 | main.rs:1843:23:1843:30 | ... >= ... | Unexpected result: target=ge |
+| main.rs:1846:24:1846:30 | ... + ... | Unexpected result: target=add |
+| main.rs:1847:24:1847:30 | ... - ... | Unexpected result: target=sub |
+| main.rs:1848:24:1848:30 | ... * ... | Unexpected result: target=mul |
+| main.rs:1849:24:1849:30 | ... / ... | Unexpected result: target=div |
+| main.rs:1850:24:1850:30 | ... % ... | Unexpected result: target=rem |
+| main.rs:1892:24:1892:26 | - ... | Unexpected result: target=neg |
 | main.rs:1902:30:1902:64 | ... == ... | Unexpected result: target=eq |
+| main.rs:2077:23:2077:57 | //... | Missing result: target=foo |
 | main.rs:2548:9:2548:20 | c.execute1() | Fixed missing result: target=execute1 |
 | main.rs:2551:9:2551:41 | c.execute2(...) | Fixed missing result: target=execute2 |
 | main.rs:2552:9:2552:49 | c.execute2(...) | Fixed missing result: target=execute2 |
