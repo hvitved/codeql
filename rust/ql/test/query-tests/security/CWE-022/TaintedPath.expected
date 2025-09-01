@@ -1,5 +1,6 @@
 #select
 | src/main.rs:11:5:11:22 | ...::read_to_string | src/main.rs:7:11:7:19 | file_name | src/main.rs:11:5:11:22 | ...::read_to_string | This path depends on a $@. | src/main.rs:7:11:7:19 | file_name | user-provided value |
+| src/main.rs:21:5:21:22 | ...::read_to_string | src/main.rs:15:36:15:44 | file_name | src/main.rs:21:5:21:22 | ...::read_to_string | This path depends on a $@. | src/main.rs:15:36:15:44 | file_name | user-provided value |
 | src/main.rs:58:5:58:22 | ...::read_to_string | src/main.rs:50:51:50:59 | file_path | src/main.rs:58:5:58:22 | ...::read_to_string | This path depends on a $@. | src/main.rs:50:51:50:59 | file_path | user-provided value |
 | src/main.rs:71:5:71:22 | ...::read_to_string | src/main.rs:63:11:63:19 | file_path | src/main.rs:71:5:71:22 | ...::read_to_string | This path depends on a $@. | src/main.rs:63:11:63:19 | file_path | user-provided value |
 | src/main.rs:99:5:99:22 | ...::read_to_string | src/main.rs:90:11:90:19 | file_path | src/main.rs:99:5:99:22 | ...::read_to_string | This path depends on a $@. | src/main.rs:90:11:90:19 | file_path | user-provided value |
@@ -20,6 +21,11 @@ edges
 | src/main.rs:9:21:9:44 | ...::from(...) | src/main.rs:9:9:9:17 | file_path | provenance |  |
 | src/main.rs:9:35:9:43 | file_name | src/main.rs:9:21:9:44 | ...::from(...) | provenance | MaD:13 |
 | src/main.rs:11:24:11:32 | file_path | src/main.rs:11:5:11:22 | ...::read_to_string | provenance | MaD:6 Sink:MaD:6 |
+| src/main.rs:15:36:15:44 | file_name | src/main.rs:20:35:20:43 | file_name | provenance |  |
+| src/main.rs:20:9:20:17 | file_path | src/main.rs:21:24:21:32 | file_path | provenance |  |
+| src/main.rs:20:21:20:44 | ...::from(...) | src/main.rs:20:9:20:17 | file_path | provenance |  |
+| src/main.rs:20:35:20:43 | file_name | src/main.rs:20:21:20:44 | ...::from(...) | provenance | MaD:13 |
+| src/main.rs:21:24:21:32 | file_path | src/main.rs:21:5:21:22 | ...::read_to_string | provenance | MaD:6 Sink:MaD:6 |
 | src/main.rs:50:51:50:59 | file_path | src/main.rs:52:32:52:40 | file_path | provenance |  |
 | src/main.rs:52:9:52:17 | file_path [&ref] | src/main.rs:53:21:53:44 | file_path.canonicalize() [Ok] | provenance | Config |
 | src/main.rs:52:21:52:41 | ...::new(...) [&ref] | src/main.rs:52:9:52:17 | file_path [&ref] | provenance |  |
@@ -134,6 +140,12 @@ nodes
 | src/main.rs:9:35:9:43 | file_name | semmle.label | file_name |
 | src/main.rs:11:5:11:22 | ...::read_to_string | semmle.label | ...::read_to_string |
 | src/main.rs:11:24:11:32 | file_path | semmle.label | file_path |
+| src/main.rs:15:36:15:44 | file_name | semmle.label | file_name |
+| src/main.rs:20:9:20:17 | file_path | semmle.label | file_path |
+| src/main.rs:20:21:20:44 | ...::from(...) | semmle.label | ...::from(...) |
+| src/main.rs:20:35:20:43 | file_name | semmle.label | file_name |
+| src/main.rs:21:5:21:22 | ...::read_to_string | semmle.label | ...::read_to_string |
+| src/main.rs:21:24:21:32 | file_path | semmle.label | file_path |
 | src/main.rs:50:51:50:59 | file_path | semmle.label | file_path |
 | src/main.rs:52:9:52:17 | file_path [&ref] | semmle.label | file_path [&ref] |
 | src/main.rs:52:21:52:41 | ...::new(...) [&ref] | semmle.label | ...::new(...) [&ref] |
@@ -227,3 +239,6 @@ nodes
 | src/main.rs:186:17:186:22 | &path1 [&ref] | semmle.label | &path1 [&ref] |
 | src/main.rs:186:18:186:22 | path1 | semmle.label | path1 |
 subpaths
+testFailures
+| src/main.rs:15:36:15:44 | file_name | Unexpected result: Source |
+| src/main.rs:21:5:21:22 | ...::read_to_string | Unexpected result: Alert |

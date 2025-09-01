@@ -1,14 +1,15 @@
 models
-| 1 | Summary: <alloc::boxed::Box>::new; Argument[0]; ReturnValue.Reference; value |
-| 2 | Summary: <core::option::Option>::unwrap; Argument[self].Field[core::option::Option::Some(0)]; ReturnValue; value |
-| 3 | Summary: <core::option::Option>::unwrap_or; Argument[0]; ReturnValue; value |
-| 4 | Summary: <core::option::Option>::unwrap_or; Argument[self].Field[core::option::Option::Some(0)]; ReturnValue; value |
-| 5 | Summary: <core::option::Option>::unwrap_or_else; Argument[0].ReturnValue; ReturnValue; value |
-| 6 | Summary: <core::option::Option>::unwrap_or_else; Argument[self].Field[core::option::Option::Some(0)]; ReturnValue; value |
-| 7 | Summary: <core::result::Result>::err; Argument[self].Field[core::result::Result::Err(0)]; ReturnValue.Field[core::option::Option::Some(0)]; value |
-| 8 | Summary: <core::result::Result>::expect; Argument[self].Field[core::result::Result::Ok(0)]; ReturnValue; value |
-| 9 | Summary: <core::result::Result>::expect_err; Argument[self].Field[core::result::Result::Err(0)]; ReturnValue; value |
-| 10 | Summary: <core::result::Result>::ok; Argument[self].Field[core::result::Result::Ok(0)]; ReturnValue.Field[core::option::Option::Some(0)]; value |
+| 1 | Summary: <alloc::boxed::Box as core::ops::deref::Deref>::deref; Argument[self].Reference; ReturnValue; value |
+| 2 | Summary: <alloc::boxed::Box>::new; Argument[0]; ReturnValue.Reference; value |
+| 3 | Summary: <core::option::Option>::unwrap; Argument[self].Field[core::option::Option::Some(0)]; ReturnValue; value |
+| 4 | Summary: <core::option::Option>::unwrap_or; Argument[0]; ReturnValue; value |
+| 5 | Summary: <core::option::Option>::unwrap_or; Argument[self].Field[core::option::Option::Some(0)]; ReturnValue; value |
+| 6 | Summary: <core::option::Option>::unwrap_or_else; Argument[0].ReturnValue; ReturnValue; value |
+| 7 | Summary: <core::option::Option>::unwrap_or_else; Argument[self].Field[core::option::Option::Some(0)]; ReturnValue; value |
+| 8 | Summary: <core::result::Result>::err; Argument[self].Field[core::result::Result::Err(0)]; ReturnValue.Field[core::option::Option::Some(0)]; value |
+| 9 | Summary: <core::result::Result>::expect; Argument[self].Field[core::result::Result::Ok(0)]; ReturnValue; value |
+| 10 | Summary: <core::result::Result>::expect_err; Argument[self].Field[core::result::Result::Err(0)]; ReturnValue; value |
+| 11 | Summary: <core::result::Result>::ok; Argument[self].Field[core::result::Result::Ok(0)]; ReturnValue.Field[core::option::Option::Some(0)]; value |
 edges
 | main.rs:23:9:23:9 | s | main.rs:24:10:24:10 | s | provenance |  |
 | main.rs:23:9:23:9 | s | main.rs:26:12:26:12 | x | provenance |  |
@@ -27,10 +28,9 @@ edges
 | main.rs:62:15:62:23 | source(...) | main.rs:61:9:61:9 | b | provenance |  |
 | main.rs:70:5:70:5 | i | main.rs:71:10:71:10 | i | provenance |  |
 | main.rs:70:9:70:17 | source(...) | main.rs:70:5:70:5 | i | provenance |  |
-| main.rs:103:9:103:9 | i [&ref] | main.rs:104:11:104:11 | i [&ref] | provenance |  |
+| main.rs:103:9:103:9 | i [&ref] | main.rs:104:10:104:11 | * ... | provenance | MaD:1 |
 | main.rs:103:13:103:31 | ...::new(...) [&ref] | main.rs:103:9:103:9 | i [&ref] | provenance |  |
-| main.rs:103:22:103:30 | source(...) | main.rs:103:13:103:31 | ...::new(...) [&ref] | provenance | MaD:1 |
-| main.rs:104:11:104:11 | i [&ref] | main.rs:104:10:104:11 | * ... | provenance |  |
+| main.rs:103:22:103:30 | source(...) | main.rs:103:13:103:31 | ...::new(...) [&ref] | provenance | MaD:2 |
 | main.rs:111:9:111:9 | a [tuple.0] | main.rs:112:10:112:10 | a [tuple.0] | provenance |  |
 | main.rs:111:13:111:26 | TupleExpr [tuple.0] | main.rs:111:9:111:9 | a [tuple.0] | provenance |  |
 | main.rs:111:14:111:22 | source(...) | main.rs:111:13:111:26 | TupleExpr [tuple.0] | provenance |  |
@@ -110,32 +110,32 @@ edges
 | main.rs:255:12:255:18 | Some(...) [Some] | main.rs:255:17:255:17 | n | provenance |  |
 | main.rs:255:17:255:17 | n | main.rs:257:18:257:18 | n | provenance |  |
 | main.rs:255:17:255:17 | n | main.rs:261:14:261:14 | n | provenance |  |
-| main.rs:266:9:266:10 | s1 [Some] | main.rs:267:10:267:20 | s1.unwrap() | provenance | MaD:2 |
+| main.rs:266:9:266:10 | s1 [Some] | main.rs:267:10:267:20 | s1.unwrap() | provenance | MaD:3 |
 | main.rs:266:14:266:29 | Some(...) [Some] | main.rs:266:9:266:10 | s1 [Some] | provenance |  |
 | main.rs:266:19:266:28 | source(...) | main.rs:266:14:266:29 | Some(...) [Some] | provenance |  |
-| main.rs:271:9:271:10 | s1 [Some] | main.rs:272:10:272:24 | s1.unwrap_or(...) | provenance | MaD:4 |
+| main.rs:271:9:271:10 | s1 [Some] | main.rs:272:10:272:24 | s1.unwrap_or(...) | provenance | MaD:5 |
 | main.rs:271:14:271:29 | Some(...) [Some] | main.rs:271:9:271:10 | s1 [Some] | provenance |  |
 | main.rs:271:19:271:28 | source(...) | main.rs:271:14:271:29 | Some(...) [Some] | provenance |  |
-| main.rs:275:23:275:32 | source(...) | main.rs:275:10:275:33 | s2.unwrap_or(...) | provenance | MaD:3 |
-| main.rs:279:9:279:10 | s1 [Some] | main.rs:280:10:280:32 | s1.unwrap_or_else(...) | provenance | MaD:6 |
+| main.rs:275:23:275:32 | source(...) | main.rs:275:10:275:33 | s2.unwrap_or(...) | provenance | MaD:4 |
+| main.rs:279:9:279:10 | s1 [Some] | main.rs:280:10:280:32 | s1.unwrap_or_else(...) | provenance | MaD:7 |
 | main.rs:279:14:279:29 | Some(...) [Some] | main.rs:279:9:279:10 | s1 [Some] | provenance |  |
 | main.rs:279:19:279:28 | source(...) | main.rs:279:14:279:29 | Some(...) [Some] | provenance |  |
-| main.rs:283:31:283:40 | source(...) | main.rs:283:10:283:41 | s2.unwrap_or_else(...) | provenance | MaD:5 |
+| main.rs:283:31:283:40 | source(...) | main.rs:283:10:283:41 | s2.unwrap_or_else(...) | provenance | MaD:6 |
 | main.rs:287:9:287:10 | s1 [Some] | main.rs:289:14:289:15 | s1 [Some] | provenance |  |
 | main.rs:287:14:287:29 | Some(...) [Some] | main.rs:287:9:287:10 | s1 [Some] | provenance |  |
 | main.rs:287:19:287:28 | source(...) | main.rs:287:14:287:29 | Some(...) [Some] | provenance |  |
 | main.rs:289:9:289:10 | i1 | main.rs:290:10:290:11 | i1 | provenance |  |
 | main.rs:289:14:289:15 | s1 [Some] | main.rs:289:14:289:16 | TryExpr | provenance |  |
 | main.rs:289:14:289:16 | TryExpr | main.rs:289:9:289:10 | i1 | provenance |  |
-| main.rs:296:9:296:10 | r1 [Ok] | main.rs:297:28:297:34 | r1.ok() [Some] | provenance | MaD:10 |
+| main.rs:296:9:296:10 | r1 [Ok] | main.rs:297:28:297:34 | r1.ok() [Some] | provenance | MaD:11 |
 | main.rs:296:32:296:45 | Ok(...) [Ok] | main.rs:296:9:296:10 | r1 [Ok] | provenance |  |
 | main.rs:296:35:296:44 | source(...) | main.rs:296:32:296:45 | Ok(...) [Ok] | provenance |  |
-| main.rs:297:9:297:11 | o1a [Some] | main.rs:299:10:299:21 | o1a.unwrap() | provenance | MaD:2 |
+| main.rs:297:9:297:11 | o1a [Some] | main.rs:299:10:299:21 | o1a.unwrap() | provenance | MaD:3 |
 | main.rs:297:28:297:34 | r1.ok() [Some] | main.rs:297:9:297:11 | o1a [Some] | provenance |  |
-| main.rs:302:9:302:10 | r2 [Err] | main.rs:304:28:304:35 | r2.err() [Some] | provenance | MaD:7 |
+| main.rs:302:9:302:10 | r2 [Err] | main.rs:304:28:304:35 | r2.err() [Some] | provenance | MaD:8 |
 | main.rs:302:32:302:46 | Err(...) [Err] | main.rs:302:9:302:10 | r2 [Err] | provenance |  |
 | main.rs:302:36:302:45 | source(...) | main.rs:302:32:302:46 | Err(...) [Err] | provenance |  |
-| main.rs:304:9:304:11 | o2b [Some] | main.rs:306:10:306:21 | o2b.unwrap() | provenance | MaD:2 |
+| main.rs:304:9:304:11 | o2b [Some] | main.rs:306:10:306:21 | o2b.unwrap() | provenance | MaD:3 |
 | main.rs:304:28:304:35 | r2.err() [Some] | main.rs:304:9:304:11 | o2b [Some] | provenance |  |
 | main.rs:310:9:310:10 | s1 [Ok] | main.rs:313:14:313:15 | s1 [Ok] | provenance |  |
 | main.rs:310:32:310:45 | Ok(...) [Ok] | main.rs:310:9:310:10 | s1 [Ok] | provenance |  |
@@ -143,10 +143,10 @@ edges
 | main.rs:313:9:313:10 | i1 | main.rs:315:10:315:11 | i1 | provenance |  |
 | main.rs:313:14:313:15 | s1 [Ok] | main.rs:313:14:313:16 | TryExpr | provenance |  |
 | main.rs:313:14:313:16 | TryExpr | main.rs:313:9:313:10 | i1 | provenance |  |
-| main.rs:323:9:323:10 | s1 [Ok] | main.rs:324:10:324:22 | s1.expect(...) | provenance | MaD:8 |
+| main.rs:323:9:323:10 | s1 [Ok] | main.rs:324:10:324:22 | s1.expect(...) | provenance | MaD:9 |
 | main.rs:323:32:323:45 | Ok(...) [Ok] | main.rs:323:9:323:10 | s1 [Ok] | provenance |  |
 | main.rs:323:35:323:44 | source(...) | main.rs:323:32:323:45 | Ok(...) [Ok] | provenance |  |
-| main.rs:327:9:327:10 | s2 [Err] | main.rs:329:10:329:26 | s2.expect_err(...) | provenance | MaD:9 |
+| main.rs:327:9:327:10 | s2 [Err] | main.rs:329:10:329:26 | s2.expect_err(...) | provenance | MaD:10 |
 | main.rs:327:32:327:46 | Err(...) [Err] | main.rs:327:9:327:10 | s2 [Err] | provenance |  |
 | main.rs:327:36:327:45 | source(...) | main.rs:327:32:327:46 | Err(...) [Err] | provenance |  |
 | main.rs:338:9:338:10 | s1 [A] | main.rs:340:11:340:12 | s1 [A] | provenance |  |
@@ -242,10 +242,9 @@ edges
 | main.rs:542:13:542:22 | source(...) | main.rs:542:9:542:9 | a | provenance |  |
 | main.rs:544:9:544:9 | c | main.rs:545:18:545:18 | c | provenance |  |
 | main.rs:544:13:544:22 | source(...) | main.rs:544:9:544:9 | c | provenance |  |
-| main.rs:545:9:545:13 | c_ref [&ref] | main.rs:550:11:550:15 | c_ref [&ref] | provenance |  |
+| main.rs:545:9:545:13 | c_ref [&ref] | main.rs:550:10:550:15 | * ... | provenance |  |
 | main.rs:545:17:545:18 | &c [&ref] | main.rs:545:9:545:13 | c_ref [&ref] | provenance |  |
 | main.rs:545:18:545:18 | c | main.rs:545:17:545:18 | &c [&ref] | provenance |  |
-| main.rs:550:11:550:15 | c_ref [&ref] | main.rs:550:10:550:15 | * ... | provenance |  |
 nodes
 | main.rs:19:10:19:18 | source(...) | semmle.label | source(...) |
 | main.rs:23:9:23:9 | s | semmle.label | s |
@@ -274,7 +273,6 @@ nodes
 | main.rs:103:13:103:31 | ...::new(...) [&ref] | semmle.label | ...::new(...) [&ref] |
 | main.rs:103:22:103:30 | source(...) | semmle.label | source(...) |
 | main.rs:104:10:104:11 | * ... | semmle.label | * ... |
-| main.rs:104:11:104:11 | i [&ref] | semmle.label | i [&ref] |
 | main.rs:111:9:111:9 | a [tuple.0] | semmle.label | a [tuple.0] |
 | main.rs:111:13:111:26 | TupleExpr [tuple.0] | semmle.label | TupleExpr [tuple.0] |
 | main.rs:111:14:111:22 | source(...) | semmle.label | source(...) |
@@ -529,7 +527,6 @@ nodes
 | main.rs:545:18:545:18 | c | semmle.label | c |
 | main.rs:547:10:547:10 | a | semmle.label | a |
 | main.rs:550:10:550:15 | * ... | semmle.label | * ... |
-| main.rs:550:11:550:15 | c_ref [&ref] | semmle.label | c_ref [&ref] |
 subpaths
 testFailures
 #select

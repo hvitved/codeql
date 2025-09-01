@@ -1,0 +1,2 @@
+| src/main.rs:17:90:17:116 | //... | Missing result: path-injection-barrier |
+| src/main.rs:20:47:20:112 | //... | Missing result: path-injection-barrier |

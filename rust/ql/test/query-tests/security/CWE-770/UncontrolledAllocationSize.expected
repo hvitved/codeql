@@ -268,7 +268,6 @@ edges
 | main.rs:230:46:230:46 | v | main.rs:231:42:231:42 | v | provenance |  |
 | main.rs:231:42:231:42 | v | main.rs:231:13:231:40 | ...::with_capacity_in | provenance | MaD:4 Sink:MaD:4 |
 | main.rs:279:24:279:41 | ...: String | main.rs:280:21:280:47 | user_input.parse() [Ok] | provenance | MaD:42 |
-| main.rs:279:24:279:41 | ...: String | main.rs:280:21:280:47 | user_input.parse() [Ok] | provenance | MaD:42 |
 | main.rs:280:9:280:17 | num_bytes | main.rs:282:54:282:62 | num_bytes | provenance |  |
 | main.rs:280:21:280:47 | user_input.parse() [Ok] | main.rs:280:21:280:48 | TryExpr | provenance |  |
 | main.rs:280:21:280:48 | TryExpr | main.rs:280:9:280:17 | num_bytes | provenance |  |
@@ -292,7 +291,6 @@ edges
 | main.rs:317:13:317:26 | ...::args | main.rs:317:13:317:28 | ...::args(...) [element] | provenance | Src:MaD:23  |
 | main.rs:317:13:317:28 | ...::args(...) [element] | main.rs:317:13:317:35 | ... .nth(...) [Some] | provenance | MaD:24 |
 | main.rs:317:13:317:35 | ... .nth(...) [Some] | main.rs:317:13:317:65 | ... .unwrap_or(...) | provenance | MaD:39 |
-| main.rs:317:13:317:65 | ... .unwrap_or(...) | main.rs:317:13:317:82 | ... .parse() [Ok] | provenance | MaD:42 |
 | main.rs:317:13:317:65 | ... .unwrap_or(...) | main.rs:317:13:317:82 | ... .parse() [Ok] | provenance | MaD:42 |
 | main.rs:317:13:317:82 | ... .parse() [Ok] | main.rs:317:13:317:91 | ... .unwrap() | provenance | MaD:41 |
 | main.rs:317:13:317:91 | ... .unwrap() | main.rs:317:9:317:9 | v | provenance |  |
@@ -344,7 +342,7 @@ models
 | 39 | Summary: <core::option::Option>::unwrap_or; Argument[self].Field[core::option::Option::Some(0)]; ReturnValue; value |
 | 40 | Summary: <core::result::Result>::expect; Argument[self].Field[core::result::Result::Ok(0)]; ReturnValue; value |
 | 41 | Summary: <core::result::Result>::unwrap; Argument[self].Field[core::result::Result::Ok(0)]; ReturnValue; value |
-| 42 | Summary: <core::str>::parse; Argument[self]; ReturnValue.Field[core::result::Result::Ok(0)]; taint |
+| 42 | Summary: <core::str>::parse; Argument[self].Reference; ReturnValue.Field[core::result::Result::Ok(0)]; taint |
 | 43 | Summary: <core::usize as core::ops::arith::Mul>::mul; Argument[0]; ReturnValue; taint |
 | 44 | Summary: <core::usize as core::ops::arith::Mul>::mul; Argument[self]; ReturnValue; taint |
 | 45 | Summary: core::cmp::max; Argument[0]; ReturnValue; value |

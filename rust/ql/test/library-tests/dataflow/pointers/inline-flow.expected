@@ -2,12 +2,11 @@ models
 edges
 | main.rs:17:13:17:13 | a | main.rs:18:18:18:18 | a | provenance |  |
 | main.rs:17:17:17:26 | source(...) | main.rs:17:13:17:13 | a | provenance |  |
-| main.rs:18:13:18:13 | b [&ref] | main.rs:19:18:19:18 | b [&ref] | provenance |  |
+| main.rs:18:13:18:13 | b [&ref] | main.rs:19:17:19:18 | * ... | provenance |  |
 | main.rs:18:17:18:18 | &a [&ref] | main.rs:18:13:18:13 | b [&ref] | provenance |  |
 | main.rs:18:18:18:18 | a | main.rs:18:17:18:18 | &a [&ref] | provenance |  |
 | main.rs:19:13:19:13 | c | main.rs:20:14:20:14 | c | provenance |  |
 | main.rs:19:17:19:18 | * ... | main.rs:19:13:19:13 | c | provenance |  |
-| main.rs:19:18:19:18 | b [&ref] | main.rs:19:17:19:18 | * ... | provenance |  |
 | main.rs:23:29:23:30 | &... [&ref] | main.rs:23:30:23:30 | n | provenance |  |
 | main.rs:23:29:23:36 | ...: ... [&ref] | main.rs:23:29:23:30 | &... [&ref] | provenance |  |
 | main.rs:23:30:23:30 | n | main.rs:24:14:24:14 | n | provenance |  |
@@ -27,26 +26,21 @@ edges
 | main.rs:51:13:51:13 | a | main.rs:52:13:52:17 | ref p | provenance |  |
 | main.rs:51:17:51:26 | source(...) | main.rs:51:13:51:13 | a | provenance |  |
 | main.rs:52:13:52:17 | ref p | main.rs:52:17:52:17 | p [&ref] | provenance |  |
-| main.rs:52:17:52:17 | p [&ref] | main.rs:53:15:53:15 | p [&ref] | provenance |  |
-| main.rs:53:15:53:15 | p [&ref] | main.rs:53:14:53:15 | * ... | provenance |  |
+| main.rs:52:17:52:17 | p [&ref] | main.rs:53:14:53:15 | * ... | provenance |  |
 | main.rs:57:13:57:13 | a [Some] | main.rs:58:15:58:15 | a [Some] | provenance |  |
 | main.rs:57:17:57:32 | Some(...) [Some] | main.rs:57:13:57:13 | a [Some] | provenance |  |
 | main.rs:57:22:57:31 | source(...) | main.rs:57:17:57:32 | Some(...) [Some] | provenance |  |
 | main.rs:58:15:58:15 | a [Some] | main.rs:59:13:59:23 | Some(...) [Some] | provenance |  |
 | main.rs:59:13:59:23 | Some(...) [Some] | main.rs:59:18:59:22 | ref p | provenance |  |
 | main.rs:59:18:59:22 | ref p | main.rs:59:22:59:22 | p [&ref] | provenance |  |
-| main.rs:59:22:59:22 | p [&ref] | main.rs:59:34:59:34 | p [&ref] | provenance |  |
-| main.rs:59:34:59:34 | p [&ref] | main.rs:59:33:59:34 | * ... | provenance |  |
-| main.rs:73:10:73:10 | [post] b [&ref] | main.rs:74:15:74:15 | b [&ref] | provenance |  |
+| main.rs:59:22:59:22 | p [&ref] | main.rs:59:33:59:34 | * ... | provenance |  |
+| main.rs:73:10:73:10 | [post] b [&ref] | main.rs:74:14:74:15 | * ... | provenance |  |
 | main.rs:73:14:73:23 | source(...) | main.rs:73:10:73:10 | [post] b [&ref] | provenance |  |
-| main.rs:74:15:74:15 | b [&ref] | main.rs:74:14:74:15 | * ... | provenance |  |
-| main.rs:105:10:105:10 | [post] c [&ref] | main.rs:106:15:106:15 | c [&ref] | provenance |  |
+| main.rs:105:10:105:10 | [post] c [&ref] | main.rs:106:14:106:15 | * ... | provenance |  |
 | main.rs:105:14:105:23 | source(...) | main.rs:105:10:105:10 | [post] c [&ref] | provenance |  |
-| main.rs:106:15:106:15 | c [&ref] | main.rs:106:14:106:15 | * ... | provenance |  |
 | main.rs:112:13:112:21 | ref mut a | main.rs:112:21:112:21 | a [&ref] | provenance |  |
-| main.rs:112:21:112:21 | a [&ref] | main.rs:113:15:113:15 | a [&ref] | provenance |  |
+| main.rs:112:21:112:21 | a [&ref] | main.rs:113:14:113:15 | * ... | provenance |  |
 | main.rs:112:25:112:34 | source(...) | main.rs:112:13:112:21 | ref mut a | provenance |  |
-| main.rs:113:15:113:15 | a [&ref] | main.rs:113:14:113:15 | * ... | provenance |  |
 | main.rs:149:14:149:24 | ...: MyNumber [MyNumber] | main.rs:150:11:150:11 | m [MyNumber] | provenance |  |
 | main.rs:150:11:150:11 | m [MyNumber] | main.rs:151:9:151:34 | ...::MyNumber(...) [MyNumber] | provenance |  |
 | main.rs:151:9:151:34 | ...::MyNumber(...) [MyNumber] | main.rs:151:28:151:33 | number | provenance |  |
@@ -84,10 +78,9 @@ edges
 | main.rs:200:29:200:38 | ...: i64 | main.rs:201:14:201:18 | value | provenance |  |
 | main.rs:201:10:201:10 | [post] n [&ref] | main.rs:200:16:200:26 | ...: ... [Return] [&ref] | provenance |  |
 | main.rs:201:14:201:18 | value | main.rs:201:10:201:10 | [post] n [&ref] | provenance |  |
-| main.rs:210:17:210:17 | [post] p [&ref] | main.rs:211:15:211:15 | p [&ref] | provenance |  |
+| main.rs:210:17:210:17 | [post] p [&ref] | main.rs:211:14:211:15 | * ... | provenance |  |
 | main.rs:210:20:210:29 | source(...) | main.rs:200:29:200:38 | ...: i64 | provenance |  |
 | main.rs:210:20:210:29 | source(...) | main.rs:210:17:210:17 | [post] p [&ref] | provenance |  |
-| main.rs:211:15:211:15 | p [&ref] | main.rs:211:14:211:15 | * ... | provenance |  |
 | main.rs:218:17:218:22 | [post] &mut n [&ref] | main.rs:218:22:218:22 | [post] n | provenance |  |
 | main.rs:218:22:218:22 | [post] n | main.rs:219:14:219:14 | n | provenance |  |
 | main.rs:218:25:218:34 | source(...) | main.rs:200:29:200:38 | ...: i64 | provenance |  |
@@ -134,7 +127,6 @@ nodes
 | main.rs:18:18:18:18 | a | semmle.label | a |
 | main.rs:19:13:19:13 | c | semmle.label | c |
 | main.rs:19:17:19:18 | * ... | semmle.label | * ... |
-| main.rs:19:18:19:18 | b [&ref] | semmle.label | b [&ref] |
 | main.rs:20:14:20:14 | c | semmle.label | c |
 | main.rs:23:29:23:30 | &... [&ref] | semmle.label | &... [&ref] |
 | main.rs:23:29:23:36 | ...: ... [&ref] | semmle.label | ...: ... [&ref] |
@@ -159,7 +151,6 @@ nodes
 | main.rs:52:13:52:17 | ref p | semmle.label | ref p |
 | main.rs:52:17:52:17 | p [&ref] | semmle.label | p [&ref] |
 | main.rs:53:14:53:15 | * ... | semmle.label | * ... |
-| main.rs:53:15:53:15 | p [&ref] | semmle.label | p [&ref] |
 | main.rs:57:13:57:13 | a [Some] | semmle.label | a [Some] |
 | main.rs:57:17:57:32 | Some(...) [Some] | semmle.label | Some(...) [Some] |
 | main.rs:57:22:57:31 | source(...) | semmle.label | source(...) |
@@ -168,20 +159,16 @@ nodes
 | main.rs:59:18:59:22 | ref p | semmle.label | ref p |
 | main.rs:59:22:59:22 | p [&ref] | semmle.label | p [&ref] |
 | main.rs:59:33:59:34 | * ... | semmle.label | * ... |
-| main.rs:59:34:59:34 | p [&ref] | semmle.label | p [&ref] |
 | main.rs:73:10:73:10 | [post] b [&ref] | semmle.label | [post] b [&ref] |
 | main.rs:73:14:73:23 | source(...) | semmle.label | source(...) |
 | main.rs:74:14:74:15 | * ... | semmle.label | * ... |
-| main.rs:74:15:74:15 | b [&ref] | semmle.label | b [&ref] |
 | main.rs:105:10:105:10 | [post] c [&ref] | semmle.label | [post] c [&ref] |
 | main.rs:105:14:105:23 | source(...) | semmle.label | source(...) |
 | main.rs:106:14:106:15 | * ... | semmle.label | * ... |
-| main.rs:106:15:106:15 | c [&ref] | semmle.label | c [&ref] |
 | main.rs:112:13:112:21 | ref mut a | semmle.label | ref mut a |
 | main.rs:112:21:112:21 | a [&ref] | semmle.label | a [&ref] |
 | main.rs:112:25:112:34 | source(...) | semmle.label | source(...) |
 | main.rs:113:14:113:15 | * ... | semmle.label | * ... |
-| main.rs:113:15:113:15 | a [&ref] | semmle.label | a [&ref] |
 | main.rs:149:14:149:24 | ...: MyNumber [MyNumber] | semmle.label | ...: MyNumber [MyNumber] |
 | main.rs:149:34:153:1 | { ... } | semmle.label | { ... } |
 | main.rs:150:11:150:11 | m [MyNumber] | semmle.label | m [MyNumber] |
@@ -226,7 +213,6 @@ nodes
 | main.rs:210:17:210:17 | [post] p [&ref] | semmle.label | [post] p [&ref] |
 | main.rs:210:20:210:29 | source(...) | semmle.label | source(...) |
 | main.rs:211:14:211:15 | * ... | semmle.label | * ... |
-| main.rs:211:15:211:15 | p [&ref] | semmle.label | p [&ref] |
 | main.rs:218:17:218:22 | [post] &mut n [&ref] | semmle.label | [post] &mut n [&ref] |
 | main.rs:218:22:218:22 | [post] n | semmle.label | [post] n |
 | main.rs:218:25:218:34 | source(...) | semmle.label | source(...) |
