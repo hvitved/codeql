@@ -467,15 +467,11 @@ newtype TNode =
         any(TryExprCfgNode try).getExpr(), //
         any(PrefixExprCfgNode pe | pe.getOperatorName() = "*").getExpr(), //
         any(AwaitExprCfgNode a).getExpr(), //
-        any(MethodCallExprCfgNode mc).getReceiver(), //
+        any(CallCfgNode call | call.getCall().receiverImplicitlyBorrowed()).getReceiver(), //
         getPostUpdateReverseStep(any(PostUpdateNode n).getPreUpdateNode().asExpr(), _)
       ]
   } or
-  TReceiverNode(CallCfgNode mc, Boolean isPost) {
-    mc.getCall().receiverImplicitlyBorrowed() and
-    // TODO: Handle index expressions as calls in data flow.
-    not mc.getCall() instanceof IndexExpr
-  } or
+  TReceiverNode(CallCfgNode mc, Boolean isPost) { mc.getCall().receiverImplicitlyBorrowed() } or
   TSsaNode(SsaImpl::DataFlowIntegration::SsaNode node) or
   TFlowSummaryNode(FlowSummaryImpl::Private::SummaryNode sn) or
   TClosureSelfReferenceNode(CfgScope c) { lambdaCreationExpr(c, _) } or

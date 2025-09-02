@@ -35,12 +35,6 @@ module RustTaintTracking implements InputSig<Location, RustDataFlow> {
       or
       pred.asExpr() = succ.asExpr().(CastExprCfgNode).getExpr()
       or
-      exists(IndexExprCfgNode index |
-        index.getIndex() instanceof RangeExprCfgNode and
-        pred.asExpr() = index.getBase() and
-        succ.asExpr() = index
-      )
-      or
       // Although data flow through collections and references is modeled using
       // stores/reads, we also allow taint to flow out of a tainted collection
       // or reference.

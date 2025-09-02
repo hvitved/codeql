@@ -7,7 +7,11 @@ private import codeql.rust.Concepts
 private import codeql.rust.controlflow.ControlFlowGraph as Cfg
 private import codeql.rust.controlflow.CfgNodes as CfgNodes
 private import codeql.rust.dataflow.DataFlow
+private import codeql.rust.dataflow.FlowSummary
 private import codeql.rust.internal.PathResolution
+private import codeql.rust.internal.Type
+private import codeql.rust.internal.TypeInference
+private import codeql.rust.internal.TypeMention
 
 /**
  * A call to the `starts_with` method on a `Path`.
@@ -235,6 +239,42 @@ class DerefTrait extends Trait {
 }
 
 /**
+ * One of the two special
+ *
+ * ```rust
+ * impl<T: ?Sized> const Deref for &T
+ * impl<T: ?Sized> const Deref for &mut T
+ * ```
+ *
+ * implementations.
+ */
+private class CoreDerefImpl extends ImplItemNode {
+  pragma[nomagic]
+  CoreDerefImpl() {
+    this.resolveTraitTy() instanceof DerefTrait and
+    this.(Impl)
+        .getSelfTy()
+        .(TypeMention)
+        .resolveTypeAt(TypePath::singleton(TRefTypeParameter()))
+        .(TypeParamTypeParameter)
+        .getTypeParam() = this.getTypeParam(_)
+  }
+
+  Function getDeref() { result = this.getASuccessor("deref") }
+}
+
+// TODO: Use MaD when `&(mut) T` is assigned an appropriate canonical path
+private class CoreDerefSummarizedCallable extends SummarizedCallable::Range {
+  CoreDerefSummarizedCallable() { this = any(CoreDerefImpl i).getDeref() }
+
+  override predicate propagatesFlow(string input, string output, boolean preservesValue) {
+    input = "Argument[self].Reference" and
+    output = "ReturnValue" and
+    preservesValue = true
+  }
+}
+
+/**
  * The [`Index` trait][1].
  *
  * [1]: https://doc.rust-lang.org/std/ops/trait.Index.html
@@ -251,5 +291,43 @@ class IndexTrait extends Trait {
   TypeAlias getOutputType() {
     result = this.getAssocItemList().getAnAssocItem() and
     result.getName().getText() = "Output"
+  }
+}
+
+/**
+ * One of the two special
+ *
+ * ```rust
+ * impl<T, I, const N: usize> Index<I> for [T; N]
+ * impl<T, I> ops::Index<I> for [T]
+ * ```
+ *
+ * implementations.
+ */
+private class CoreIndexImpl extends ImplItemNode {
+  pragma[nomagic]
+  CoreIndexImpl() {
+    this.resolveTraitTy() instanceof IndexTrait and
+    exists(TypeParameter tp | tp = TArrayTypeParameter() or tp = TSliceTypeParameter() |
+      this.(Impl)
+          .getSelfTy()
+          .(TypeMention)
+          .resolveTypeAt(TypePath::singleton(tp))
+          .(TypeParamTypeParameter)
+          .getTypeParam() = this.getTypeParam(_)
+    )
+  }
+
+  Function getIndex() { result = this.getASuccessor("index") }
+}
+
+// TODO: Use MaD when `[T(; N)]` is assigned an appropriate canonical path
+private class CoreIndexSummarizedCallable extends SummarizedCallable::Range {
+  CoreIndexSummarizedCallable() { this = any(CoreIndexImpl i).getIndex() }
+
+  override predicate propagatesFlow(string input, string output, boolean preservesValue) {
+    input = "Argument[self].Reference.Element" and
+    output = "ReturnValue" and
+    preservesValue = true
   }
 }

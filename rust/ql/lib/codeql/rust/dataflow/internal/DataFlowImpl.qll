@@ -147,13 +147,9 @@ final class ArgumentPosition extends ParameterPosition {
  * as the synthetic `ReceiverNode` is the argument for the `self` parameter.
  */
 predicate isArgumentForCall(ExprCfgNode arg, CallCfgNode call, ParameterPosition pos) {
-  // TODO: Handle index expressions as calls in data flow.
-  not call.getCall() instanceof IndexExpr and
-  (
-    call.getPositionalArgument(pos.getPosition()) = arg
-    or
-    call.getReceiver() = arg and pos.isSelf() and not call.getCall().receiverImplicitlyBorrowed()
-  )
+  call.getPositionalArgument(pos.getPosition()) = arg
+  or
+  call.getReceiver() = arg and pos.isSelf() and not call.getCall().receiverImplicitlyBorrowed()
 }
 
 /** Provides logic related to SSA. */
@@ -560,12 +556,6 @@ module RustDataFlow implements InputSig<Location> {
       access = c.(FieldContent).getAnAccess()
     )
     or
-    exists(IndexExprCfgNode arr |
-      c instanceof ElementContent and
-      node1.asExpr() = arr.getBase() and
-      node2.asExpr() = arr
-    )
-    or
     exists(ForExprCfgNode for |
       c instanceof ElementContent and
       node1.asExpr() = for.getIterable() and
@@ -583,13 +573,6 @@ module RustDataFlow implements InputSig<Location> {
       node2.asExpr() = try and
       c.(TupleFieldContent)
           .isVariantField([any(OptionEnum o).getSome(), any(ResultEnum r).getOk()], 0)
-    )
-    or
-    exists(PrefixExprCfgNode deref |
-      c instanceof ReferenceContent and
-      deref.getOperatorName() = "*" and
-      node1.asExpr() = deref.getExpr() and
-      node2.asExpr() = deref
     )
     or
     // Read from function return
@@ -703,6 +686,7 @@ module RustDataFlow implements InputSig<Location> {
     or
     referenceAssignment(node1, node2.(PostUpdateNode).getPreUpdateNode(), c)
     or
+    // todo: rely on flow summary
     exists(AssignmentExprCfgNode assignment, IndexExprCfgNode index |
       c instanceof ElementContent and
       assignment.getLhs() = index and
@@ -986,11 +970,7 @@ private module Cached {
 
   cached
   newtype TDataFlowCall =
-    TCall(CallCfgNode c) {
-      Stages::DataFlowStage::ref() and
-      // TODO: Handle index expressions as calls in data flow.
-      not c.getCall() instanceof IndexExpr
-    } or
+    TCall(CallCfgNode c) { Stages::DataFlowStage::ref() } or
     TSummaryCall(
       FlowSummaryImpl::Public::SummarizedCallable c, FlowSummaryImpl::Private::SummaryNode receiver
     ) {
