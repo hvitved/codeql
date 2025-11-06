@@ -3347,7 +3347,7 @@ private module Debug {
     exists(string filepath, int startline, int startcolumn, int endline, int endcolumn |
       result.getLocation().hasLocationInfo(filepath, startline, startcolumn, endline, endcolumn) and
       filepath.matches("%/sqlx.rs") and
-      startline = [56 .. 60]
+      startline = [40 .. 68]
     )
   }
 
