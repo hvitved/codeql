@@ -7,6 +7,7 @@ private import codeql.rust.internal.CachedStages
 private import codeql.rust.elements.internal.generated.Raw
 private import codeql.rust.elements.internal.generated.Synth
 private import codeql.rust.frameworks.stdlib.Stdlib
+private import codeql.rust.frameworks.stdlib.Builtins as Builtins
 
 /**
  * Holds if a dyn trait type should have a type parameter associated with `n`. A
@@ -44,24 +45,20 @@ newtype TType =
   TEnum(Enum e) or
   TTrait(Trait t) or
   TUnion(Union u) or
-  TArrayType() or // todo: add size?
   TRefType() or // todo: add mut?
   TImplTraitType(ImplTraitTypeRepr impl) or
   TDynTraitType(Trait t) { t = any(DynTraitTypeRepr dt).getTrait() } or
-  TSliceType() or
   TNeverType() or
   TPtrType() or
   TTupleTypeParameter(int arity, int i) { exists(TTuple(arity)) and i in [0 .. arity - 1] } or
   TTypeParamTypeParameter(TypeParam t) or
   TAssociatedTypeTypeParameter(TypeAlias t) { any(TraitItemNode trait).getAnAssocItem() = t } or
-  TArrayTypeParameter() or
   TDynTraitTypeParameter(AstNode n) { dynTraitTypeParameter(_, n) } or
   TImplTraitTypeParameter(ImplTraitTypeRepr implTrait, TypeParam tp) {
     implTraitTypeParam(implTrait, _, tp)
   } or
   TRefTypeParameter() or
   TSelfTypeParameter(Trait t) or
-  TSliceTypeParameter() or
   TPtrTypeParameter()
 
 private predicate implTraitTypeParam(ImplTraitTypeRepr implTrait, int i, TypeParam tp) {
@@ -228,17 +225,10 @@ class UnionType extends Type, TUnion {
  * Array types like `[i64; 5]` are modeled as normal generic types
  * with a single type argument.
  */
-class ArrayType extends Type, TArrayType {
-  ArrayType() { this = TArrayType() }
+class ArrayType extends StructType {
+  ArrayType() { this.getStruct() instanceof Builtins::ArrayType }
 
-  override TypeParameter getPositionalTypeParameter(int i) {
-    result = TArrayTypeParameter() and
-    i = 0
-  }
-
-  override string toString() { result = "[]" }
-
-  override Location getLocation() { result instanceof EmptyLocation }
+  override string toString() { result = "[;]" }
 }
 
 /**
@@ -339,17 +329,10 @@ class ImplTraitReturnType extends ImplTraitType {
  * Slice types like `[i64]` are modeled as normal generic types
  * with a single type argument.
  */
-class SliceType extends Type, TSliceType {
-  SliceType() { this = TSliceType() }
-
-  override TypeParameter getPositionalTypeParameter(int i) {
-    result = TSliceTypeParameter() and
-    i = 0
-  }
+class SliceType extends StructType {
+  SliceType() { this.getStruct() instanceof Builtins::SliceType }
 
   override string toString() { result = "[]" }
-
-  override Location getLocation() { result instanceof EmptyLocation }
 }
 
 class NeverType extends Type, TNeverType {
@@ -392,7 +375,14 @@ class TypeParamTypeParameter extends TypeParameter, TTypeParamTypeParameter {
 
   TypeParam getTypeParam() { result = typeParam }
 
-  override string toString() { result = typeParam.toString() }
+  override string toString() {
+    if this = any(ArrayType at).getATypeParameter()
+    then result = "[T;...]"
+    else
+      if this = any(SliceType st).getATypeParameter()
+      then result = "[T]"
+      else result = typeParam.toString()
+  }
 
   override Location getLocation() { result = typeParam.getLocation() }
 }
@@ -454,13 +444,6 @@ class TupleTypeParameter extends TypeParameter, TTupleTypeParameter {
   TupleType getTupleType() { result = TTuple(arity) }
 }
 
-/** An implicit array type parameter. */
-class ArrayTypeParameter extends TypeParameter, TArrayTypeParameter {
-  override string toString() { result = "[T;...]" }
-
-  override Location getLocation() { result instanceof EmptyLocation }
-}
-
 class DynTraitTypeParameter extends TypeParameter, TDynTraitTypeParameter {
   private AstNode n;
 
@@ -511,13 +494,6 @@ class ImplTraitTypeParameter extends TypeParameter, TImplTraitTypeParameter {
 /** An implicit reference type parameter. */
 class RefTypeParameter extends TypeParameter, TRefTypeParameter {
   override string toString() { result = "&T" }
-
-  override Location getLocation() { result instanceof EmptyLocation }
-}
-
-/** An implicit slice type parameter. */
-class SliceTypeParameter extends TypeParameter, TSliceTypeParameter {
-  override string toString() { result = "[T]" }
 
   override Location getLocation() { result instanceof EmptyLocation }
 }

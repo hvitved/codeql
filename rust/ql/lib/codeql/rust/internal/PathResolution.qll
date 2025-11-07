@@ -739,7 +739,12 @@ final class ImplItemNode extends ImplOrTraitItemNode instanceof Impl {
 
   Path getTraitPath() { result = super.getTrait().(PathTypeRepr).getPath() }
 
-  TypeItemNode resolveSelfTy() { result = resolvePath(this.getSelfPath()) }
+  TypeItemNode resolveSelfTy() {
+    result = resolvePath(this.getSelfPath())
+    or
+    this.(Impl).getSelfTy() instanceof SliceTypeRepr and
+    result instanceof Builtins::SliceType
+  }
 
   TraitItemNode resolveTraitTy() { result = resolvePath(this.getTraitPath()) }
 
@@ -914,7 +919,12 @@ private class ModuleItemNode extends ModuleLikeNode instanceof Module {
 }
 
 private class ImplItemNodeImpl extends ImplItemNode {
-  TypeItemNode resolveSelfTyCand() { result = resolvePathCand(this.getSelfPath()) }
+  TypeItemNode resolveSelfTyCand() {
+    result = resolvePathCand(this.getSelfPath())
+    or
+    this.(Impl).getSelfTy() instanceof SliceTypeRepr and
+    result instanceof Builtins::SliceType
+  }
 
   TraitItemNode resolveTraitTyCand() { result = resolvePathCand(this.getTraitPath()) }
 }
@@ -1764,6 +1774,14 @@ private ItemNode resolvePathCand0(RelevantPath path, Namespace ns) {
   or
   result = resolveUseTreeListItem(_, _, path, _) and
   ns = result.getNamespace()
+  or
+  path.getSegment().getTypeRepr() instanceof SliceTypeRepr and
+  result = any(BuiltinSourceFile b).getASuccessor("Slice") and
+  ns.isType()
+  or
+  path.getSegment().getTypeRepr() instanceof ArrayTypeRepr and
+  result = any(BuiltinSourceFile b).getASuccessor("Array") and
+  ns.isType()
 }
 
 pragma[nomagic]
@@ -2127,7 +2145,8 @@ pragma[nomagic]
 private predicate builtin(string name, ItemNode i) {
   exists(BuiltinSourceFile builtins |
     builtins.getFile().getBaseName() = "types.rs" and
-    i = builtins.getASuccessor(name)
+    i = builtins.getASuccessor(name) and
+    not name = ["Array", "Slice"]
   )
 }
 
@@ -2136,8 +2155,8 @@ private module Debug {
   Locatable getRelevantLocatable() {
     exists(string filepath, int startline, int startcolumn, int endline, int endcolumn |
       result.getLocation().hasLocationInfo(filepath, startline, startcolumn, endline, endcolumn) and
-      filepath.matches("%/main.rs") and
-      startline = 52
+      filepath.matches("%/dereference.rs") and
+      startline = 107
     )
   }
 

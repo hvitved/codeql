@@ -87,25 +87,15 @@ private module Input1 implements InputSig1<Location> {
   int getTypeParameterId(TypeParameter tp) {
     tp =
       rank[result](TypeParameter tp0, int kind, int id1, int id2 |
-        tp0 instanceof ArrayTypeParameter and
+        tp0 instanceof RefTypeParameter and
         kind = 0 and
         id1 = 0 and
         id2 = 0
         or
-        tp0 instanceof RefTypeParameter and
-        kind = 0 and
-        id1 = 0 and
-        id2 = 1
-        or
-        tp0 instanceof SliceTypeParameter and
-        kind = 0 and
-        id1 = 0 and
-        id2 = 2
-        or
         tp0 instanceof PtrTypeParameter and
         kind = 0 and
         id1 = 0 and
-        id2 = 3
+        id2 = 1
         or
         kind = 1 and
         id1 = 0 and
@@ -555,6 +545,16 @@ private predicate bodyReturns(Expr body, Expr e) {
   )
 }
 
+pragma[nomagic]
+TypeParamTypeParameter getArrayTypeParameter() {
+  result = any(ArrayType t).getPositionalTypeParameter(0)
+}
+
+pragma[nomagic]
+TypeParamTypeParameter getSliceTypeParameter() {
+  result = any(SliceType t).getPositionalTypeParameter(0)
+}
+
 /**
  * Holds if the type tree of `n1` at `prefix1` should be equal to the type tree
  * of `n2` at `prefix2` and type information should propagate in both directions
@@ -649,12 +649,12 @@ private predicate typeEquality(AstNode n1, TypePath prefix1, AstNode n2, TypePat
       ale.getAnExpr() = n2 and
       ale.getNumberOfExprs() = 1
     ) and
-  prefix1 = TypePath::singleton(TArrayTypeParameter()) and
+  prefix1 = TypePath::singleton(getArrayTypeParameter()) and
   prefix2.isEmpty()
   or
   // an array repeat expression (`[1; 3]`) has the type of the repeat operand
   n1.(ArrayRepeatExpr).getRepeatOperand() = n2 and
-  prefix1 = TypePath::singleton(TArrayTypeParameter()) and
+  prefix1 = TypePath::singleton(getArrayTypeParameter()) and
   prefix2.isEmpty()
   or
   exists(Struct s |
@@ -703,7 +703,7 @@ private predicate lubCoercion(AstNode parent, AstNode child, TypePath prefix) {
       child = ale.getAnExpr() and
       ale.getNumberOfExprs() > 1
     ) and
-  prefix = TypePath::singleton(TArrayTypeParameter())
+  prefix = TypePath::singleton(getArrayTypeParameter())
   or
   bodyReturns(parent, child) and
   strictcount(Expr e | bodyReturns(parent, e)) > 1 and
@@ -2886,7 +2886,7 @@ private Type inferAwaitExprType(AstNode n, TypePath path) {
  * Gets the root type of the array expression `ae`.
  */
 pragma[nomagic]
-private Type inferArrayExprType(ArrayExpr ae) { exists(ae) and result = TArrayType() }
+private Type inferArrayExprType(ArrayExpr ae) { exists(ae) and result instanceof ArrayType }
 
 /**
  * Gets the root type of the range expression `re`.
@@ -2922,11 +2922,11 @@ private Type inferIndexExprType(IndexExpr ie, TypePath path) {
     // todo: remove?
     exprPath.isCons(TTypeParamTypeParameter(any(Vec v).getElementTypeParam()), path)
     or
-    exprPath.isCons(any(ArrayTypeParameter tp), path)
+    exprPath.isCons(getArrayTypeParameter(), path)
     or
     exists(TypePath path0 |
       exprPath.isCons(any(RefTypeParameter tp), path0) and
-      path0.isCons(any(SliceTypeParameter tp), path)
+      path0.isCons(getSliceTypeParameter(), path)
     )
   )
 }
@@ -3071,7 +3071,7 @@ private Type inferForLoopExprType(AstNode n, TypePath path) {
     or
     // TODO: Remove once we can handle the `impl<I: Iterator> IntoIterator for I` implementation
     tp = getIteratorItemTypeParameter() and
-    inferType(fe.getIterable()) != TArrayType()
+    inferType(fe.getIterable()) != getArrayTypeParameter()
   )
 }
 
@@ -3346,8 +3346,8 @@ private module Debug {
   Locatable getRelevantLocatable() {
     exists(string filepath, int startline, int startcolumn, int endline, int endcolumn |
       result.getLocation().hasLocationInfo(filepath, startline, startcolumn, endline, endcolumn) and
-      filepath.matches("%/sqlx.rs") and
-      startline = [40 .. 68]
+      filepath.matches("%/dereference.rs") and
+      startline = 107
     )
   }
 

@@ -23,3 +23,6 @@ pub struct isize;
 // floating-point types
 pub struct f32;
 pub struct f64;
+
+pub struct Slice<T>();
+pub struct Array<T, const N: usize>();

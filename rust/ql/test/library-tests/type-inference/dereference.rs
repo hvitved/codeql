@@ -102,6 +102,10 @@ fn implicit_dereference() {
 
     let z = MySmartPointer { value: S(0i64) };
     let z_ = z.foo(); // $ MISSING: target=foo type=z_:&T.i64
+
+    let v = vec![1, 2, 3]; // $ type=v:Vec type=v:T.i32
+    let v2 = <[_]>::into_vec(Box::new([1, 2, 3])); // $ target=new target=into_vec type=v2:Vec
+    let b = v.iter().all(|x| *x >= 0); // $ target=iter target=all target=ge type=b:bool
 }
 
 mod implicit_deref_coercion_cycle {

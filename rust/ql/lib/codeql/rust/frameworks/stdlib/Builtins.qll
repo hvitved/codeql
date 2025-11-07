@@ -136,3 +136,11 @@ class F32 extends FloatingPointTypeImpl {
 class F64 extends FloatingPointTypeImpl {
   F64() { this.getName() = "f64" }
 }
+
+class SliceType extends BuiltinType {
+  SliceType() { this.getName() = "Slice" }
+}
+
+class ArrayType extends BuiltinType {
+  ArrayType() { this.getName() = "Array" }
+}

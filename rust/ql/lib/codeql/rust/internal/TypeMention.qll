@@ -44,11 +44,11 @@ class ParenthesizedArgListMention extends TypeMention instanceof ParenthesizedAr
 class ArrayTypeReprMention extends TypeMention instanceof ArrayTypeRepr {
   override Type resolveTypeAt(TypePath path) {
     path.isEmpty() and
-    result = TArrayType()
+    result instanceof ArrayType
     or
     exists(TypePath suffix |
       result = super.getElementTypeRepr().(TypeMention).resolveTypeAt(suffix) and
-      path = TypePath::cons(TArrayTypeParameter(), suffix)
+      path = TypePath::cons(getArrayTypeParameter(), suffix)
     )
   }
 }
@@ -68,11 +68,11 @@ class RefTypeReprMention extends TypeMention instanceof RefTypeRepr {
 class SliceTypeReprMention extends TypeMention instanceof SliceTypeRepr {
   override Type resolveTypeAt(TypePath path) {
     path.isEmpty() and
-    result = TSliceType()
+    result instanceof SliceType
     or
     exists(TypePath suffix |
       result = super.getTypeRepr().(TypeMention).resolveTypeAt(suffix) and
-      path = TypePath::cons(TSliceTypeParameter(), suffix)
+      path = TypePath::cons(getSliceTypeParameter(), suffix)
     )
   }
 }
