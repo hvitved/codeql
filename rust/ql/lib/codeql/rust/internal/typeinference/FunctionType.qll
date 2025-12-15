@@ -194,6 +194,7 @@ class AssocFunctionType extends MkAssocFunctionType {
   Location getLocation() { result = this.getTypeMention().getLocation() }
 }
 
+pragma[nomagic]
 private Trait getALookupTrait(Type t) {
   result = t.(TypeParamTypeParameter).getTypeParam().(TypeParamItemNode).resolveABound()
   or

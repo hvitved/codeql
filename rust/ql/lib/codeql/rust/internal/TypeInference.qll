@@ -1614,22 +1614,29 @@ private module MethodResolution {
      * Same as `getACandidateReceiverTypeAt`, but with traits substituted in for types
      * with trait bounds.
      */
+    // pragma[nomagic]
+    // Type getACandidateReceiverTypeAtSubstituteLookupTraits(
+    //   string derefChain, BorrowKind borrow, TypePath path
+    // ) {
+    //   result = substituteLookupTraits(this.getACandidateReceiverTypeAt(derefChain, borrow, path)) and
+    //   result != TNeverType() and
+    //   result != TUnknownType()
+    // }
     pragma[nomagic]
-    Type getACandidateReceiverTypeAtSubstituteLookupTraits(
-      string derefChain, BorrowKind borrow, TypePath path
-    ) {
-      result = substituteLookupTraits(this.getACandidateReceiverTypeAt(derefChain, borrow, path))
+    Type foo(string derefChain, BorrowKind borrow, TypePath path) {
+      result = this.getACandidateReceiverTypeAt(derefChain, borrow, path) and
+      result != TNeverType() and
+      result != TUnknownType()
     }
 
     pragma[nomagic]
     private Type getComplexStrippedType(
       string derefChain, BorrowKind borrow, TypePath strippedTypePath
     ) {
-      result =
-        this.getACandidateReceiverTypeAtSubstituteLookupTraits(derefChain, borrow, strippedTypePath) and
-      isComplexRootStripped(strippedTypePath, result) and
-      result != TNeverType() and
-      result != TUnknownType()
+      // result =
+      //   this.getACandidateReceiverTypeAtSubstituteLookupTraits(derefChain, borrow, strippedTypePath) and
+      result = this.foo(derefChain, borrow, strippedTypePath) and
+      isComplexRootStripped(strippedTypePath, result)
     }
 
     bindingset[derefChain, borrow, strippedTypePath, strippedType]
@@ -1682,7 +1689,10 @@ private module MethodResolution {
       ) and
       exists(TypePath strippedTypePath, Type strippedType |
         strippedType = this.getComplexStrippedType(derefChain, TNoBorrowKind(), strippedTypePath) and
-        this.hasNoCompatibleTargetCheck(derefChain, TNoBorrowKind(), strippedTypePath, strippedType)
+        // this.hasNoCompatibleTargetCheck(derefChain, TNoBorrowKind(), strippedTypePath, strippedType)
+        forex(Type t | t = substituteLookupTraits(strippedType) |
+          this.hasNoCompatibleTargetCheck(derefChain, TNoBorrowKind(), strippedTypePath, t)
+        )
       )
     }
 
@@ -1701,8 +1711,11 @@ private module MethodResolution {
       ) and
       exists(TypePath strippedTypePath, Type strippedType |
         strippedType = this.getComplexStrippedType(derefChain, TNoBorrowKind(), strippedTypePath) and
-        this.hasNoCompatibleNonBlanketTargetCheck(derefChain, TNoBorrowKind(), strippedTypePath,
-          strippedType)
+        // this.hasNoCompatibleNonBlanketTargetCheck(derefChain, TNoBorrowKind(), strippedTypePath,
+        //   strippedType)
+        forex(Type t | t = substituteLookupTraits(strippedType) |
+          this.hasNoCompatibleNonBlanketTargetCheck(derefChain, TNoBorrowKind(), strippedTypePath, t)
+        )
       )
     }
 
@@ -1716,8 +1729,12 @@ private module MethodResolution {
         this.hasNoCompatibleTargetNoBorrow(derefChain) and
         strippedType =
           this.getComplexStrippedType(derefChain, TSharedBorrowKind(), strippedTypePath) and
-        this.hasNoCompatibleNonBlanketLikeTargetCheck(derefChain, TSharedBorrowKind(),
-          strippedTypePath, strippedType)
+        // this.hasNoCompatibleNonBlanketLikeTargetCheck(derefChain, TSharedBorrowKind(),
+        //   strippedTypePath, strippedType)
+        forex(Type t | t = substituteLookupTraits(strippedType) |
+          this.hasNoCompatibleNonBlanketLikeTargetCheck(derefChain, TSharedBorrowKind(),
+            strippedTypePath, t)
+        )
       )
     }
 
@@ -1730,8 +1747,12 @@ private module MethodResolution {
       exists(TypePath strippedTypePath, Type strippedType |
         this.hasNoCompatibleTargetSharedBorrow(derefChain) and
         strippedType = this.getComplexStrippedType(derefChain, TMutBorrowKind(), strippedTypePath) and
-        this.hasNoCompatibleNonBlanketLikeTargetCheck(derefChain, TMutBorrowKind(),
-          strippedTypePath, strippedType)
+        // this.hasNoCompatibleNonBlanketLikeTargetCheck(derefChain, TMutBorrowKind(),
+        //   strippedTypePath, strippedType)
+        forex(Type t | t = substituteLookupTraits(strippedType) |
+          this.hasNoCompatibleNonBlanketLikeTargetCheck(derefChain, TMutBorrowKind(),
+            strippedTypePath, t)
+        )
       )
     }
 
@@ -1745,8 +1766,12 @@ private module MethodResolution {
         this.hasNoCompatibleTargetNoBorrow(derefChain) and
         strippedType =
           this.getComplexStrippedType(derefChain, TSharedBorrowKind(), strippedTypePath) and
-        this.hasNoCompatibleNonBlanketTargetCheck(derefChain, TSharedBorrowKind(), strippedTypePath,
-          strippedType)
+        // this.hasNoCompatibleNonBlanketTargetCheck(derefChain, TSharedBorrowKind(), strippedTypePath,
+        //   strippedType)
+        forex(Type t | t = substituteLookupTraits(strippedType) |
+          this.hasNoCompatibleNonBlanketTargetCheck(derefChain, TSharedBorrowKind(),
+            strippedTypePath, t)
+        )
       )
     }
 
@@ -1761,6 +1786,10 @@ private module MethodResolution {
         strippedType = this.getComplexStrippedType(derefChain, TMutBorrowKind(), strippedTypePath) and
         this.hasNoCompatibleNonBlanketTargetCheck(derefChain, TMutBorrowKind(), strippedTypePath,
           strippedType)
+        // forex(Type t | t = substituteLookupTraits(strippedType) |
+        //   this.hasNoCompatibleNonBlanketTargetCheck(derefChain, TMutBorrowKind(), strippedTypePath,
+        //     t)
+        // )
       )
     }
 
@@ -1999,9 +2028,7 @@ private module MethodResolution {
     MethodCall getMethodCall() { result = mc_ }
 
     Type getTypeAt(TypePath path) {
-      result = mc_.getACandidateReceiverTypeAtSubstituteLookupTraits(derefChain, borrow, path) and
-      not result = TNeverType() and
-      not result = TUnknownType()
+      result = substituteLookupTraits(mc_.foo(derefChain, borrow, path))
     }
 
     pragma[nomagic]
@@ -3918,8 +3945,8 @@ private module Debug {
   Locatable getRelevantLocatable() {
     exists(string filepath, int startline, int startcolumn, int endline, int endcolumn |
       result.getLocation().hasLocationInfo(filepath, startline, startcolumn, endline, endcolumn) and
-      filepath.matches("%/sqlx.rs") and
-      startline = [56 .. 60]
+      filepath.matches("%/multi_buffer.rs") and
+      startline = 3707
     )
   }
 
