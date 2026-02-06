@@ -189,12 +189,12 @@ mod m8 {
     #[rustfmt::skip]
     pub fn g() {
         let x = MyStruct {}; // $ item=I50
-        MyTrait::f(&x); // $ item=I48
+        MyTrait::f(&x); // $ item=I48 (type inference later resolves this correctly to `I53`)
         MyStruct::f(&x); // $ item=I53
         <MyStruct as // $ item=I50
          MyTrait // $ item=I47
         > // $ MISSING: item=52
-        ::f(&x); // $ item=I48
+        ::f(&x); // $ item=I48 (type inference later resolves this correctly to `I53`)
         let x = MyStruct {}; // $ item=I50
         x.f(); // $ item=I53
         let x = MyStruct {}; // $ item=I50
@@ -365,10 +365,10 @@ mod m15 {
         let x = S; // $ item=I81
         <S // $ item=I81
           as Trait1 // $ item=I79
-        >::f(&x); // $ item=Trait1::f
+        >::f(&x); // $ item=Trait1::f (type inference later resolves this correctly to `I76`)
         <S // $ item=I81
           as Trait2 // $ item=I82
-        >::f(&x); // $ item=Trait2::f
+        >::f(&x); // $ item=Trait2::f (type inference later resolves this correctly to `I78`)
         S::g(&x); // $ item=I77
         x.g(); // $ item=I77
     } // I75
@@ -452,12 +452,12 @@ mod m16 {
           as Trait1<
             S // $ item=I90
           > // $ item=I86
-        >::f(&x); // $ item=Trait1::f
+        >::f(&x); // $ item=Trait1::f (type inference later resolves this correctly to `I91`)
         <S // $ item=I90
           as Trait2<
             S // $ item=I90
           > // $ item=I89
-        >::f(&x); // $ item=Trait2::f
+        >::f(&x); // $ item=Trait2::f (type inference later resolves this correctly to `I93`)
         S::g(&x); // $ item=I92
         x.g(); // $ item=I92
         S::h(&x); // $ item=I96
@@ -628,7 +628,7 @@ mod trait_visibility {
         {
             // The `Bar` trait is not visible, but we can refer to its method
             // with a full path.
-            m::Bar::a_method(&x); // $ item=Bar::a_method
+            m::Bar::a_method(&x); // $ item=Bar::a_method (type inference later resolves this correctly to `X_Bar::a_method`)
         }
     } // trait_visibility::f
 }
