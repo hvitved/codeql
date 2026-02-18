@@ -32,3 +32,35 @@ mod regression1 {
         opt_e.unwrap() // $ target=unwrap
     }
 }
+
+mod regression2 {
+    trait SomeTrait {}
+
+    trait MyFrom<T> {
+        fn my_from(value: T) -> Self;
+    }
+
+    impl<T> MyFrom<T> for T {
+        fn my_from(s: T) -> Self {
+            s
+        }
+    }
+
+    impl<T> MyFrom<T> for Option<T> {
+        fn my_from(val: T) -> Option<T> {
+            Some(val)
+        }
+    }
+
+    pub struct S<Ts>(Ts);
+
+    pub fn f<T1, T2>(x: T2) -> T2
+    where
+        T2: SomeTrait + MyFrom<Option<T1>>,
+        Option<T1>: MyFrom<T2>,
+    {
+        let y = MyFrom::my_from(x); // $ target=my_from
+        let z = MyFrom::my_from(y); // $ target=my_from
+        z
+    }
+}
