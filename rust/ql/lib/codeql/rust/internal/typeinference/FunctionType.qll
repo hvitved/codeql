@@ -29,18 +29,20 @@ class FunctionPosition extends TFunctionPosition {
 
   predicate isReturn() { this = TReturnFunctionPosition() }
 
+  /** Gets the corresponding position when function call syntax is used. */
+  FunctionPosition getFunctionCallAdjusted() {
+    (this.isReturn() or this.isTypeQualifier()) and
+    result = this
+    or
+    this.isSelf() and result.asPosition() = 0
+    or
+    result.asPosition() = this.asPosition() + 1
+  }
+
   /** Gets the corresponding position when `f` is invoked via a function call. */
   bindingset[f]
   FunctionPosition getFunctionCallAdjusted(Function f) {
-    this.isReturn() and
-    result = this
-    or
-    if f.hasSelfParam()
-    then
-      this.isSelf() and result.asPosition() = 0
-      or
-      result.asPosition() = this.asPosition() + 1
-    else result = this
+    if f.hasSelfParam() then result = this.getFunctionCallAdjusted() else result = this
   }
 
   TypeMention getTypeMention(Function f) {
@@ -197,7 +199,7 @@ class AssocFunctionType extends MkAssocFunctionType {
     exists(Function f, ImplOrTraitItemNode i, FunctionPosition pos | this.appliesTo(f, i, pos) |
       result = pos.getTypeMention(f)
       or
-      pos.isSelf() and
+      pos.isSelfOrTypeQualifier() and
       not f.hasSelfParam() and
       result = [i.(Impl).getSelfTy().(AstNode), i.(Trait).getName()]
     )

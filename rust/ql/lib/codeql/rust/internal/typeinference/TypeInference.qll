@@ -343,6 +343,10 @@ private class FunctionDeclaration extends Function {
   }
 }
 
+private class AssocFunction extends FunctionDeclaration {
+  AssocFunction() { this.isAssoc(_) }
+}
+
 pragma[nomagic]
 private TypeMention getCallExprTypeMentionArgument(CallExpr ce, TypeArgumentPosition apos) {
   exists(Path p, int i | p = CallExprImpl::getFunctionPath(ce) |
@@ -1246,7 +1250,7 @@ private predicate assocFunctionInfo(
   AssocFunctionType t
 ) {
   f = i.getASuccessor(name) and
-  arity = f.getParamList().getNumberOfParams() and
+  arity = f.getNumberOfParamsInclSelf() and
   t.appliesTo(f, i, pos)
 }
 
@@ -1259,7 +1263,7 @@ private predicate assocFunctionInfo(
  * is the type parameter used in the blanket implementation.
  */
 pragma[nomagic]
-private predicate functionInfoBlanketLike(
+private predicate assocFunctionInfoBlanketLike(
   Function f, string name, int arity, ImplItemNode impl, Trait trait, FunctionPosition pos,
   AssocFunctionType t, TypePath blanketPath, TypeParam blanketTypeParam
 ) {
@@ -1327,7 +1331,7 @@ private class BorrowKind extends TBorrowKind {
 }
 
 /**
- * Provides logic for resolving calls to methods.
+ * Provides logic for resolving calls to associated functions.
  *
  * When resolving a method call, a list of [candidate receiver types][1] is constructed
  *
@@ -1361,190 +1365,257 @@ private class BorrowKind extends TBorrowKind {
  *
  * [1]: https://doc.rust-lang.org/reference/expressions/method-call-expr.html#r-expr.method.candidate-receivers
  */
-private module MethodResolution {
+private module AssocFunctionResolution {
   /**
-   * Holds if method `m` with the name `name` and the arity `arity` exists in
-   * `i`, and the type of the `self` parameter is `selfType`.
+   * Holds if the non-method trait function `f` mentions the implicit `Self` type
+   * parameter at `pos`.
+   */
+  pragma[nomagic]
+  private predicate traitSelfTypeParameterOccurrence(
+    TraitItemNode trait, NonMethodFunction f, FunctionPosition pos
+  ) {
+    FunctionOverloading::traitTypeParameterOccurrence(trait, f, _, pos, _, TSelfTypeParameter(trait))
+  }
+
+  /**
+   * Holds if the non-method function `f` implements a trait function that mentions
+   * the implicit `Self` type parameter at `pos`.
+   */
+  pragma[nomagic]
+  private predicate traitImplSelfTypeParameterOccurrence(
+    ImplItemNode impl, NonMethodFunction f, FunctionPosition pos
+  ) {
+    exists(NonMethodFunction traitFunction |
+      f = impl.getAnAssocItem() and
+      f.implements(traitFunction) and
+      traitSelfTypeParameterOccurrence(_, traitFunction, pos)
+    )
+  }
+
+  /**
+   * Holds if function `f` with the name `name` and the arity `arity` exists in
+   * `i`, and the type at `selfPos` is `selfType`.
    *
    * `strippedTypePath` points to the type `strippedType` inside `selfType`,
    * which is the (possibly complex-stripped) root type of `selfType`. For example,
-   * if `m` has a `&self` parameter, then `strippedTypePath` is `getRefSharedTypeParameter()`
+   * if `f` has a `&self` parameter, then `strippedTypePath` is `getRefSharedTypeParameter()`
    * and `strippedType` is the type inside the reference.
+   *
+   * `selfPosAdj` is the function-call adjusted version of `selfPos`.
    */
   pragma[nomagic]
-  private predicate methodInfo(
-    Method m, string name, int arity, FunctionPosition selfPos, ImplOrTraitItemNode i,
-    AssocFunctionType selfType, TypePath strippedTypePath, Type strippedType
+  private predicate assocFunctionInfo(
+    Function f, string name, int arity, FunctionPosition selfPos, FunctionPosition selfPosAdj,
+    ImplOrTraitItemNode i, AssocFunctionType selfType, TypePath strippedTypePath, Type strippedType
   ) {
-    assocFunctionInfo(m, name, arity, i, selfPos, selfType) and
+    assocFunctionInfo(f, name, arity, i, selfPos, selfType) and
     strippedType = selfType.getTypeAt(strippedTypePath) and
-    isComplexRootStripped(strippedTypePath, strippedType) and
-    selfPos.isSelfOrTypeQualifier()
+    (
+      isComplexRootStripped(strippedTypePath, strippedType)
+      or
+      selfPos.isTypeQualifier() and strippedTypePath.isEmpty()
+    ) and
+    selfPosAdj = selfPos.getFunctionCallAdjusted(f) and
+    (
+      selfPos.isSelfOrTypeQualifier()
+      or
+      traitSelfTypeParameterOccurrence(i, f, selfPos)
+      or
+      traitImplSelfTypeParameterOccurrence(i, f, selfPos)
+    )
   }
 
   pragma[nomagic]
-  private predicate methodInfoTypeParam(
-    Method m, string name, int arity, FunctionPosition selfPos, ImplOrTraitItemNode i,
-    AssocFunctionType selfType, TypePath strippedTypePath, TypeParam tp
+  private predicate assocFunctionInfoTypeParam(
+    Function f, string name, int arity, FunctionPosition selfPos, FunctionPosition selfPosAdj,
+    ImplOrTraitItemNode i, AssocFunctionType selfType, TypePath strippedTypePath, TypeParam tp
   ) {
-    methodInfo(m, name, arity, selfPos, i, selfType, strippedTypePath, TTypeParamTypeParameter(tp))
+    assocFunctionInfo(f, name, arity, selfPos, selfPosAdj, i, selfType, strippedTypePath,
+      TTypeParamTypeParameter(tp))
   }
 
   /**
-   * Same as `methodInfo`, but restricted to non-blanket implementations, and
-   * allowing for any `strippedType` when the corresponding type inside `m` is
+   * Same as `assocFunctionInfo`, but restricted to non-blanket implementations, and
+   * allowing for any `strippedType` when the corresponding type inside `f` is
    * a type parameter.
    */
   pragma[inline]
-  private predicate methodInfoNonBlanket(
-    Method m, string name, int arity, FunctionPosition selfPos, ImplOrTraitItemNode i,
-    AssocFunctionType selfType, TypePath strippedTypePath, Type strippedType
+  private predicate assocFunctionInfoNonBlanket(
+    Function f, string name, int arity, FunctionPosition selfPos, FunctionPosition selfPosAdj,
+    ImplOrTraitItemNode i, AssocFunctionType selfType, TypePath strippedTypePath, Type strippedType
   ) {
     (
-      methodInfo(m, name, arity, selfPos, i, selfType, strippedTypePath, strippedType) or
-      methodInfoTypeParam(m, name, arity, selfPos, i, selfType, strippedTypePath, _)
+      assocFunctionInfo(f, name, arity, selfPos, selfPosAdj, i, selfType, strippedTypePath,
+        strippedType) or
+      assocFunctionInfoTypeParam(f, name, arity, selfPos, selfPosAdj, i, selfType, strippedTypePath,
+        _)
     ) and
     not BlanketImplementation::isBlanketLike(i, _, _)
   }
 
   /**
-   * Holds if method `m` with the name `name` and the arity `arity` exists in
-   * blanket (like) implementation `impl` of `trait`, and the type of the `self`
-   * parameter is `selfType`.
+   * Holds if associated function `f` with the name `name` and the arity `arity` exists
+   * in blanket (like) implementation `impl` of `trait`, and the type at `selfPos` is
+   * `selfType`.
    *
    * `blanketPath` points to the type `blanketTypeParam` inside `selfType`, which
    * is the type parameter used in the blanket implementation.
    */
   pragma[nomagic]
-  private predicate methodInfoBlanketLike(
-    Method m, string name, int arity, FunctionPosition selfPos, ImplItemNode impl, Trait trait,
-    AssocFunctionType selfType, TypePath blanketPath, TypeParam blanketTypeParam
+  private predicate assocFunctionSelfInfoBlanketLike(
+    Function f, string name, int arity, FunctionPosition selfPos, FunctionPosition selfPosAdj,
+    ImplItemNode impl, Trait trait, AssocFunctionType selfType, TypePath blanketPath,
+    TypeParam blanketTypeParam
   ) {
-    functionInfoBlanketLike(m, name, arity, impl, trait, selfPos, selfType, blanketPath,
+    assocFunctionInfoBlanketLike(f, name, arity, impl, trait, selfPos, selfType, blanketPath,
       blanketTypeParam) and
-    selfPos.isSelfOrTypeQualifier()
+    selfPosAdj = selfPos.getFunctionCallAdjusted(f) and
+    (
+      selfPos.isSelfOrTypeQualifier()
+      or
+      traitImplSelfTypeParameterOccurrence(impl, f, selfPos)
+    )
   }
 
   pragma[nomagic]
-  private predicate methodTraitInfo(string name, int arity, Trait trait) {
+  private predicate assocFunctionTraitInfo(string name, int arity, Trait trait) {
     exists(ImplItemNode i |
-      methodInfo(_, name, arity, _, i, _, _, _) and
+      assocFunctionInfo(_, name, arity, _, _, i, _, _, _) and
       trait = i.resolveTraitTy()
     )
     or
-    methodInfo(_, name, arity, _, trait, _, _, _)
+    assocFunctionInfo(_, name, arity, _, _, trait, _, _, _)
   }
 
   pragma[nomagic]
-  private predicate methodCallTraitCandidate(Element mc, Trait trait) {
-    mc =
-      any(MethodCall mc0 |
+  private predicate assocFunctionCallTraitCandidate(Element afc, Trait trait) {
+    afc =
+      any(AssocFunctionCall afc0 |
         exists(string name, int arity |
-          mc0.hasNameAndArity(name, arity) and
-          methodTraitInfo(name, arity, trait)
+          afc0.hasNameAndArity(name, arity) and
+          assocFunctionTraitInfo(name, arity, trait)
         |
-          not mc0.hasTrait()
+          not afc0.hasTrait()
           or
-          trait = mc0.getTrait()
+          trait = afc0.getTrait()
         )
       )
   }
 
-  private module MethodTraitIsVisible = TraitIsVisible<methodCallTraitCandidate/2>;
+  private module AssocFunctionTraitIsVisible = TraitIsVisible<assocFunctionCallTraitCandidate/2>;
 
-  private predicate methodCallVisibleTraitCandidate = MethodTraitIsVisible::traitIsVisible/2;
+  private predicate callVisibleTraitCandidate = AssocFunctionTraitIsVisible::traitIsVisible/2;
 
-  bindingset[mc, impl]
+  bindingset[afc, impl]
   pragma[inline_late]
-  private predicate methodCallVisibleImplTraitCandidate(MethodCall mc, ImplItemNode impl) {
-    methodCallVisibleTraitCandidate(mc, impl.resolveTraitTy())
+  private predicate callVisibleImplTraitCandidate(AssocFunctionCall afc, ImplItemNode impl) {
+    callVisibleTraitCandidate(afc, impl.resolveTraitTy())
   }
 
   /**
-   * Holds if method call `mc` may target a method in `i` with `self` parameter having
-   * type `selfType`.
+   * Holds if call `afc` may target function `f` in `i` with type `selfType` at
+   * `selfPos`.
    *
    * `strippedTypePath` points to the type `strippedType` inside `selfType`,
    * which is the (possibly complex-stripped) root type of `selfType`.
    *
-   * This predicate only checks for matching method names and arities, and whether
+   * This predicate only checks for matching function names and arities, and whether
    * the trait being implemented by `i` (when `i` is not a trait itself) is visible
-   * at `mc`.
+   * at `afc`.
    */
-  bindingset[mc, strippedTypePath, strippedType]
+  bindingset[afc, strippedTypePath, strippedType]
   pragma[inline_late]
-  private predicate methodCallNonBlanketCandidate(
-    MethodCall mc, Method m, FunctionPosition selfPos, ImplOrTraitItemNode i,
-    AssocFunctionType self, TypePath strippedTypePath, Type strippedType
+  private predicate nonBlanketCandidate(
+    AssocFunctionCall afc, Function f, FunctionPosition selfPos, FunctionPosition selfPosAdj,
+    ImplOrTraitItemNode i, AssocFunctionType selfType, TypePath strippedTypePath, Type strippedType
   ) {
     exists(string name, int arity |
-      mc.hasNameAndArity(name, arity) and
-      methodInfoNonBlanket(m, name, arity, selfPos, i, self, strippedTypePath, strippedType)
+      afc.hasNameAndArity(name, arity) and
+      assocFunctionInfoNonBlanket(f, name, arity, selfPos, selfPosAdj, i, selfType,
+        strippedTypePath, strippedType) and
+      (if afc.hasReceiver() then f instanceof Method else any()) and
+      // In case of a (non-type-parameter) type qualifier, the `impl` block must match that type
+      forall(Type t |
+        t = getCallExprTypeQualifier(afc, TypePath::nil(), _) and
+        not t instanceof TypeParameter
+      |
+        t = resolveImplSelfTypeAt(i, TypePath::nil())
+      )
     |
       i =
         any(Impl impl |
           not impl.hasTrait()
           or
-          methodCallVisibleImplTraitCandidate(mc, impl)
+          callVisibleImplTraitCandidate(afc, impl)
         )
       or
-      methodCallVisibleTraitCandidate(mc, i)
+      callVisibleTraitCandidate(afc, i)
       or
-      i.(ImplItemNode).resolveTraitTy() = mc.getTrait()
+      i.(ImplItemNode).resolveTraitTy() = afc.getTrait()
     )
   }
 
   /**
-   * Holds if method call `mc` may target a method in blanket (like) implementation
-   * `impl` with `self` parameter having type `selfType`.
+   * Holds if call `afc` may target function `f` in blanket (like) implementation
+   * `impl` with type `selfType` at `selfPos`.
    *
    * `blanketPath` points to the type `blanketTypeParam` inside `selfType`, which
    * is the type parameter used in the blanket implementation.
    *
-   * This predicate only checks for matching method names and arities, and whether
+   * This predicate only checks for matching function names and arities, and whether
    * the trait being implemented by `i` (when `i` is not a trait itself) is visible
-   * at `mc`.
+   * at `afc`.
    */
-  bindingset[mc]
+  bindingset[afc]
   pragma[inline_late]
-  private predicate methodCallBlanketLikeCandidate(
-    MethodCall mc, Method m, FunctionPosition selfPos, ImplItemNode impl, AssocFunctionType self,
-    TypePath blanketPath, TypeParam blanketTypeParam
+  private predicate blanketLikeCandidate(
+    AssocFunctionCall afc, Function f, FunctionPosition selfPos, FunctionPosition selfPosAdj,
+    ImplItemNode impl, AssocFunctionType self, TypePath blanketPath, TypeParam blanketTypeParam
   ) {
     exists(string name, int arity |
-      mc.hasNameAndArity(name, arity) and
-      methodInfoBlanketLike(m, name, arity, selfPos, impl, _, self, blanketPath, blanketTypeParam)
+      afc.hasNameAndArity(name, arity) and
+      assocFunctionSelfInfoBlanketLike(f, name, arity, selfPos, selfPosAdj, impl, _, self,
+        blanketPath, blanketTypeParam) and
+      if afc.hasReceiver() then f instanceof Method else any()
     |
-      methodCallVisibleImplTraitCandidate(mc, impl)
+      callVisibleImplTraitCandidate(afc, impl)
       or
-      impl.resolveTraitTy() = mc.getTrait()
+      impl.resolveTraitTy() = afc.getTrait()
     )
   }
 
   /**
-   * A (potential) method call.
+   * A (potential) call to an associated function.
    *
    * This is either:
    *
-   * 1. `MethodCallMethodCallExpr`: an actual method call, `x.m()`;
-   * 2. `MethodCallIndexExpr`: an index expression, `x[i]`, which is [syntactic sugar][1]
+   * 1. `AssocFunctionCallMethodCallExpr`: a method call, `x.m()`;
+   * 2. `AssocFunctionCallIndexExpr`: an index expression, `x[i]`, which is [syntactic sugar][1]
    *    for `*x.index(i)`;
-   * 3. `MethodCallCallExpr`: a qualified function call, `Q::m(x)`, where `m` is a method;
-   *    or
-   * 4. `MethodCallOperation`: an operation expression, `x + y`, which is syntactic sugar
+   * 3. `AssocFunctionCallCallExpr`: a qualified function call, `Q::f(x)`, where `f` is an associated
+   *    function; or
+   * 4. `AssocFunctionCallOperation`: an operation expression, `x + y`, which is syntactic sugar
    *    for `Add::add(x, y)`.
    *
    * Note that only in case 1 and 2 is auto-dereferencing and borrowing allowed.
    *
-   * Note also that only case 4 is a _potential_ method call; in all other cases, we are
-   * guaranteed that the target is a method.
+   * Note also that only case 3 is a _potential_ call; in all other cases, we are guaranteed that
+   * the target is an associated function.
    *
    * [1]: https://doc.rust-lang.org/std/ops/trait.Index.html
    */
-  abstract class MethodCall extends Expr {
+  abstract class AssocFunctionCall extends Expr {
     abstract predicate hasNameAndArity(string name, int arity);
 
-    abstract Expr getArg(ArgumentPosition pos);
+    abstract Expr getNonReturnNodeAt(FunctionPosition apos);
+
+    AstNode getNodeAt(FunctionPosition pos) {
+      result = this.getNonReturnNodeAt(pos)
+      or
+      result = this and pos.isReturn()
+    }
+
+    predicate hasReceiver() { exists(this.getNodeAt(any(FunctionPosition self | self.isSelf()))) }
 
     abstract predicate supportsAutoDerefAndBorrow();
 
@@ -1554,25 +1625,16 @@ private module MethodResolution {
     /** Holds if this call targets a trait. */
     predicate hasTrait() { exists(this.getTrait()) }
 
-    AstNode getNodeAt(FunctionPosition apos) {
-      result = this.getArg(apos.asArgumentPosition())
-      or
-      result = this and apos.isReturn()
-    }
-
-    Type getArgumentTypeAt(ArgumentPosition pos, TypePath path) {
-      result = inferType(this.getArg(pos), path)
+    Type getTypeAt(FunctionPosition pos, TypePath path) {
+      result = inferType(this.getNodeAt(pos), path)
     }
 
     /**
-     * Same as `getACandidateReceiverTypeAt`, but without borrows.
+     * Same as `getTypeAt`, but without borrows.
      */
     pragma[nomagic]
-    Type getACandidateReceiverTypeAtNoBorrow(
-      FunctionPosition selfPos, DerefChain derefChain, TypePath path
-    ) {
-      result = this.getArgumentTypeAt(selfPos.asArgumentPosition(), path) and
-      selfPos.isSelfOrTypeQualifier() and
+    Type getTypeAtNoBorrow(FunctionPosition selfPos, DerefChain derefChain, TypePath path) {
+      result = this.getTypeAt(selfPos, path) and
       derefChain.isEmpty()
       or
       exists(DerefImplItemNode impl, DerefChain suffix |
@@ -1583,9 +1645,9 @@ private module MethodResolution {
     }
 
     /**
-     * Holds if the method inside `i` with matching name and arity can be ruled
+     * Holds if the function inside `i` with matching name and arity can be ruled
      * out as a target of this call, because the candidate receiver type represented
-     * by `derefChain` and `borrow` is incompatible with the `self` parameter type.
+     * by `derefChain` and `borrow` is incompatible with the type at `selfPos`.
      *
      * The types are incompatible because they disagree on a concrete type somewhere
      * inside `root`.
@@ -1596,37 +1658,44 @@ private module MethodResolution {
       Type root
     ) {
       exists(TypePath path |
-        ReceiverIsInstantiationOfSelfParam::argIsNotInstantiationOf(MkMethodCallCand(this, selfPos,
-            derefChain, borrow), i, _, path) and
+        ArgIsInstantiationOfSelfParam::argIsNotInstantiationOf(MkAssocFunctionCallCand(this,
+            selfPos, _, derefChain, borrow), i, _, path) and
         path.isCons(root.getATypeParameter(), _)
+      )
+      or
+      exists(AssocFunctionType selfType |
+        ArgIsInstantiationOfSelfParam::argIsInstantiationOf(MkAssocFunctionCallCand(this, selfPos,
+            _, derefChain, borrow), i, selfType) and
+        CallArgsAreInstantiationsOf::argsAreNotInstantiationsOf(this, i, _) and
+        root = selfType.getTypeAt(TypePath::nil())
       )
     }
 
     /**
-     * Holds if the method inside blanket-like implementation `impl` with matching name
+     * Holds if the function inside blanket-like implementation `impl` with matching name
      * and arity can be ruled out as a target of this call, either because the candidate
-     * receiver type represented by `derefChain` and `borrow` is incompatible with the `self`
-     * parameter type, or because the blanket constraint is not satisfied.
+     * receiver type represented by `derefChain` and `borrow` is incompatible with the type
+     * at `selfPos`, or because the blanket constraint is not satisfied.
      */
     pragma[nomagic]
     private predicate hasIncompatibleBlanketLikeTarget(
       ImplItemNode impl, FunctionPosition selfPos, DerefChain derefChain, BorrowKind borrow
     ) {
-      ReceiverIsNotInstantiationOfBlanketLikeSelfParam::argIsNotInstantiationOf(MkMethodCallCand(this,
-          selfPos, derefChain, borrow), impl, _, _)
+      ArgIsNotInstantiationOfBlanketLikeSelfParam::argIsNotInstantiationOf(MkAssocFunctionCallCand(this,
+          selfPos, _, derefChain, borrow), impl, _, _)
       or
-      ReceiverSatisfiesBlanketLikeConstraint::dissatisfiesBlanketConstraint(MkMethodCallCand(this,
-          selfPos, derefChain, borrow), impl)
+      ArgSatisfiesBlanketLikeConstraint::dissatisfiesBlanketConstraint(MkAssocFunctionCallCand(this,
+          selfPos, _, derefChain, borrow), impl)
     }
 
     /**
-     * Same as `getACandidateReceiverTypeAt`, but excludes pseudo types `!` and `unknown`.
+     * Same as `getTypeAt`, but excludes pseudo types `!` and `unknown`.
      */
     pragma[nomagic]
-    Type getANonPseudoCandidateReceiverTypeAt(
+    Type getANonPseudoTypeAt(
       FunctionPosition selfPos, DerefChain derefChain, BorrowKind borrow, TypePath path
     ) {
-      result = this.getACandidateReceiverTypeAt(selfPos, derefChain, borrow, path) and
+      result = this.getTypeAt(selfPos, derefChain, borrow, path) and
       result != TNeverType() and
       result != TUnknownType()
     }
@@ -1635,9 +1704,12 @@ private module MethodResolution {
     private Type getComplexStrippedType(
       FunctionPosition selfPos, DerefChain derefChain, BorrowKind borrow, TypePath strippedTypePath
     ) {
-      result =
-        this.getANonPseudoCandidateReceiverTypeAt(selfPos, derefChain, borrow, strippedTypePath) and
-      isComplexRootStripped(strippedTypePath, result)
+      result = this.getANonPseudoTypeAt(selfPos, derefChain, borrow, strippedTypePath) and
+      (
+        isComplexRootStripped(strippedTypePath, result)
+        or
+        selfPos.isTypeQualifier() and strippedTypePath.isEmpty()
+      )
     }
 
     bindingset[derefChain, borrow, strippedTypePath, strippedType]
@@ -1646,7 +1718,7 @@ private module MethodResolution {
       Type strippedType
     ) {
       forall(ImplOrTraitItemNode i |
-        methodCallNonBlanketCandidate(this, _, selfPos, i, _, strippedTypePath, strippedType)
+        nonBlanketCandidate(this, _, selfPos, _, i, _, strippedTypePath, strippedType)
       |
         this.hasIncompatibleTarget(i, selfPos, derefChain, borrow, strippedType)
       )
@@ -1659,7 +1731,7 @@ private module MethodResolution {
     ) {
       this.hasNoCompatibleNonBlanketLikeTargetCheck(selfPos, derefChain, borrow, strippedTypePath,
         strippedType) and
-      forall(ImplItemNode i | methodCallBlanketLikeCandidate(this, _, selfPos, i, _, _, _) |
+      forall(ImplItemNode i | blanketLikeCandidate(this, _, selfPos, _, i, _, _, _) |
         this.hasIncompatibleBlanketLikeTarget(i, selfPos, derefChain, borrow)
       )
     }
@@ -1672,7 +1744,7 @@ private module MethodResolution {
       this.hasNoCompatibleNonBlanketLikeTargetCheck(selfPos, derefChain, borrow, strippedTypePath,
         strippedType) and
       forall(ImplItemNode i |
-        methodCallBlanketLikeCandidate(this, _, selfPos, i, _, _, _) and
+        blanketLikeCandidate(this, _, selfPos, _, i, _, _, _) and
         not i.isBlanketImplementation()
       |
         this.hasIncompatibleBlanketLikeTarget(i, selfPos, derefChain, borrow)
@@ -1686,10 +1758,11 @@ private module MethodResolution {
       int n
     ) {
       (
-        this.supportsAutoDerefAndBorrow()
+        this.supportsAutoDerefAndBorrow() and
+        selfPos.isSelf()
         or
         // needed for the `hasNoCompatibleTarget` check in
-        // `ReceiverSatisfiesBlanketLikeConstraintInput::hasBlanketCandidate`
+        // `ArgSatisfiesBlanketLikeConstraintInput::hasBlanketCandidate`
         derefChain.isEmpty()
       ) and
       strippedType =
@@ -1705,7 +1778,7 @@ private module MethodResolution {
 
     /**
      * Holds if the candidate receiver type represented by `derefChain` does not
-     * have a matching method target.
+     * have a matching call target at `selfPos`.
      */
     pragma[nomagic]
     predicate hasNoCompatibleTargetNoBorrow(FunctionPosition selfPos, DerefChain derefChain) {
@@ -1722,10 +1795,11 @@ private module MethodResolution {
       int n
     ) {
       (
-        this.supportsAutoDerefAndBorrow()
+        this.supportsAutoDerefAndBorrow() and
+        selfPos.isSelf()
         or
         // needed for the `hasNoCompatibleTarget` check in
-        // `ReceiverSatisfiesBlanketLikeConstraintInput::hasBlanketCandidate`
+        // `ArgSatisfiesBlanketLikeConstraintInput::hasBlanketCandidate`
         derefChain.isEmpty()
       ) and
       strippedType =
@@ -1742,7 +1816,7 @@ private module MethodResolution {
 
     /**
      * Holds if the candidate receiver type represented by `derefChain` does not have
-     * a matching non-blanket method target.
+     * a matching non-blanket call target at `selfPos`.
      */
     pragma[nomagic]
     predicate hasNoCompatibleNonBlanketTargetNoBorrow(
@@ -1775,7 +1849,7 @@ private module MethodResolution {
 
     /**
      * Holds if the candidate receiver type represented by `derefChain`, followed
-     * by a shared borrow, does not have a matching method target.
+     * by a shared borrow, does not have a matching call target at `selfPos`.
      */
     pragma[nomagic]
     predicate hasNoCompatibleTargetSharedBorrow(FunctionPosition selfPos, DerefChain derefChain) {
@@ -1806,7 +1880,7 @@ private module MethodResolution {
 
     /**
      * Holds if the candidate receiver type represented by `derefChain`, followed
-     * by a `mut` borrow, does not have a matching method target.
+     * by a `mut` borrow, does not have a matching call target at `selfPos`.
      */
     pragma[nomagic]
     predicate hasNoCompatibleTargetMutBorrow(FunctionPosition selfPos, DerefChain derefChain) {
@@ -1837,7 +1911,7 @@ private module MethodResolution {
 
     /**
      * Holds if the candidate receiver type represented by `derefChain`, followed
-     * by a shared borrow, does not have a matching non-blanket method target.
+     * by a shared borrow, does not have a matching non-blanket call target at `selfPos`.
      */
     pragma[nomagic]
     predicate hasNoCompatibleNonBlanketTargetSharedBorrow(
@@ -1870,7 +1944,7 @@ private module MethodResolution {
 
     /**
      * Holds if the candidate receiver type represented by `derefChain`, followed
-     * by a `mut` borrow, does not have a matching non-blanket method target.
+     * by a `mut` borrow, does not have a matching non-blanket call target at `selfPos`.
      */
     pragma[nomagic]
     predicate hasNoCompatibleNonBlanketTargetMutBorrow(
@@ -1883,7 +1957,10 @@ private module MethodResolution {
     }
 
     /**
-     * Gets a [candidate receiver type][1] of this method call at `path`.
+     * Gets the type of this call at `selfPos` and `path`.
+     *
+     * In case this call supports auto-dereferencing and borrowing and `selfPos` is the
+     * `self` parameter position, the result is a [candidate receiver type][1]:
      *
      * The type is obtained by repeatedly dereferencing the receiver expression's type,
      * as long as the method cannot be resolved in an earlier candidate type, and possibly
@@ -1895,15 +1972,14 @@ private module MethodResolution {
      * [1]: https://doc.rust-lang.org/reference/expressions/method-call-expr.html#r-expr.method.candidate-receivers
      */
     pragma[nomagic]
-    Type getACandidateReceiverTypeAt(
-      FunctionPosition selfPos, DerefChain derefChain, BorrowKind borrow, TypePath path
-    ) {
-      result = this.getACandidateReceiverTypeAtNoBorrow(selfPos, derefChain, path) and
+    Type getTypeAt(FunctionPosition selfPos, DerefChain derefChain, BorrowKind borrow, TypePath path) {
+      result = this.getTypeAtNoBorrow(selfPos, derefChain, path) and
       borrow.isNoBorrow()
       or
       exists(RefType rt |
         // first try shared borrow
         this.supportsAutoDerefAndBorrow() and
+        selfPos.isSelf() and
         this.hasNoCompatibleTargetNoBorrow(selfPos, derefChain) and
         borrow.isSharedBorrow()
         or
@@ -1917,7 +1993,7 @@ private module MethodResolution {
           result = rt
           or
           exists(TypePath suffix |
-            result = this.getACandidateReceiverTypeAtNoBorrow(selfPos, derefChain, suffix) and
+            result = this.getTypeAtNoBorrow(selfPos, derefChain, suffix) and
             path = TypePath::cons(rt.getPositionalTypeParameter(0), suffix)
           )
         )
@@ -1925,15 +2001,17 @@ private module MethodResolution {
     }
 
     /**
-     * Gets a method that this call resolves to after having applied a sequence of
+     * Gets a function that this call resolves to after having applied a sequence of
      * dereferences and possibly a borrow on the receiver type, encoded in `derefChain`
      * and `borrow`.
      */
     pragma[nomagic]
-    Method resolveCallTarget(ImplOrTraitItemNode i, DerefChain derefChain, BorrowKind borrow) {
-      exists(MethodCallCand mcc |
-        mcc = MkMethodCallCand(this, _, derefChain, borrow) and
-        result = mcc.resolveCallTarget(i)
+    AssocFunction resolveCallTarget(
+      ImplOrTraitItemNode i, FunctionPosition selfPos, DerefChain derefChain, BorrowKind borrow
+    ) {
+      exists(AssocFunctionCallCand afcc |
+        afcc = MkAssocFunctionCallCand(this, selfPos, _, derefChain, borrow) and
+        result = afcc.resolveCallTarget(i)
       )
     }
 
@@ -1943,21 +2021,24 @@ private module MethodResolution {
      * resolve the call target.
      */
     predicate argumentHasImplicitDerefChainBorrow(Expr arg, DerefChain derefChain, BorrowKind borrow) {
-      exists(this.resolveCallTarget(_, derefChain, borrow)) and
-      arg = this.getArg(any(ArgumentPosition apos | apos.isSelf())) and
-      not (derefChain.isEmpty() and borrow.isNoBorrow())
+      exists(FunctionPosition self |
+        self.isSelf() and
+        exists(this.resolveCallTarget(_, self, derefChain, borrow)) and
+        arg = this.getNodeAt(self) and
+        not (derefChain.isEmpty() and borrow.isNoBorrow())
+      )
     }
   }
 
-  private class MethodCallMethodCallExpr extends MethodCall instanceof MethodCallExpr {
+  private class AssocFunctionCallMethodCallExpr extends AssocFunctionCall instanceof MethodCallExpr {
     pragma[nomagic]
     override predicate hasNameAndArity(string name, int arity) {
       name = super.getIdentifier().getText() and
-      arity = super.getArgList().getNumberOfArgs()
+      arity = super.getArgList().getNumberOfArgs() + 1
     }
 
-    override Expr getArg(ArgumentPosition pos) {
-      result = MethodCallExpr.super.getSyntacticArgument(pos)
+    override Expr getNonReturnNodeAt(FunctionPosition pos) {
+      result = MethodCallExpr.super.getSyntacticArgument(pos.asArgumentPosition())
     }
 
     override predicate supportsAutoDerefAndBorrow() { any() }
@@ -1965,7 +2046,7 @@ private module MethodResolution {
     override Trait getTrait() { none() }
   }
 
-  private class MethodCallIndexExpr extends MethodCall instanceof IndexExpr {
+  private class AssocFunctionCallIndexExpr extends AssocFunctionCall instanceof IndexExpr {
     private predicate isInMutableContext() {
       // todo: does not handle all cases yet
       VariableImpl::assignmentOperationDescendant(_, this)
@@ -1974,10 +2055,10 @@ private module MethodResolution {
     pragma[nomagic]
     override predicate hasNameAndArity(string name, int arity) {
       (if this.isInMutableContext() then name = "index_mut" else name = "index") and
-      arity = 1
+      arity = 2
     }
 
-    override Expr getArg(ArgumentPosition pos) {
+    override Expr getNonReturnNodeAt(FunctionPosition pos) {
       pos.isSelf() and
       result = super.getBase()
       or
@@ -1994,38 +2075,29 @@ private module MethodResolution {
     }
   }
 
-  private class MethodCallCallExpr extends MethodCall instanceof CallExpr {
-    MethodCallCallExpr() {
+  private class AssocFunctionCallCallExpr extends AssocFunctionCall instanceof CallExpr {
+    AssocFunctionCallCallExpr() {
       exists(getCallExprPathQualifier(this)) and
-      // even if a method cannot be resolved by path resolution, it may still
+      // even if a target cannot be resolved by path resolution, it may still
       // be possible to resolve a blanket implementation (so not `forex`)
-      forall(ItemNode i | i = CallExprImpl::getResolvedFunction(this) | i instanceof Method)
+      forall(ItemNode i | i = CallExprImpl::getResolvedFunction(this) | i instanceof AssocFunction)
     }
 
     pragma[nomagic]
     override predicate hasNameAndArity(string name, int arity) {
       name = CallExprImpl::getFunctionPath(this).getText() and
-      arity = super.getArgList().getNumberOfArgs() - 1
+      arity = super.getArgList().getNumberOfArgs()
     }
 
-    override Expr getArg(ArgumentPosition pos) {
-      pos.isSelf() and
-      result = super.getSyntacticPositionalArgument(0)
-      or
-      result = super.getSyntacticPositionalArgument(pos.asPosition() + 1)
+    override Expr getNonReturnNodeAt(FunctionPosition pos) {
+      result = super.getSyntacticPositionalArgument(pos.asPosition())
     }
 
-    override Type getArgumentTypeAt(ArgumentPosition pos, TypePath path) {
-      result = super.getArgumentTypeAt(pos, path)
+    override Type getTypeAt(FunctionPosition pos, TypePath path) {
+      result = super.getTypeAt(pos, path)
       or
       pos.isTypeQualifier() and
       result = getCallExprTypeQualifier(this, path, _)
-    }
-
-    pragma[nomagic]
-    predicate hasNoInherentTarget() {
-      // `_` is fine below, because auto-deref/borrow is not supported
-      MkMethodCallCand(this, _, _, _).(MethodCallCand).hasNoInherentTarget()
     }
 
     override predicate supportsAutoDerefAndBorrow() { none() }
@@ -2033,21 +2105,21 @@ private module MethodResolution {
     override Trait getTrait() { result = getCallExprTraitQualifier(this) }
   }
 
-  final class MethodCallOperation extends MethodCall instanceof Operation {
+  final class AssocFunctionCallOperation extends AssocFunctionCall instanceof Operation {
     pragma[nomagic]
     override predicate hasNameAndArity(string name, int arity) {
       super.isOverloaded(_, name, _) and
-      arity = super.getNumberOfOperands() - 1
+      arity = super.getNumberOfOperands()
     }
 
-    override Expr getArg(ArgumentPosition pos) {
+    override Expr getNonReturnNodeAt(FunctionPosition pos) {
       pos.isSelf() and
       result = super.getOperand(0)
       or
       result = super.getOperand(pos.asPosition() + 1)
     }
 
-    private predicate implicitBorrowAt(ArgumentPosition pos, boolean isMutable) {
+    private predicate implicitBorrowAt(FunctionPosition pos, boolean isMutable) {
       exists(int borrows | super.isOverloaded(_, _, borrows) |
         pos.isSelf() and
         borrows >= 1 and
@@ -2059,7 +2131,7 @@ private module MethodResolution {
       )
     }
 
-    override Type getArgumentTypeAt(ArgumentPosition pos, TypePath path) {
+    override Type getTypeAt(FunctionPosition pos, TypePath path) {
       exists(boolean isMutable, RefType rt |
         this.implicitBorrowAt(pos, isMutable) and
         rt = getRefType(isMutable)
@@ -2068,21 +2140,21 @@ private module MethodResolution {
         path.isEmpty()
         or
         exists(TypePath path0 |
-          result = inferType(this.getArg(pos), path0) and
+          result = inferType(this.getNodeAt(pos), path0) and
           path = TypePath::cons(rt.getPositionalTypeParameter(0), path0)
         )
       )
       or
       not this.implicitBorrowAt(pos, _) and
-      result = inferType(this.getArg(pos), path)
+      result = inferType(this.getNodeAt(pos), path)
     }
 
     override predicate argumentHasImplicitDerefChainBorrow(
       Expr arg, DerefChain derefChain, BorrowKind borrow
     ) {
-      exists(ArgumentPosition apos, boolean isMutable |
-        this.implicitBorrowAt(apos, isMutable) and
-        arg = this.getArg(apos) and
+      exists(FunctionPosition pos, boolean isMutable |
+        this.implicitBorrowAt(pos, isMutable) and
+        arg = this.getNodeAt(pos) and
         derefChain = DerefChain::nil() and
         borrow = TSomeBorrowKind(isMutable)
       )
@@ -2094,80 +2166,93 @@ private module MethodResolution {
   }
 
   pragma[nomagic]
-  private Method getMethodSuccessor(ImplOrTraitItemNode i, string name, int arity) {
+  private AssocFunction getFunctionSuccessor(ImplOrTraitItemNode i, string name, int arity) {
     result = i.getASuccessor(name) and
-    arity = result.getParamList().getNumberOfParams()
+    arity = result.getNumberOfParamsInclSelf()
   }
 
-  private newtype TMethodCallCand =
-    MkMethodCallCand(
-      MethodCall mc, FunctionPosition selfPos, DerefChain derefChain, BorrowKind borrow
+  private newtype TAssocFunctionCallCand =
+    MkAssocFunctionCallCand(
+      AssocFunctionCall afc, FunctionPosition selfPos, FunctionPosition selfPosAdj,
+      DerefChain derefChain, BorrowKind borrow
     ) {
-      exists(mc.getACandidateReceiverTypeAt(selfPos, derefChain, borrow, _))
+      // todo: restrict to relevant positions
+      exists(afc.getTypeAt(selfPos, derefChain, borrow, _)) and
+      if afc.hasReceiver()
+      then selfPosAdj = selfPos.getFunctionCallAdjusted()
+      else selfPosAdj = selfPos
     }
 
-  /** A method call with a dereference chain and a potential borrow. */
-  private class MethodCallCand extends MkMethodCallCand {
-    MethodCall mc_;
+  /** A call with a dereference chain and a potential borrow. */
+  private class AssocFunctionCallCand extends MkAssocFunctionCallCand {
+    AssocFunctionCall afc_;
     FunctionPosition selfPos;
+    FunctionPosition selfPosAdj;
     DerefChain derefChain;
     BorrowKind borrow;
 
-    MethodCallCand() { this = MkMethodCallCand(mc_, selfPos, derefChain, borrow) }
+    AssocFunctionCallCand() {
+      this = MkAssocFunctionCallCand(afc_, selfPos, selfPosAdj, derefChain, borrow)
+    }
 
-    MethodCall getMethodCall() { result = mc_ }
+    AssocFunctionCall getAssocFunctionCall() { result = afc_ }
 
     Type getTypeAt(TypePath path) {
-      result =
-        substituteLookupTraits(mc_.getANonPseudoCandidateReceiverTypeAt(selfPos, derefChain, borrow,
-            path))
+      result = substituteLookupTraits(afc_.getANonPseudoTypeAt(selfPos, derefChain, borrow, path))
     }
 
     pragma[nomagic]
     predicate hasNoCompatibleNonBlanketTarget() {
-      mc_.hasNoCompatibleNonBlanketTargetSharedBorrow(selfPos, derefChain) and
+      afc_.hasNoCompatibleNonBlanketTargetSharedBorrow(selfPos, derefChain) and
       borrow.isSharedBorrow()
       or
-      mc_.hasNoCompatibleNonBlanketTargetMutBorrow(selfPos, derefChain) and
+      afc_.hasNoCompatibleNonBlanketTargetMutBorrow(selfPos, derefChain) and
       borrow.isMutableBorrow()
       or
-      mc_.hasNoCompatibleNonBlanketTargetNoBorrow(selfPos, derefChain) and
+      afc_.hasNoCompatibleNonBlanketTargetNoBorrow(selfPos, derefChain) and
       borrow.isNoBorrow()
     }
 
     pragma[nomagic]
     predicate hasSignature(
-      MethodCall mc, FunctionPosition selfPos_, TypePath strippedTypePath, Type strippedType,
+      AssocFunctionCall afc, FunctionPosition pos, TypePath strippedTypePath, Type strippedType,
       string name, int arity
     ) {
       strippedType = this.getTypeAt(strippedTypePath) and
-      isComplexRootStripped(strippedTypePath, strippedType) and
-      mc = mc_ and
-      mc.hasNameAndArity(name, arity) and
-      selfPos = selfPos_
+      (
+        isComplexRootStripped(strippedTypePath, strippedType)
+        or
+        selfPos.isTypeQualifier() and strippedTypePath.isEmpty()
+      ) and
+      afc = afc_ and
+      afc.hasNameAndArity(name, arity) and
+      pos = selfPosAdj
     }
 
     /**
-     * Holds if the inherent method inside `impl` with matching name and arity can be
+     * Holds if the inherent function inside `impl` with matching name and arity can be
      * ruled out as a candidate for this call.
      */
     pragma[nomagic]
     private predicate hasIncompatibleInherentTarget(Impl impl) {
-      ReceiverIsNotInstantiationOfInherentSelfParam::argIsNotInstantiationOf(this, impl, _, _)
+      ArgIsNotInstantiationOfInherentSelfParam::argIsNotInstantiationOf(this, impl, _, _)
     }
 
     /**
-     * Holds if this method call has no inherent target, i.e., it does not
-     * resolve to a method in an `impl` block for the type of the receiver.
+     * Holds if this function call has no inherent target, i.e., it does not
+     * resolve to a function in an `impl` block for the type of the receiver.
      */
     pragma[nomagic]
     predicate hasNoInherentTarget() {
-      mc_.hasTrait()
+      afc_.hasTrait()
       or
       exists(TypePath strippedTypePath, Type strippedType, string name, int arity |
-        this.hasSignature(_, selfPos, strippedTypePath, strippedType, name, arity) and
+        selfPosAdj.isTypeQualifier() or selfPosAdj.asPosition() = 0
+      |
+        this.hasSignature(_, selfPosAdj, strippedTypePath, strippedType, name, arity) and
         forall(Impl i |
-          methodInfoNonBlanket(_, name, arity, selfPos, i, _, strippedTypePath, strippedType) and
+          assocFunctionInfoNonBlanket(_, name, arity, _, selfPosAdj, i, _, strippedTypePath,
+            strippedType) and
           not i.hasTrait()
         |
           this.hasIncompatibleInherentTarget(i)
@@ -2177,32 +2262,32 @@ private module MethodResolution {
 
     pragma[nomagic]
     private predicate argIsInstantiationOf(ImplOrTraitItemNode i, string name, int arity) {
-      ReceiverIsInstantiationOfSelfParam::argIsInstantiationOf(this, i, _) and
-      mc_.hasNameAndArity(name, arity)
+      ArgIsInstantiationOfSelfParam::argIsInstantiationOf(this, i, _) and
+      afc_.hasNameAndArity(name, arity)
     }
 
     pragma[nomagic]
-    Method resolveCallTargetCand(ImplOrTraitItemNode i) {
+    AssocFunction resolveCallTargetCand(ImplOrTraitItemNode i) {
       exists(string name, int arity |
         this.argIsInstantiationOf(i, name, arity) and
-        result = getMethodSuccessor(i, name, arity)
+        result = getFunctionSuccessor(i, name, arity)
       )
     }
 
-    /** Gets a method that matches this method call. */
+    /** Gets a function that matches this call. */
     pragma[nomagic]
-    Method resolveCallTarget(ImplOrTraitItemNode i) {
+    AssocFunction resolveCallTarget(ImplOrTraitItemNode i) {
       result = this.resolveCallTargetCand(i) and
       not FunctionOverloading::functionResolutionDependsOnArgument(i, result, _, _)
       or
-      MethodArgsAreInstantiationsOf::argsAreInstantiationsOf(this, i, result)
+      CallArgsAreInstantiationsOf::argsAreInstantiationsOf(afc_, i, result)
     }
 
     string toString() {
-      result = mc_.toString() + " [" + derefChain.toString() + "; " + borrow + "]"
+      result = afc_ + " at " + selfPos + " [" + derefChain.toString() + "; " + borrow + "]"
     }
 
-    Location getLocation() { result = mc_.getLocation() }
+    Location getLocation() { result = afc_.getLocation() }
   }
 
   /**
@@ -2210,23 +2295,23 @@ private module MethodResolution {
    */
   private module ImplicitDeref {
     private newtype TMethodCallDerefCand =
-      MkMethodCallDerefCand(MethodCall mc, FunctionPosition selfPos, DerefChain derefChain) {
+      MkMethodCallDerefCand(AssocFunctionCall mc, FunctionPosition selfPos, DerefChain derefChain) {
         mc.supportsAutoDerefAndBorrow() and
+        selfPos.isSelf() and
         mc.hasNoCompatibleTargetMutBorrow(selfPos, derefChain) and
-        exists(mc.getACandidateReceiverTypeAtNoBorrow(selfPos, derefChain, TypePath::nil()))
+        exists(mc.getTypeAtNoBorrow(selfPos, derefChain, TypePath::nil()))
       }
 
     /** A method call with a dereference chain. */
     private class MethodCallDerefCand extends MkMethodCallDerefCand {
-      MethodCall mc;
+      AssocFunctionCall mc;
       FunctionPosition selfPos;
       DerefChain derefChain;
 
       MethodCallDerefCand() { this = MkMethodCallDerefCand(mc, selfPos, derefChain) }
 
       Type getTypeAt(TypePath path) {
-        result =
-          substituteLookupTraits(mc.getACandidateReceiverTypeAtNoBorrow(selfPos, derefChain, path)) and
+        result = substituteLookupTraits(mc.getTypeAtNoBorrow(selfPos, derefChain, path)) and
         result != TNeverType() and
         result != TUnknownType()
       }
@@ -2255,16 +2340,16 @@ private module MethodResolution {
     }
 
     /**
-     * Gets the type of the receiver of `mc` at `path` after applying the implicit
+     * Gets the type of the receiver of `afc` at `path` after applying the implicit
      * dereference inside `impl`, following the existing dereference chain `derefChain`.
      */
     pragma[nomagic]
     Type getDereferencedCandidateReceiverType(
-      MethodCall mc, FunctionPosition selfPos, DerefImplItemNode impl, DerefChain derefChain,
-      TypePath path
+      AssocFunctionCall afc, FunctionPosition selfPos, DerefImplItemNode impl,
+      DerefChain derefChain, TypePath path
     ) {
       exists(MethodCallDerefCand mcc, TypePath exprPath |
-        mcc = MkMethodCallDerefCand(mc, selfPos, derefChain) and
+        mcc = MkMethodCallDerefCand(afc, selfPos, derefChain) and
         MethodCallSatisfiesDerefConstraint::satisfiesConstraintTypeThrough(mcc, impl, _, exprPath,
           result) and
         exprPath.isCons(getDerefTargetTypeParameter(), path)
@@ -2272,21 +2357,22 @@ private module MethodResolution {
     }
   }
 
-  private module ReceiverSatisfiesBlanketLikeConstraintInput implements
-    BlanketImplementation::SatisfiesBlanketConstraintInputSig<MethodCallCand>
+  private module ArgSatisfiesBlanketLikeConstraintInput implements
+    BlanketImplementation::SatisfiesBlanketConstraintInputSig<AssocFunctionCallCand>
   {
     pragma[nomagic]
     predicate hasBlanketCandidate(
-      MethodCallCand mcc, ImplItemNode impl, TypePath blanketPath, TypeParam blanketTypeParam
+      AssocFunctionCallCand afcc, ImplItemNode impl, TypePath blanketPath,
+      TypeParam blanketTypeParam
     ) {
-      exists(MethodCall mc, FunctionPosition selfPos, BorrowKind borrow |
-        mcc = MkMethodCallCand(mc, selfPos, _, borrow) and
-        methodCallBlanketLikeCandidate(mc, _, selfPos, impl, _, blanketPath, blanketTypeParam) and
+      exists(AssocFunctionCall afc, FunctionPosition selfPosAdj, BorrowKind borrow |
+        afcc = MkAssocFunctionCallCand(afc, _, selfPosAdj, _, borrow) and
+        blanketLikeCandidate(afc, _, _, selfPosAdj, impl, _, blanketPath, blanketTypeParam) and
         // Only apply blanket implementations when no other implementations are possible;
         // this is to account for codebases that use the (unstable) specialization feature
         // (https://rust-lang.github.io/rfcs/1210-impl-specialization.html), as well as
         // cases where our blanket implementation filtering is not precise enough.
-        (mcc.hasNoCompatibleNonBlanketTarget() or not impl.isBlanketImplementation())
+        (afcc.hasNoCompatibleNonBlanketTarget() or not impl.isBlanketImplementation())
       |
         borrow.isNoBorrow()
         or
@@ -2295,126 +2381,129 @@ private module MethodResolution {
     }
   }
 
-  private module ReceiverSatisfiesBlanketLikeConstraint =
-    BlanketImplementation::SatisfiesBlanketConstraint<MethodCallCand,
-      ReceiverSatisfiesBlanketLikeConstraintInput>;
+  private module ArgSatisfiesBlanketLikeConstraint =
+    BlanketImplementation::SatisfiesBlanketConstraint<AssocFunctionCallCand,
+      ArgSatisfiesBlanketLikeConstraintInput>;
 
   /**
-   * A configuration for matching the type of a receiver against the type of
-   * a `self` parameter.
+   * A configuration for matching the type of an argument against the type of
+   * a `self` parameter or similar parameter used to determine dispatch.
    */
-  private module ReceiverIsInstantiationOfSelfParamInput implements
-    IsInstantiationOfInputSig<MethodCallCand, AssocFunctionType>
+  private module ArgIsInstantiationOfSelfParamInput implements
+    IsInstantiationOfInputSig<AssocFunctionCallCand, AssocFunctionType>
   {
     pragma[nomagic]
     additional predicate potentialInstantiationOf0(
-      MethodCallCand mcc, ImplOrTraitItemNode i, AssocFunctionType selfType
+      AssocFunctionCallCand afcc, ImplOrTraitItemNode i, AssocFunctionType selfType
     ) {
       exists(
-        MethodCall mc, FunctionPosition selfPos, Method m, TypePath strippedTypePath,
+        AssocFunctionCall afc, FunctionPosition pos, Function f, TypePath strippedTypePath,
         Type strippedType
       |
-        mcc.hasSignature(mc, selfPos, strippedTypePath, strippedType, _, _)
+        afcc.hasSignature(afc, pos, strippedTypePath, strippedType, _, _)
       |
-        methodCallNonBlanketCandidate(mc, m, selfPos, i, selfType, strippedTypePath, strippedType)
+        nonBlanketCandidate(afc, f, _, pos, i, selfType, strippedTypePath, strippedType)
         or
-        methodCallBlanketLikeCandidate(mc, m, selfPos, i, selfType, _, _) and
-        ReceiverSatisfiesBlanketLikeConstraint::satisfiesBlanketConstraint(mcc, i)
+        blanketLikeCandidate(afc, f, _, pos, i, selfType, _, _) and
+        ArgSatisfiesBlanketLikeConstraint::satisfiesBlanketConstraint(afcc, i)
       )
     }
 
     pragma[nomagic]
     predicate potentialInstantiationOf(
-      MethodCallCand mcc, TypeAbstraction abs, AssocFunctionType constraint
+      AssocFunctionCallCand afcc, TypeAbstraction abs, AssocFunctionType constraint
     ) {
-      potentialInstantiationOf0(mcc, abs, constraint) and
+      potentialInstantiationOf0(afcc, abs, constraint) and
       if abs.(Impl).hasTrait()
       then
-        // inherent methods take precedence over trait methods, so only allow
-        // trait methods when there are no matching inherent methods
-        mcc.hasNoInherentTarget()
+        // inherent functions take precedence over trait functions, so only allow
+        // trait functions when there are no matching inherent functions
+        afcc.hasNoInherentTarget()
       else any()
     }
 
     predicate relevantConstraint(AssocFunctionType constraint) {
-      methodInfo(_, _, _, _, _, constraint, _, _)
+      assocFunctionInfo(_, _, _, _, _, _, constraint, _, _)
     }
   }
 
-  private module ReceiverIsInstantiationOfSelfParam =
-    ArgIsInstantiationOf<MethodCallCand, ReceiverIsInstantiationOfSelfParamInput>;
+  private module ArgIsInstantiationOfSelfParam =
+    ArgIsInstantiationOf<AssocFunctionCallCand, ArgIsInstantiationOfSelfParamInput>;
 
   /**
-   * A configuration for anti-matching the type of a receiver against the type of
+   * A configuration for anti-matching the type of an argument against the type of
    * a `self` parameter belonging to a blanket (like) implementation.
    */
-  private module ReceiverIsNotInstantiationOfBlanketLikeSelfParamInput implements
-    IsInstantiationOfInputSig<MethodCallCand, AssocFunctionType>
+  private module ArgIsNotInstantiationOfBlanketLikeSelfParamInput implements
+    IsInstantiationOfInputSig<AssocFunctionCallCand, AssocFunctionType>
   {
     pragma[nomagic]
     predicate potentialInstantiationOf(
-      MethodCallCand mcc, TypeAbstraction abs, AssocFunctionType constraint
+      AssocFunctionCallCand afcc, TypeAbstraction abs, AssocFunctionType constraint
     ) {
-      exists(MethodCall mc, FunctionPosition selfPos |
-        mcc = MkMethodCallCand(mc, selfPos, _, _) and
-        methodCallBlanketLikeCandidate(mc, _, selfPos, abs, constraint, _, _) and
+      exists(AssocFunctionCall afc, FunctionPosition selfPosAdj |
+        afcc = MkAssocFunctionCallCand(afc, _, selfPosAdj, _, _) and
+        blanketLikeCandidate(afc, _, _, selfPosAdj, abs, constraint, _, _) and
         if abs.(Impl).hasTrait()
         then
-          // inherent methods take precedence over trait methods, so only allow
-          // trait methods when there are no matching inherent methods
-          mcc.hasNoInherentTarget()
+          // inherent functions take precedence over trait functions, so only allow
+          // trait functions when there are no matching inherent functions
+          afcc.hasNoInherentTarget()
         else any()
       )
     }
   }
 
-  private module ReceiverIsNotInstantiationOfBlanketLikeSelfParam =
-    ArgIsInstantiationOf<MethodCallCand, ReceiverIsNotInstantiationOfBlanketLikeSelfParamInput>;
+  private module ArgIsNotInstantiationOfBlanketLikeSelfParam =
+    ArgIsInstantiationOf<AssocFunctionCallCand, ArgIsNotInstantiationOfBlanketLikeSelfParamInput>;
 
   /**
-   * A configuration for anti-matching the type of a receiver against the type of
+   * A configuration for anti-matching the type of an argument against the type of
    * a `self` parameter in an inherent method.
    */
-  private module ReceiverIsNotInstantiationOfInherentSelfParamInput implements
-    IsInstantiationOfInputSig<MethodCallCand, AssocFunctionType>
+  private module ArgIsNotInstantiationOfInherentSelfParamInput implements
+    IsInstantiationOfInputSig<AssocFunctionCallCand, AssocFunctionType>
   {
     pragma[nomagic]
     predicate potentialInstantiationOf(
-      MethodCallCand mcc, TypeAbstraction abs, AssocFunctionType constraint
+      AssocFunctionCallCand afcc, TypeAbstraction abs, AssocFunctionType constraint
     ) {
-      ReceiverIsInstantiationOfSelfParamInput::potentialInstantiationOf0(mcc, abs, constraint) and
-      abs = any(Impl i | not i.hasTrait())
+      ArgIsInstantiationOfSelfParamInput::potentialInstantiationOf0(afcc, abs, constraint) and
+      abs = any(Impl i | not i.hasTrait()) and
+      // todo: comment
+      exists(FunctionPosition selfPosAdj | afcc = MkAssocFunctionCallCand(_, _, selfPosAdj, _, _) |
+        selfPosAdj.isTypeQualifier() or selfPosAdj.asPosition() = 0
+      )
     }
   }
 
-  private module ReceiverIsNotInstantiationOfInherentSelfParam =
-    ArgIsInstantiationOf<MethodCallCand, ReceiverIsNotInstantiationOfInherentSelfParamInput>;
+  private module ArgIsNotInstantiationOfInherentSelfParam =
+    ArgIsInstantiationOf<AssocFunctionCallCand, ArgIsNotInstantiationOfInherentSelfParamInput>;
 
   /**
    * A configuration for matching the types of positional arguments against the
    * types of parameters, when needed to disambiguate the call.
    */
-  private module MethodArgsAreInstantiationsOfInput implements ArgsAreInstantiationsOfInputSig {
+  private module CallArgsAreInstantiationsOfInput implements ArgsAreInstantiationsOfInputSig {
     predicate toCheck(ImplOrTraitItemNode i, Function f, TypeParameter traitTp, FunctionPosition pos) {
       FunctionOverloading::functionResolutionDependsOnArgument(i, f, traitTp, pos)
     }
 
-    class Call extends MethodCallCand {
-      Type getArgType(FunctionPosition pos, TypePath path) {
-        result = mc_.getArgumentTypeAt(pos.asArgumentPosition(), path)
-        or
-        pos.isReturn() and
-        result = inferType(mc_.getNodeAt(pos), path)
-      }
+    final private class AssocFunctionCallFinal = AssocFunctionCall;
+
+    class Call extends AssocFunctionCallFinal {
+      Type getArgType(FunctionPosition pos, TypePath path) { result = this.getTypeAt(pos, path) }
 
       predicate hasTargetCand(ImplOrTraitItemNode i, Function f) {
-        f = this.resolveCallTargetCand(i)
+        f =
+          any(AssocFunctionCallCand afcc | afcc = MkAssocFunctionCallCand(this, _, _, _, _))
+              .resolveCallTargetCand(i)
       }
     }
   }
 
-  private module MethodArgsAreInstantiationsOf =
-    ArgsAreInstantiationsOf<MethodArgsAreInstantiationsOfInput>;
+  private module CallArgsAreInstantiationsOf =
+    ArgsAreInstantiationsOf<CallArgsAreInstantiationsOfInput>;
 }
 
 /**
@@ -2461,25 +2550,30 @@ private module MethodCallMatchingInput implements MatchingWithEnvironmentInputSi
 
   class AccessEnvironment = string;
 
-  bindingset[derefChain, borrow]
-  private AccessEnvironment encodeDerefChainBorrow(DerefChain derefChain, BorrowKind borrow) {
-    result = derefChain + ";" + borrow
+  bindingset[pos, derefChain, borrow]
+  private AccessEnvironment encodeDerefChainBorrow(
+    FunctionPosition pos, DerefChain derefChain, BorrowKind borrow
+  ) {
+    result = pos + ":" + derefChain + ";" + borrow
   }
 
   bindingset[derefChainBorrow]
   additional predicate decodeDerefChainBorrow(
-    string derefChainBorrow, DerefChain derefChain, BorrowKind borrow
+    string derefChainBorrow, FunctionPosition pos, DerefChain derefChain, BorrowKind borrow
   ) {
-    exists(int i |
-      i = derefChainBorrow.indexOf(";") and
-      derefChain = derefChainBorrow.prefix(i) and
-      borrow.toString() = derefChainBorrow.suffix(i + 1)
+    exists(int i, string rest, int j |
+      i = derefChainBorrow.indexOf(":") and
+      pos.toString() = derefChainBorrow.prefix(i) and
+      rest = derefChainBorrow.suffix(i + 1) and
+      j = rest.indexOf(";") and
+      derefChain = rest.prefix(j) and
+      borrow.toString() = rest.suffix(j + 1)
     )
   }
 
-  final private class MethodCallFinal = MethodResolution::MethodCall;
+  final private class AssocFunctionCallFinal = AssocFunctionResolution::AssocFunctionCall;
 
-  class Access extends MethodCallFinal, ContextTyping::ContextTypedCallCand {
+  class Access extends AssocFunctionCallFinal, ContextTyping::ContextTypedCallCand {
     Access() {
       // handled in the `OperationMatchingInput` module
       not this instanceof Operation
@@ -2500,43 +2594,40 @@ private module MethodCallMatchingInput implements MatchingWithEnvironmentInputSi
     pragma[nomagic]
     private Type getInferredSelfType(AccessPosition apos, string derefChainBorrow, TypePath path) {
       exists(DerefChain derefChain, BorrowKind borrow |
-        result = this.getACandidateReceiverTypeAt(apos, derefChain, borrow, path) and
-        derefChainBorrow = encodeDerefChainBorrow(derefChain, borrow)
+        result = this.getTypeAt(apos, derefChain, borrow, path) and
+        derefChainBorrow = encodeDerefChainBorrow(apos, derefChain, borrow)
       )
     }
 
     pragma[nomagic]
-    Type getInferredNonSelfType(AccessPosition apos, TypePath path) {
-      if
-        // index expression `x[i]` desugars to `*x.index(i)`, so we must account for
-        // the implicit deref
-        apos.isReturn() and
-        this instanceof IndexExpr
-      then
-        path.isEmpty() and
-        result instanceof RefType
-        or
-        exists(TypePath suffix |
-          result = inferType(this.getNodeAt(apos), suffix) and
-          path = TypePath::cons(getRefTypeParameter(_), suffix)
-        )
-      else (
-        not apos.isSelf() and
-        result = inferType(this.getNodeAt(apos), path)
+    private Type getInferredNonSelfType(AccessPosition apos, TypePath path) {
+      exists(DerefChain derefChain, BorrowKind borrow |
+        result = this.getTypeAt(apos, derefChain, borrow, path) and
+        derefChain.isEmpty() and
+        borrow.isNoBorrow()
       )
     }
 
     bindingset[derefChainBorrow]
     Type getInferredType(string derefChainBorrow, AccessPosition apos, TypePath path) {
-      result = this.getInferredSelfType(apos, derefChainBorrow, path)
-      or
-      result = this.getInferredNonSelfType(apos, path)
+      exists(FunctionPosition pos |
+        result = this.getInferredSelfType(pos, derefChainBorrow, path)
+        or
+        exists(FunctionPosition selfPos |
+          MethodCallMatchingInput::decodeDerefChainBorrow(derefChainBorrow, selfPos, _, _) and
+          result = this.getInferredNonSelfType(pos, path) and
+          pos != selfPos
+        )
+      |
+        // result = this.getInferredNonSelfType(pos, path)
+        if this.hasReceiver() then apos = pos else pos = apos.getFunctionCallAdjusted()
+      )
     }
 
     Method getTarget(ImplOrTraitItemNode i, string derefChainBorrow) {
-      exists(DerefChain derefChain, BorrowKind borrow |
-        derefChainBorrow = encodeDerefChainBorrow(derefChain, borrow) and
-        result = this.resolveCallTarget(i, derefChain, borrow) // mutual recursion; resolving method calls requires resolving types and vice versa
+      exists(FunctionPosition pos, DerefChain derefChain, BorrowKind borrow |
+        derefChainBorrow = encodeDerefChainBorrow(pos, derefChain, borrow) and
+        result = this.resolveCallTarget(i, pos, derefChain, borrow) // mutual recursion; resolving method calls requires resolving types and vice versa
       )
     }
 
@@ -2557,6 +2648,20 @@ private module MethodCallMatchingInput implements MatchingWithEnvironmentInputSi
         this.hasUnknownTypeAt(i, this.getTarget(i, derefChainBorrow), pos, path)
       )
     }
+
+    /**
+     * Holds if the return type of this call at `path` may have to be inferred
+     * from the context.
+     */
+    pragma[nomagic]
+    predicate hasUnknownTypeAt(FunctionPosition pos, TypePath path) {
+      forex(ImplOrTraitItemNode i, Function f |
+        f = CallExprImpl::getResolvedFunction(this) and
+        f = i.getAnAssocItem()
+      |
+        this.hasUnknownTypeAt(i, f, pos, path)
+      )
+    }
   }
 }
 
@@ -2565,15 +2670,26 @@ private module MethodCallMatching = MatchingWithEnvironment<MethodCallMatchingIn
 pragma[nomagic]
 private Type inferMethodCallType0(
   MethodCallMatchingInput::Access a, MethodCallMatchingInput::AccessPosition apos, AstNode n,
-  string derefChainBorrow, TypePath path
+  DerefChain derefChain, BorrowKind borrow, TypePath path
 ) {
   exists(TypePath path0 |
     n = a.getNodeAt(apos) and
-    (
-      result = MethodCallMatching::inferAccessType(a, derefChainBorrow, apos, path0)
+    exists(FunctionPosition pos |
+      if a.hasReceiver() then apos = pos else apos = pos.getFunctionCallAdjusted()
+    |
+      exists(string derefChainBorrow |
+        MethodCallMatchingInput::decodeDerefChainBorrow(derefChainBorrow, _, derefChain, borrow)
+      |
+        result = MethodCallMatching::inferAccessType(a, derefChainBorrow, pos, path0)
+        or
+        a.hasUnknownTypeAt(derefChainBorrow, pos, path0) and
+        result = TUnknownType()
+      )
       or
-      a.hasUnknownTypeAt(derefChainBorrow, apos, path0) and
-      result = TUnknownType()
+      a.hasUnknownTypeAt(pos, path0) and
+      result = TUnknownType() and
+      derefChain.isEmpty() and
+      borrow.isNoBorrow()
     )
   |
     if
@@ -2588,7 +2704,7 @@ private Type inferMethodCallType0(
 
 pragma[nomagic]
 private Type inferMethodCallTypeNonSelf(AstNode n, FunctionPosition pos, TypePath path) {
-  result = inferMethodCallType0(_, pos, n, _, path) and
+  result = inferMethodCallType0(_, pos, n, _, _, path) and
   not pos.isSelf()
 }
 
@@ -2601,13 +2717,9 @@ private Type inferMethodCallTypeNonSelf(AstNode n, FunctionPosition pos, TypePat
  */
 pragma[nomagic]
 private Type inferMethodCallTypeSelf(MethodCall mc, AstNode n, DerefChain derefChain, TypePath path) {
-  exists(
-    MethodCallMatchingInput::AccessPosition apos, string derefChainBorrow, BorrowKind borrow,
-    TypePath path0
-  |
-    result = inferMethodCallType0(mc, apos, n, derefChainBorrow, path0) and
-    apos.isSelf() and
-    MethodCallMatchingInput::decodeDerefChainBorrow(derefChainBorrow, derefChain, borrow)
+  exists(MethodCallMatchingInput::AccessPosition apos, BorrowKind borrow, TypePath path0 |
+    result = inferMethodCallType0(mc, apos, n, derefChain, borrow, path0) and
+    apos.isSelf()
   |
     borrow.isNoBorrow() and
     path = path0
@@ -2662,181 +2774,13 @@ private predicate inferMethodCallType =
  * "calls" to tuple variants and tuple structs.
  */
 private module NonMethodResolution {
-  pragma[nomagic]
-  private predicate traitFunctionResolutionDependsOnArgument0(
-    TraitItemNode trait, NonMethodFunction traitFunction, FunctionPosition pos, ImplItemNode impl,
-    NonMethodFunction implFunction, TypePath path, TypeParameter traitTp
-  ) {
-    implFunction = impl.getAnAssocItem() and
-    implFunction.implements(traitFunction) and
-    FunctionOverloading::traitTypeParameterOccurrence(trait, traitFunction, _, pos, path, traitTp) and
-    (
-      traitTp = TSelfTypeParameter(trait)
-      or
-      FunctionOverloading::functionResolutionDependsOnArgument(impl, implFunction, traitTp, pos)
-    )
-  }
-
-  /**
-   * Holds if resolving the function `implFunction` in `impl` requires inspecting
-   * the type of applied _arguments_ or possibly knowing the return type.
-   *
-   * `traitTp` is a type parameter of the trait being implemented by `impl`, and
-   * we need to check that the type of `f` corresponding to `traitTp` is satisfied
-   * at any one of the positions `pos` in which that type occurs in `f` (at `path`).
-   *
-   * As for method resolution, we always check the type being implemented (corresponding
-   * to `traitTp` being the special `Self` type parameter).
-   */
-  pragma[nomagic]
-  private predicate traitFunctionResolutionDependsOnArgument(
-    TraitItemNode trait, NonMethodFunction traitFunction, FunctionPosition pos, ImplItemNode impl,
-    NonMethodFunction implFunction, TypePath path, TypeParameter traitTp
-  ) {
-    traitFunctionResolutionDependsOnArgument0(trait, traitFunction, pos, impl, implFunction, path,
-      traitTp) and
-    // Exclude functions where we cannot resolve all relevant type mentions; this allows
-    // for blanket implementations to be applied in those cases
-    forall(TypeParameter traitTp0 |
-      traitFunctionResolutionDependsOnArgument0(trait, traitFunction, _, impl, implFunction, _,
-        traitTp0)
-    |
-      exists(FunctionPosition pos0, TypePath path0 |
-        traitFunctionResolutionDependsOnArgument0(trait, traitFunction, pos0, impl, implFunction,
-          path0, traitTp0) and
-        exists(getAssocFunctionTypeAt(implFunction, impl, pos0, path0))
-      )
-    )
-  }
-
-  /**
-   * Holds if `f` inside `i` either implements trait function `traitFunction` inside `trait`
-   * or is equal to `traitFunction`, and the type of `f` at `pos` and `path` is `t`, which
-   * corresponds to the `Self` type parameter of `trait`.
-   */
-  pragma[nomagic]
-  private predicate traitFunctionHasSelfType(
-    TraitItemNode trait, NonMethodFunction traitFunction, FunctionPosition pos, TypePath path,
-    Type t, ImplOrTraitItemNode i, NonMethodFunction f
-  ) {
-    exists(ImplItemNode impl, NonMethodFunction implFunction, AssocFunctionType aft |
-      traitFunctionResolutionDependsOnArgument(trait, traitFunction, pos, impl, implFunction, path,
-        TSelfTypeParameter(trait)) and
-      aft.appliesTo(f, i, pos) and
-      t = aft.getTypeAt(path)
-    |
-      i = trait and
-      f = traitFunction
-      or
-      i = impl and
-      f = implFunction and
-      not BlanketImplementation::isBlanketLike(i, _, _)
-    )
-  }
-
-  pragma[nomagic]
-  private predicate functionResolutionDependsOnArgument(
-    ImplItemNode impl, NonMethodFunction f, FunctionPosition pos, TypeParameter tp
-  ) {
-    traitFunctionResolutionDependsOnArgument(_, _, pos, impl, f, _, tp)
-    or
-    // For inherent implementations of generic types, we also need to check the type being
-    // implemented. We arbitrarily choose the first type parameter of the type being implemented
-    // to represent this case.
-    f = impl.getAnAssocItem() and
-    not impl.(Impl).hasTrait() and
-    tp = TTypeParamTypeParameter(impl.resolveSelfTy().getTypeParam(0)) and
-    pos.isTypeQualifier()
-  }
-
-  pragma[nomagic]
-  private predicate functionInfoBlanketLikeRelevantPos(
-    NonMethodFunction f, string name, int arity, ImplItemNode impl, Trait trait,
-    FunctionPosition pos, AssocFunctionType t, TypePath blanketPath, TypeParam blanketTypeParam
-  ) {
-    functionInfoBlanketLike(f, name, arity, impl, trait, pos, t, blanketPath, blanketTypeParam) and
-    (
-      if pos.isReturn()
-      then
-        // We only check that the context of the call provides relevant type information
-        // when no argument can
-        not exists(FunctionPosition pos0 |
-          functionInfoBlanketLike(f, name, arity, impl, trait, pos0, _, _, _) and
-          not pos0.isReturn()
-        )
-      else any()
-    )
-  }
-
-  pragma[nomagic]
-  private predicate blanketLikeCallTraitCandidate(Element fc, Trait trait) {
-    fc =
-      any(NonMethodCall nmc |
-        exists(string name, int arity |
-          nmc.hasNameAndArity(name, arity) and
-          functionInfoBlanketLikeRelevantPos(_, name, arity, _, trait, _, _, _, _)
-        |
-          not nmc.hasTrait()
-          or
-          trait = nmc.getTrait()
-        )
-      )
-  }
-
-  private module BlanketTraitIsVisible = TraitIsVisible<blanketLikeCallTraitCandidate/2>;
-
   /** A (potential) non-method call, `f(x)`. */
   final class NonMethodCall extends CallExpr {
     NonMethodCall() {
       // even if a function cannot be resolved by path resolution, it may still
       // be possible to resolve a blanket implementation (so not `forex`)
-      forall(Function f | f = CallExprImpl::getResolvedFunction(this) |
-        f instanceof NonMethodFunction
-      )
+      forall(Function f | f = CallExprImpl::getResolvedFunction(this) | not f instanceof Method)
     }
-
-    pragma[nomagic]
-    predicate hasNameAndArity(string name, int arity) {
-      name = CallExprImpl::getFunctionPath(this).getText() and
-      arity = this.getArgList().getNumberOfArgs()
-    }
-
-    /**
-     * Gets the item that this function call resolves to using path resolution,
-     * if any.
-     */
-    private ItemNode getPathResolutionResolved() {
-      result = CallExprImpl::getResolvedFunction(this) and
-      not result.(Function).hasSelfParam()
-    }
-
-    /**
-     * Gets the associated function that this function call resolves to using path
-     * resolution, if any.
-     */
-    pragma[nomagic]
-    NonMethodFunction getPathResolutionResolved(ImplOrTraitItemNode i) {
-      result = this.getPathResolutionResolved() and
-      result = i.getAnAssocItem()
-    }
-
-    /**
-     * Gets the blanket function that this call may resolve to, if any.
-     */
-    pragma[nomagic]
-    NonMethodFunction resolveCallTargetBlanketCand(ImplItemNode impl) {
-      exists(string name |
-        this.hasNameAndArity(pragma[only_bind_into](name), _) and
-        ArgIsInstantiationOfBlanketParam::argIsInstantiationOf(MkCallAndBlanketPos(this, _), impl, _) and
-        result = impl.getASuccessor(pragma[only_bind_into](name))
-      )
-    }
-
-    /** Gets the trait targeted by this call, if any. */
-    Trait getTrait() { result = getCallExprTraitQualifier(this) }
-
-    /** Holds if this call targets a trait. */
-    predicate hasTrait() { exists(this.getTrait()) }
 
     AstNode getNodeAt(FunctionPosition pos) {
       result = this.getSyntacticArgument(pos.asArgumentPosition())
@@ -2844,241 +2788,15 @@ private module NonMethodResolution {
       result = this and pos.isReturn()
     }
 
-    Type getTypeAt(FunctionPosition pos, TypePath path) {
-      result = inferType(this.getNodeAt(pos), path)
-    }
-
-    pragma[nomagic]
-    NonMethodFunction resolveCallTargetNonBlanketCand(ImplItemNode i) {
-      not this.hasTrait() and
-      result = this.getPathResolutionResolved(i) and
-      not exists(this.resolveCallTargetViaPathResolution()) and
-      functionResolutionDependsOnArgument(i, result, _, _)
-    }
-
-    pragma[nomagic]
-    predicate resolveCallTargetBlanketLikeCand(
-      ImplItemNode impl, FunctionPosition pos, TypePath blanketPath, TypeParam blanketTypeParam
-    ) {
-      exists(string name, int arity, Trait trait, AssocFunctionType t |
-        this.hasNameAndArity(name, arity) and
-        exists(this.getTypeAt(pos, blanketPath)) and
-        functionInfoBlanketLikeRelevantPos(_, name, arity, impl, trait, pos, t, blanketPath,
-          blanketTypeParam) and
-        BlanketTraitIsVisible::traitIsVisible(this, trait)
-      |
-        not this.hasTrait()
-        or
-        trait = this.getTrait()
-      )
-    }
-
-    pragma[nomagic]
-    predicate hasTraitResolved(TraitItemNode trait, NonMethodFunction resolved) {
-      resolved = this.getPathResolutionResolved() and
-      trait = this.getTrait()
-    }
-
-    /**
-     * Holds if this call has no compatible non-blanket target, and it has some
-     * candidate blanket target.
-     */
-    pragma[nomagic]
-    predicate hasNoCompatibleNonBlanketTarget() {
-      this.resolveCallTargetBlanketLikeCand(_, _, _, _) and
-      not exists(this.resolveCallTargetViaPathResolution()) and
-      forall(ImplOrTraitItemNode i, Function f | f = this.resolveCallTargetNonBlanketCand(i) |
-        NonMethodArgsAreInstantiationsOfNonBlanket::argsAreNotInstantiationsOf(this, i, f)
-      ) and
-      (
-        not this.hasTraitResolved(_, _)
-        or
-        exists(
-          TraitItemNode trait, NonMethodFunction resolved, FunctionPosition pos, TypePath path,
-          Type t
-        |
-          this.(NonMethodArgsAreInstantiationsOfNonBlanketInput::Call)
-              .hasTraitResolvedSelfType(trait, resolved, pos, path, t)
-        |
-          forall(ImplOrTraitItemNode i, Function f |
-            traitFunctionHasSelfType(trait, resolved, pos, path, t, i, f)
-          |
-            NonMethodArgsAreInstantiationsOfNonBlanket::argsAreNotInstantiationsOf(this, i, f)
-          )
-        )
-      )
-    }
-
     /**
      * Gets the target of this call, which can be resolved using only path resolution.
      */
     pragma[nomagic]
     ItemNode resolveCallTargetViaPathResolution() {
-      not this.hasTrait() and
-      result = this.getPathResolutionResolved() and
-      not functionResolutionDependsOnArgument(_, result, _, _)
-    }
-
-    /**
-     * Gets the target of this call, which can be resolved using type inference.
-     */
-    pragma[nomagic]
-    NonMethodFunction resolveCallTargetViaTypeInference(ImplOrTraitItemNode i) {
-      result = this.resolveCallTargetBlanketCand(i) and
-      not FunctionOverloading::functionResolutionDependsOnArgument(_, result, _, _)
-      or
-      NonMethodArgsAreInstantiationsOfBlanket::argsAreInstantiationsOf(this, i, result)
-      or
-      NonMethodArgsAreInstantiationsOfNonBlanket::argsAreInstantiationsOf(this, i, result)
+      result = CallExprImpl::getResolvedFunction(this) and
+      not result instanceof AssocFunction
     }
   }
-
-  private newtype TCallAndBlanketPos =
-    MkCallAndBlanketPos(NonMethodCall fc, FunctionPosition pos) {
-      fc.resolveCallTargetBlanketLikeCand(_, pos, _, _)
-    }
-
-  /** A call tagged with a position. */
-  private class CallAndBlanketPos extends MkCallAndBlanketPos {
-    NonMethodCall fc;
-    FunctionPosition pos;
-
-    CallAndBlanketPos() { this = MkCallAndBlanketPos(fc, pos) }
-
-    Location getLocation() { result = fc.getLocation() }
-
-    Type getTypeAt(TypePath path) { result = fc.getTypeAt(pos, path) }
-
-    string toString() { result = fc.toString() + " [arg " + pos + "]" }
-  }
-
-  private module ArgSatisfiesBlanketConstraintInput implements
-    BlanketImplementation::SatisfiesBlanketConstraintInputSig<CallAndBlanketPos>
-  {
-    pragma[nomagic]
-    predicate hasBlanketCandidate(
-      CallAndBlanketPos fcp, ImplItemNode impl, TypePath blanketPath, TypeParam blanketTypeParam
-    ) {
-      exists(NonMethodCall fc, FunctionPosition pos |
-        fcp = MkCallAndBlanketPos(fc, pos) and
-        fc.resolveCallTargetBlanketLikeCand(impl, pos, blanketPath, blanketTypeParam) and
-        // Only apply blanket implementations when no other implementations are possible;
-        // this is to account for codebases that use the (unstable) specialization feature
-        // (https://rust-lang.github.io/rfcs/1210-impl-specialization.html), as well as
-        // cases where our blanket implementation filtering is not precise enough.
-        (fc.hasNoCompatibleNonBlanketTarget() or not impl.isBlanketImplementation())
-      )
-    }
-  }
-
-  private module ArgSatisfiesBlanketConstraint =
-    BlanketImplementation::SatisfiesBlanketConstraint<CallAndBlanketPos,
-      ArgSatisfiesBlanketConstraintInput>;
-
-  /**
-   * A configuration for matching the type of an argument against the type of
-   * a parameter that mentions a satisfied blanket type parameter.
-   */
-  private module ArgIsInstantiationOfBlanketParamInput implements
-    IsInstantiationOfInputSig<CallAndBlanketPos, AssocFunctionType>
-  {
-    pragma[nomagic]
-    predicate potentialInstantiationOf(
-      CallAndBlanketPos fcp, TypeAbstraction abs, AssocFunctionType constraint
-    ) {
-      exists(FunctionPosition pos |
-        ArgSatisfiesBlanketConstraint::satisfiesBlanketConstraint(fcp, abs) and
-        fcp = MkCallAndBlanketPos(_, pos) and
-        functionInfoBlanketLikeRelevantPos(_, _, _, abs, _, pos, constraint, _, _)
-      )
-    }
-
-    predicate relevantConstraint(AssocFunctionType constraint) {
-      functionInfoBlanketLikeRelevantPos(_, _, _, _, _, _, constraint, _, _)
-    }
-  }
-
-  private module ArgIsInstantiationOfBlanketParam =
-    ArgIsInstantiationOf<CallAndBlanketPos, ArgIsInstantiationOfBlanketParamInput>;
-
-  private Type getArgType(
-    NonMethodCall call, FunctionPosition pos, TypePath path, boolean isDefaultTypeArg
-  ) {
-    result = inferType(call.getNodeAt(pos), path) and
-    isDefaultTypeArg = false
-    or
-    result = getCallExprTypeQualifier(call, path, isDefaultTypeArg) and
-    pos.isTypeQualifier()
-  }
-
-  private module NonMethodArgsAreInstantiationsOfBlanketInput implements
-    ArgsAreInstantiationsOfInputSig
-  {
-    predicate toCheck(ImplOrTraitItemNode i, Function f, TypeParameter tp, FunctionPosition pos) {
-      functionResolutionDependsOnArgument(i, f, pos, tp)
-    }
-
-    final class Call extends NonMethodCall {
-      Type getArgType(FunctionPosition pos, TypePath path) {
-        result = getArgType(this, pos, path, false)
-      }
-
-      predicate hasTargetCand(ImplOrTraitItemNode i, Function f) {
-        f = this.resolveCallTargetBlanketCand(i)
-      }
-    }
-  }
-
-  private module NonMethodArgsAreInstantiationsOfBlanket =
-    ArgsAreInstantiationsOf<NonMethodArgsAreInstantiationsOfBlanketInput>;
-
-  private module NonMethodArgsAreInstantiationsOfNonBlanketInput implements
-    ArgsAreInstantiationsOfInputSig
-  {
-    predicate toCheck(ImplOrTraitItemNode i, Function f, TypeParameter traitTp, FunctionPosition pos) {
-      functionResolutionDependsOnArgument(i, f, pos, traitTp)
-      or
-      // Also match against the trait function itself
-      FunctionOverloading::traitTypeParameterOccurrence(i, f, _, pos, _, traitTp) and
-      traitTp = TSelfTypeParameter(i)
-    }
-
-    class Call extends NonMethodCall {
-      Type getArgType(FunctionPosition pos, TypePath path) {
-        result = getArgType(this, pos, path, _)
-      }
-
-      /**
-       * Holds if this call is of the form `Trait::function(args)`, and the type at `pos` and
-       * `path` matches the `Self` type parameter of `Trait`.
-       */
-      pragma[nomagic]
-      predicate hasTraitResolvedSelfType(
-        TraitItemNode trait, NonMethodFunction function, FunctionPosition pos, TypePath path, Type t
-      ) {
-        this.hasTraitResolved(trait, function) and
-        FunctionOverloading::traitTypeParameterOccurrence(trait, function, _, pos, path,
-          TSelfTypeParameter(trait)) and
-        t = substituteLookupTraits(this.getArgType(pos, path)) and
-        t != TUnknownType()
-      }
-
-      predicate hasTargetCand(ImplOrTraitItemNode i, Function f) {
-        f = this.resolveCallTargetNonBlanketCand(i)
-        or
-        exists(
-          TraitItemNode trait, NonMethodFunction resolved, FunctionPosition pos, TypePath path,
-          Type t
-        |
-          this.hasTraitResolvedSelfType(trait, resolved, pos, path, t) and
-          traitFunctionHasSelfType(trait, resolved, pos, path, t, i, f)
-        )
-      }
-    }
-  }
-
-  private module NonMethodArgsAreInstantiationsOfNonBlanket =
-    ArgsAreInstantiationsOf<NonMethodArgsAreInstantiationsOfNonBlanketInput>;
 }
 
 abstract private class TupleLikeConstructor extends Addressable {
@@ -3233,7 +2951,7 @@ private module NonMethodCallMatchingInput implements MatchingInputSig {
       exists(ImplOrTraitItemNodeOption i, NonMethodFunctionDeclaration f |
         result = TNonMethodFunctionDeclaration(i, f)
       |
-        f = this.resolveCallTargetViaTypeInference(i.asSome()) // mutual recursion; resolving some associated function calls requires resolving types
+        f = this.(AssocFunctionResolution::AssocFunctionCall).resolveCallTarget(i.asSome(), _, _, _) // mutual recursion; resolving some associated function calls requires resolving types
         or
         f = this.resolveCallTargetViaPathResolution() and
         f.isDirectlyFor(i)
@@ -3253,12 +2971,6 @@ private module NonMethodCallMatchingInput implements MatchingInputSig {
       exists(ImplOrTraitItemNodeOption i, NonMethodFunctionDeclaration f |
         TNonMethodFunctionDeclaration(i, f) = this.getTarget() and
         this.hasUnknownTypeAt(i.asSome(), f, pos, path)
-      )
-      or
-      forex(ImplOrTraitItemNode i, NonMethodFunctionDeclaration f |
-        f = this.getPathResolutionResolved(i)
-      |
-        this.hasUnknownTypeAt(i, f, pos, path)
       )
       or
       // Tuple declarations, such as `Result::Ok(...)`, may also be context typed
@@ -3336,7 +3048,7 @@ private module OperationMatchingInput implements MatchingInputSig {
     }
   }
 
-  class Access extends MethodResolution::MethodCallOperation {
+  class Access extends AssocFunctionResolution::AssocFunctionCallOperation {
     Type getTypeArgument(TypeArgumentPosition apos, TypePath path) { none() }
 
     pragma[nomagic]
@@ -3346,7 +3058,7 @@ private module OperationMatchingInput implements MatchingInputSig {
 
     Declaration getTarget() {
       exists(ImplOrTraitItemNode i |
-        result.isMethod(i, this.resolveCallTarget(i, _, _)) // mutual recursion
+        result.isMethod(i, this.resolveCallTarget(i, _, _, _)) // mutual recursion
       )
     }
   }
@@ -4057,7 +3769,8 @@ private module Cached {
   cached
   predicate implicitDerefChainBorrow(Expr e, DerefChain derefChain, boolean borrow) {
     exists(BorrowKind bk |
-      any(MethodResolution::MethodCall mc).argumentHasImplicitDerefChainBorrow(e, derefChain, bk) and
+      any(AssocFunctionResolution::AssocFunctionCall afc)
+          .argumentHasImplicitDerefChainBorrow(e, derefChain, bk) and
       if bk.isNoBorrow() then borrow = false else borrow = true
     )
     or
@@ -4089,8 +3802,7 @@ private module Cached {
       or
       i instanceof ImplItemNode and dispatch = false
     |
-      result = call.(MethodResolution::MethodCall).resolveCallTarget(i, _, _) or
-      result = call.(NonMethodResolution::NonMethodCall).resolveCallTargetViaTypeInference(i)
+      result = call.(AssocFunctionResolution::AssocFunctionCall).resolveCallTarget(i, _, _, _)
     )
   }
 
@@ -4223,7 +3935,7 @@ private module Debug {
     exists(string filepath, int startline, int startcolumn, int endline, int endcolumn |
       result.getLocation().hasLocationInfo(filepath, startline, startcolumn, endline, endcolumn) and
       filepath.matches("%/main.rs") and
-      startline = 103
+      startline = 50
     )
   }
 
