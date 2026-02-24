@@ -1658,14 +1658,14 @@ private module AssocFunctionResolution {
       Type root
     ) {
       exists(TypePath path |
-        ArgIsInstantiationOfSelfParam::argIsNotInstantiationOf(MkAssocFunctionCallCand(this,
-            selfPos, _, derefChain, borrow), i, _, path) and
+        ArgIsInstantiationOfSelfParam::argIsNotInstantiationOf(this, i, selfPos, derefChain, borrow,
+          path) and
         path.isCons(root.getATypeParameter(), _)
       )
       or
       exists(AssocFunctionType selfType |
-        ArgIsInstantiationOfSelfParam::argIsInstantiationOf(MkAssocFunctionCallCand(this, selfPos,
-            _, derefChain, borrow), i, selfType) and
+        ArgIsInstantiationOfSelfParam::argIsInstantiationOf(this, i, selfPos, derefChain, borrow,
+          selfType) and
         CallArgsAreInstantiationsOf::argsAreNotInstantiationsOf(this, i, _) and
         root = selfType.getTypeAt(TypePath::nil())
       )
@@ -2176,8 +2176,17 @@ private module AssocFunctionResolution {
       AssocFunctionCall afc, FunctionPosition selfPos, FunctionPosition selfPosAdj,
       DerefChain derefChain, BorrowKind borrow
     ) {
-      // todo: restrict to relevant positions
-      exists(afc.getTypeAt(selfPos, derefChain, borrow, _)) and
+      exists(TypePath strippedTypePath, Type strippedType |
+        strippedType =
+          substituteLookupTraits(afc.getANonPseudoTypeAt(selfPos, derefChain, borrow,
+              strippedTypePath))
+      |
+        selfPos.isSelfOrTypeQualifier()
+        or
+        blanketLikeCandidate(afc, _, _, selfPosAdj, _, _, _, _)
+        or
+        nonBlanketCandidate(afc, _, _, selfPosAdj, _, _, strippedTypePath, strippedType)
+      ) and
       if afc.hasReceiver()
       then selfPosAdj = selfPos.getFunctionCallAdjusted()
       else selfPosAdj = selfPos
@@ -2427,8 +2436,26 @@ private module AssocFunctionResolution {
     }
   }
 
-  private module ArgIsInstantiationOfSelfParam =
-    ArgIsInstantiationOf<AssocFunctionCallCand, ArgIsInstantiationOfSelfParamInput>;
+  private module ArgIsInstantiationOfSelfParam {
+    import ArgIsInstantiationOf<AssocFunctionCallCand, ArgIsInstantiationOfSelfParamInput>
+
+    pragma[nomagic]
+    predicate argIsNotInstantiationOf(
+      AssocFunctionCall afc, ImplOrTraitItemNode i, FunctionPosition selfPos, DerefChain derefChain,
+      BorrowKind borrow, TypePath path
+    ) {
+      argIsNotInstantiationOf(MkAssocFunctionCallCand(afc, selfPos, _, derefChain, borrow), i, _,
+        path)
+    }
+
+    pragma[nomagic]
+    predicate argIsInstantiationOf(
+      AssocFunctionCall afc, ImplOrTraitItemNode i, FunctionPosition selfPos, DerefChain derefChain,
+      BorrowKind borrow, AssocFunctionType selfType
+    ) {
+      argIsInstantiationOf(MkAssocFunctionCallCand(afc, selfPos, _, derefChain, borrow), i, selfType)
+    }
+  }
 
   /**
    * A configuration for anti-matching the type of an argument against the type of
@@ -2592,35 +2619,36 @@ private module MethodCallMatchingInput implements MatchingWithEnvironmentInputSi
     }
 
     pragma[nomagic]
-    private Type getInferredSelfType(AccessPosition apos, string derefChainBorrow, TypePath path) {
+    private Type getInferredSelfType(
+      FunctionPosition pos, AccessPosition apos, string derefChainBorrow, TypePath path
+    ) {
       exists(DerefChain derefChain, BorrowKind borrow |
-        result = this.getTypeAt(apos, derefChain, borrow, path) and
-        derefChainBorrow = encodeDerefChainBorrow(apos, derefChain, borrow)
+        result = this.getTypeAt(pos, derefChain, borrow, path) and
+        derefChainBorrow = encodeDerefChainBorrow(pos, derefChain, borrow) and
+        if this.hasReceiver() then apos = pos else pos = apos.getFunctionCallAdjusted()
       )
     }
 
     pragma[nomagic]
-    private Type getInferredNonSelfType(AccessPosition apos, TypePath path) {
+    private Type getInferredNonSelfType(FunctionPosition pos, AccessPosition apos, TypePath path) {
       exists(DerefChain derefChain, BorrowKind borrow |
-        result = this.getTypeAt(apos, derefChain, borrow, path) and
+        result = this.getTypeAt(pos, derefChain, borrow, path) and
         derefChain.isEmpty() and
-        borrow.isNoBorrow()
+        borrow.isNoBorrow() and
+        if this.hasReceiver() then apos = pos else pos = apos.getFunctionCallAdjusted()
       )
     }
 
     bindingset[derefChainBorrow]
     Type getInferredType(string derefChainBorrow, AccessPosition apos, TypePath path) {
       exists(FunctionPosition pos |
-        result = this.getInferredSelfType(pos, derefChainBorrow, path)
+        result = this.getInferredSelfType(pos, apos, derefChainBorrow, path)
         or
         exists(FunctionPosition selfPos |
           MethodCallMatchingInput::decodeDerefChainBorrow(derefChainBorrow, selfPos, _, _) and
-          result = this.getInferredNonSelfType(pos, path) and
+          result = this.getInferredNonSelfType(pos, apos, path) and
           pos != selfPos
         )
-      |
-        // result = this.getInferredNonSelfType(pos, path)
-        if this.hasReceiver() then apos = pos else pos = apos.getFunctionCallAdjusted()
       )
     }
 
