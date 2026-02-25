@@ -1513,24 +1513,30 @@ private module AssocFunctionResolution {
       any(AssocFunctionCall afc0 |
         exists(string name, int arity |
           afc0.hasNameAndArity(name, arity, _, _) and
-          assocFunctionTraitInfo(name, arity, trait)
-        |
+          assocFunctionTraitInfo(name, arity, trait) and
           not afc0.hasTrait()
-          or
-          trait = afc0.getTrait()
         )
       )
   }
 
   private module AssocFunctionTraitIsVisible = TraitIsVisible<assocFunctionCallTraitCandidate/2>;
 
-  private predicate callVisibleTraitCandidate = AssocFunctionTraitIsVisible::traitIsVisible/2;
+  pragma[nomagic]
+  predicate callVisibleTraitCandidate(AssocFunctionCall afc, Trait trait) {
+    AssocFunctionTraitIsVisible::traitIsVisible(afc, trait)
+    or
+    // if the call has a trait qualifier then that trait must be visible
+    trait = afc.getTrait()
+  }
 
   bindingset[afc, impl]
   pragma[inline_late]
   private predicate callVisibleImplTraitCandidate(AssocFunctionCall afc, ImplItemNode impl) {
     callVisibleTraitCandidate(afc, impl.resolveTraitTy())
   }
+
+  pragma[nomagic]
+  private predicate implHasNoTrait(Impl i) { not i.hasTrait() }
 
   /**
    * Holds if call `afc` may target function `f` in `i` with type `selfType` at
@@ -1554,16 +1560,11 @@ private module AssocFunctionResolution {
       assocFunctionInfoNonBlanketLike(f, name, arity, selfPos, selfPosAdj, i, selfType,
         strippedTypePath, strippedType, implType, isMethod)
     |
-      i =
-        any(Impl impl |
-          not impl.hasTrait()
-          or
-          callVisibleImplTraitCandidate(afc, impl)
-        )
+      implHasNoTrait(i)
+      or
+      callVisibleImplTraitCandidate(afc, i)
       or
       callVisibleTraitCandidate(afc, i)
-      or
-      i.(ImplItemNode).resolveTraitTy() = afc.getTrait()
     )
   }
 
@@ -1587,11 +1588,8 @@ private module AssocFunctionResolution {
     exists(string name, int arity, boolean isMethod |
       afc.hasNameAndArity(name, arity, _, isMethod) and
       assocFunctionSelfInfoBlanketLike(f, name, arity, selfPos, selfPosAdj, impl, _, self,
-        blanketPath, blanketTypeParam, isMethod)
-    |
+        blanketPath, blanketTypeParam, isMethod) and
       callVisibleImplTraitCandidate(afc, impl)
-      or
-      impl.resolveTraitTy() = afc.getTrait()
     )
   }
 
