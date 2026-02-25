@@ -1406,7 +1406,8 @@ private module AssocFunctionResolution {
   pragma[nomagic]
   private predicate assocFunctionInfo(
     Function f, string name, int arity, FunctionPosition selfPos, FunctionPosition selfPosAdj,
-    ImplOrTraitItemNode i, AssocFunctionType selfType, TypePath strippedTypePath, Type strippedType
+    ImplOrTraitItemNode i, AssocFunctionType selfType, TypePath strippedTypePath, Type strippedType,
+    TypeOption implType, boolean isMethod
   ) {
     assocFunctionInfo(f, name, arity, i, selfPos, selfType) and
     strippedType = selfType.getTypeAt(strippedTypePath) and
@@ -1422,35 +1423,53 @@ private module AssocFunctionResolution {
       traitSelfTypeParameterOccurrence(i, f, selfPos)
       or
       traitImplSelfTypeParameterOccurrence(i, f, selfPos)
-    )
+    ) and
+    (
+      not i instanceof Impl and
+      implType.isNone()
+      or
+      implType.asSome() = resolveImplSelfTypeAt(i, TypePath::nil())
+    ) and
+    if f instanceof Method then isMethod = true else isMethod = false
   }
 
   pragma[nomagic]
-  private predicate assocFunctionInfoTypeParam(
+  private predicate assocFunctionInfoNonBlanketLike0(
     Function f, string name, int arity, FunctionPosition selfPos, FunctionPosition selfPosAdj,
-    ImplOrTraitItemNode i, AssocFunctionType selfType, TypePath strippedTypePath, TypeParam tp
+    ImplOrTraitItemNode i, AssocFunctionType selfType, TypePath strippedTypePath, Type strippedType,
+    TypeOption implType, boolean isMethod
   ) {
     assocFunctionInfo(f, name, arity, selfPos, selfPosAdj, i, selfType, strippedTypePath,
-      TTypeParamTypeParameter(tp))
+      strippedType, implType, isMethod) and
+    not BlanketImplementation::isBlanketLike(i, _, _)
+  }
+
+  pragma[nomagic]
+  private predicate assocFunctionInfoNonBlanketLikeTypeParam(
+    Function f, string name, int arity, FunctionPosition selfPos, FunctionPosition selfPosAdj,
+    ImplOrTraitItemNode i, AssocFunctionType selfType, TypePath strippedTypePath, TypeParam tp,
+    TypeOption implType, boolean isMethod
+  ) {
+    assocFunctionInfo(f, name, arity, selfPos, selfPosAdj, i, selfType, strippedTypePath,
+      TTypeParamTypeParameter(tp), implType, isMethod) and
+    not BlanketImplementation::isBlanketLike(i, _, _)
   }
 
   /**
-   * Same as `assocFunctionInfo`, but restricted to non-blanket implementations, and
+   * Same as `assocFunctionInfo`, but restricted to non-blanket-like implementations, and
    * allowing for any `strippedType` when the corresponding type inside `f` is
    * a type parameter.
    */
   pragma[inline]
-  private predicate assocFunctionInfoNonBlanket(
+  private predicate assocFunctionInfoNonBlanketLike(
     Function f, string name, int arity, FunctionPosition selfPos, FunctionPosition selfPosAdj,
-    ImplOrTraitItemNode i, AssocFunctionType selfType, TypePath strippedTypePath, Type strippedType
+    ImplOrTraitItemNode i, AssocFunctionType selfType, TypePath strippedTypePath, Type strippedType,
+    TypeOption implType, boolean isMethod
   ) {
-    (
-      assocFunctionInfo(f, name, arity, selfPos, selfPosAdj, i, selfType, strippedTypePath,
-        strippedType) or
-      assocFunctionInfoTypeParam(f, name, arity, selfPos, selfPosAdj, i, selfType, strippedTypePath,
-        _)
-    ) and
-    not BlanketImplementation::isBlanketLike(i, _, _)
+    assocFunctionInfoNonBlanketLike0(f, name, arity, selfPos, selfPosAdj, i, selfType,
+      strippedTypePath, strippedType, implType, isMethod) or
+    assocFunctionInfoNonBlanketLikeTypeParam(f, name, arity, selfPos, selfPosAdj, i, selfType,
+      strippedTypePath, _, implType, isMethod)
   }
 
   /**
@@ -1465,7 +1484,7 @@ private module AssocFunctionResolution {
   private predicate assocFunctionSelfInfoBlanketLike(
     Function f, string name, int arity, FunctionPosition selfPos, FunctionPosition selfPosAdj,
     ImplItemNode impl, Trait trait, AssocFunctionType selfType, TypePath blanketPath,
-    TypeParam blanketTypeParam
+    TypeParam blanketTypeParam, boolean isMethod
   ) {
     assocFunctionInfoBlanketLike(f, name, arity, impl, trait, selfPos, selfType, blanketPath,
       blanketTypeParam) and
@@ -1474,17 +1493,18 @@ private module AssocFunctionResolution {
       selfPos.isSelfOrTypeQualifier()
       or
       traitImplSelfTypeParameterOccurrence(impl, f, selfPos)
-    )
+    ) and
+    if f instanceof Method then isMethod = true else isMethod = false
   }
 
   pragma[nomagic]
   private predicate assocFunctionTraitInfo(string name, int arity, Trait trait) {
     exists(ImplItemNode i |
-      assocFunctionInfo(_, name, arity, _, _, i, _, _, _) and
+      assocFunctionInfo(_, name, arity, _, _, i, _, _, _, _, _) and
       trait = i.resolveTraitTy()
     )
     or
-    assocFunctionInfo(_, name, arity, _, _, trait, _, _, _)
+    assocFunctionInfo(_, name, arity, _, _, trait, _, _, _, _, _)
   }
 
   pragma[nomagic]
@@ -1492,7 +1512,7 @@ private module AssocFunctionResolution {
     afc =
       any(AssocFunctionCall afc0 |
         exists(string name, int arity |
-          afc0.hasNameAndArity(name, arity) and
+          afc0.hasNameAndArity(name, arity, _, _) and
           assocFunctionTraitInfo(name, arity, trait)
         |
           not afc0.hasTrait()
@@ -1525,22 +1545,14 @@ private module AssocFunctionResolution {
    */
   bindingset[afc, strippedTypePath, strippedType]
   pragma[inline_late]
-  private predicate nonBlanketCandidate(
+  private predicate nonBlanketLikeCandidate(
     AssocFunctionCall afc, Function f, FunctionPosition selfPos, FunctionPosition selfPosAdj,
     ImplOrTraitItemNode i, AssocFunctionType selfType, TypePath strippedTypePath, Type strippedType
   ) {
-    exists(string name, int arity |
-      afc.hasNameAndArity(name, arity) and
-      assocFunctionInfoNonBlanket(f, name, arity, selfPos, selfPosAdj, i, selfType,
-        strippedTypePath, strippedType) and
-      (if afc.hasReceiver() then f instanceof Method else any()) and
-      // In case of a (non-type-parameter) type qualifier, the `impl` block must match that type
-      forall(Type t |
-        t = getCallExprTypeQualifier(afc, TypePath::nil(), _) and
-        not t instanceof TypeParameter
-      |
-        t = resolveImplSelfTypeAt(i, TypePath::nil())
-      )
+    exists(string name, int arity, TypeOption implType, boolean isMethod |
+      afc.hasNameAndArity(name, arity, [implType, any(TypeOption non | non.isNone())], isMethod) and
+      assocFunctionInfoNonBlanketLike(f, name, arity, selfPos, selfPosAdj, i, selfType,
+        strippedTypePath, strippedType, implType, isMethod)
     |
       i =
         any(Impl impl |
@@ -1572,17 +1584,20 @@ private module AssocFunctionResolution {
     AssocFunctionCall afc, Function f, FunctionPosition selfPos, FunctionPosition selfPosAdj,
     ImplItemNode impl, AssocFunctionType self, TypePath blanketPath, TypeParam blanketTypeParam
   ) {
-    exists(string name, int arity |
-      afc.hasNameAndArity(name, arity) and
+    exists(string name, int arity, boolean isMethod |
+      afc.hasNameAndArity(name, arity, _, isMethod) and
       assocFunctionSelfInfoBlanketLike(f, name, arity, selfPos, selfPosAdj, impl, _, self,
-        blanketPath, blanketTypeParam) and
-      if afc.hasReceiver() then f instanceof Method else any()
+        blanketPath, blanketTypeParam, isMethod)
     |
       callVisibleImplTraitCandidate(afc, impl)
       or
       impl.resolveTraitTy() = afc.getTrait()
     )
   }
+
+  private module TypeOption = Option<Type>;
+
+  private class TypeOption = TypeOption::Option;
 
   /**
    * A (potential) call to an associated function.
@@ -1605,7 +1620,7 @@ private module AssocFunctionResolution {
    * [1]: https://doc.rust-lang.org/std/ops/trait.Index.html
    */
   abstract class AssocFunctionCall extends Expr {
-    abstract predicate hasNameAndArity(string name, int arity);
+    abstract predicate hasNameAndArity(string name, int arity, TypeOption implType, boolean isMethod);
 
     abstract Expr getNonReturnNodeAt(FunctionPosition apos);
 
@@ -1643,7 +1658,7 @@ private module AssocFunctionResolution {
         (
           blanketLikeCandidate(this, _, _, selfPos, _, _, _, _)
           or
-          nonBlanketCandidate(this, _, _, selfPos, _, _, strippedTypePath, strippedType)
+          nonBlanketLikeCandidate(this, _, _, selfPos, _, _, strippedTypePath, strippedType)
         )
       )
     }
@@ -1738,7 +1753,7 @@ private module AssocFunctionResolution {
       Type strippedType
     ) {
       forall(ImplOrTraitItemNode i |
-        nonBlanketCandidate(this, _, selfPos, _, i, _, strippedTypePath, strippedType)
+        nonBlanketLikeCandidate(this, _, selfPos, _, i, _, strippedTypePath, strippedType)
       |
         this.hasIncompatibleTarget(i, selfPos, derefChain, borrow, strippedType)
       )
@@ -1789,11 +1804,21 @@ private module AssocFunctionResolution {
         this.getComplexStrippedSelfType(selfPos, derefChain, TNoBorrowKind(), strippedTypePath) and
       n = -1
       or
-      this.hasNoCompatibleTargetNoBorrowToIndex(selfPos, derefChain, strippedTypePath, strippedType,
-        n - 1) and
-      exists(Type t | t = getNthLookupType(strippedType, n) |
+      exists(Type t |
+        this.hasNoCompatibleTargetNoBorrowToIndexRec(selfPos, derefChain, strippedTypePath,
+          strippedType, n, t) and
         this.hasNoCompatibleTargetCheck(selfPos, derefChain, TNoBorrowKind(), strippedTypePath, t)
       )
+    }
+
+    pragma[nomagic]
+    private predicate hasNoCompatibleTargetNoBorrowToIndexRec(
+      FunctionPosition selfPos, DerefChain derefChain, TypePath strippedTypePath, Type strippedType,
+      int n, Type t
+    ) {
+      this.hasNoCompatibleTargetNoBorrowToIndex(selfPos, derefChain, strippedTypePath, strippedType,
+        n - 1) and
+      t = getNthLookupType(strippedType, n)
     }
 
     /**
@@ -1826,12 +1851,22 @@ private module AssocFunctionResolution {
         this.getComplexStrippedSelfType(selfPos, derefChain, TNoBorrowKind(), strippedTypePath) and
       n = -1
       or
-      this.hasNoCompatibleNonBlanketTargetNoBorrowToIndex(selfPos, derefChain, strippedTypePath,
-        strippedType, n - 1) and
-      exists(Type t | t = getNthLookupType(strippedType, n) |
+      exists(Type t |
+        this.hasNoCompatibleNonBlanketTargetNoBorrowToIndexRec(selfPos, derefChain,
+          strippedTypePath, strippedType, n, t) and
         this.hasNoCompatibleNonBlanketTargetCheck(selfPos, derefChain, TNoBorrowKind(),
           strippedTypePath, t)
       )
+    }
+
+    pragma[nomagic]
+    private predicate hasNoCompatibleNonBlanketTargetNoBorrowToIndexRec(
+      FunctionPosition selfPos, DerefChain derefChain, TypePath strippedTypePath, Type strippedType,
+      int n, Type t
+    ) {
+      this.hasNoCompatibleNonBlanketTargetNoBorrowToIndex(selfPos, derefChain, strippedTypePath,
+        strippedType, n - 1) and
+      t = getNthLookupType(strippedType, n)
     }
 
     /**
@@ -1860,12 +1895,22 @@ private module AssocFunctionResolution {
           strippedTypePath) and
       n = -1
       or
-      this.hasNoCompatibleTargetSharedBorrowToIndex(selfPos, derefChain, strippedTypePath,
-        strippedType, n - 1) and
-      exists(Type t | t = getNthLookupType(strippedType, n) |
+      exists(Type t |
+        this.hasNoCompatibleTargetSharedBorrowToIndexRec(selfPos, derefChain, strippedTypePath,
+          strippedType, n, t) and
         this.hasNoCompatibleNonBlanketLikeTargetCheck(selfPos, derefChain, TSomeBorrowKind(false),
           strippedTypePath, t)
       )
+    }
+
+    pragma[nomagic]
+    private predicate hasNoCompatibleTargetSharedBorrowToIndexRec(
+      FunctionPosition selfPos, DerefChain derefChain, TypePath strippedTypePath, Type strippedType,
+      int n, Type t
+    ) {
+      this.hasNoCompatibleTargetSharedBorrowToIndex(selfPos, derefChain, strippedTypePath,
+        strippedType, n - 1) and
+      t = getNthLookupType(strippedType, n)
     }
 
     /**
@@ -1891,12 +1936,22 @@ private module AssocFunctionResolution {
         this.getComplexStrippedSelfType(selfPos, derefChain, TSomeBorrowKind(true), strippedTypePath) and
       n = -1
       or
-      this.hasNoCompatibleTargetMutBorrowToIndex(selfPos, derefChain, strippedTypePath,
-        strippedType, n - 1) and
-      exists(Type t | t = getNthLookupType(strippedType, n) |
+      exists(Type t |
+        this.hasNoCompatibleTargetMutBorrowToIndexRec(selfPos, derefChain, strippedTypePath,
+          strippedType, n, t) and
         this.hasNoCompatibleNonBlanketLikeTargetCheck(selfPos, derefChain, TSomeBorrowKind(true),
           strippedTypePath, t)
       )
+    }
+
+    pragma[nomagic]
+    private predicate hasNoCompatibleTargetMutBorrowToIndexRec(
+      FunctionPosition selfPos, DerefChain derefChain, TypePath strippedTypePath, Type strippedType,
+      int n, Type t
+    ) {
+      this.hasNoCompatibleTargetMutBorrowToIndex(selfPos, derefChain, strippedTypePath,
+        strippedType, n - 1) and
+      t = getNthLookupType(strippedType, n)
     }
 
     /**
@@ -1923,12 +1978,22 @@ private module AssocFunctionResolution {
           strippedTypePath) and
       n = -1
       or
-      this.hasNoCompatibleNonBlanketTargetSharedBorrowToIndex(selfPos, derefChain, strippedTypePath,
-        strippedType, n - 1) and
-      exists(Type t | t = getNthLookupType(strippedType, n) |
+      exists(Type t |
+        this.hasNoCompatibleNonBlanketTargetSharedBorrowToIndexRec(selfPos, derefChain,
+          strippedTypePath, strippedType, n, t) and
         this.hasNoCompatibleNonBlanketTargetCheck(selfPos, derefChain, TSomeBorrowKind(false),
           strippedTypePath, t)
       )
+    }
+
+    pragma[nomagic]
+    private predicate hasNoCompatibleNonBlanketTargetSharedBorrowToIndexRec(
+      FunctionPosition selfPos, DerefChain derefChain, TypePath strippedTypePath, Type strippedType,
+      int n, Type t
+    ) {
+      this.hasNoCompatibleNonBlanketTargetSharedBorrowToIndex(selfPos, derefChain, strippedTypePath,
+        strippedType, n - 1) and
+      t = getNthLookupType(strippedType, n)
     }
 
     /**
@@ -1956,12 +2021,22 @@ private module AssocFunctionResolution {
         this.getComplexStrippedSelfType(selfPos, derefChain, TSomeBorrowKind(true), strippedTypePath) and
       n = -1
       or
-      this.hasNoCompatibleNonBlanketTargetMutBorrowToIndex(selfPos, derefChain, strippedTypePath,
-        strippedType, n - 1) and
-      exists(Type t | t = getNthLookupType(strippedType, n) |
+      exists(Type t |
+        this.hasNoCompatibleNonBlanketTargetMutBorrowToIndexRec(selfPos, derefChain,
+          strippedTypePath, strippedType, n, t) and
         this.hasNoCompatibleNonBlanketTargetCheck(selfPos, derefChain, TSomeBorrowKind(true),
           strippedTypePath, t)
       )
+    }
+
+    pragma[nomagic]
+    private predicate hasNoCompatibleNonBlanketTargetMutBorrowToIndexRec(
+      FunctionPosition selfPos, DerefChain derefChain, TypePath strippedTypePath, Type strippedType,
+      int n, Type t
+    ) {
+      this.hasNoCompatibleNonBlanketTargetMutBorrowToIndex(selfPos, derefChain, strippedTypePath,
+        strippedType, n - 1) and
+      t = getNthLookupType(strippedType, n)
     }
 
     /**
@@ -2054,9 +2129,11 @@ private module AssocFunctionResolution {
 
   private class AssocFunctionCallMethodCallExpr extends AssocFunctionCall instanceof MethodCallExpr {
     pragma[nomagic]
-    override predicate hasNameAndArity(string name, int arity) {
+    override predicate hasNameAndArity(string name, int arity, TypeOption implType, boolean isMethod) {
       name = super.getIdentifier().getText() and
-      arity = super.getArgList().getNumberOfArgs() + 1
+      arity = super.getArgList().getNumberOfArgs() + 1 and
+      implType.isNone() and
+      isMethod = true
     }
 
     override Expr getNonReturnNodeAt(FunctionPosition pos) {
@@ -2075,9 +2152,11 @@ private module AssocFunctionResolution {
     }
 
     pragma[nomagic]
-    override predicate hasNameAndArity(string name, int arity) {
+    override predicate hasNameAndArity(string name, int arity, TypeOption implType, boolean isMethod) {
       (if this.isInMutableContext() then name = "index_mut" else name = "index") and
-      arity = 2
+      arity = 2 and
+      implType.isNone() and
+      isMethod = true
     }
 
     override Expr getNonReturnNodeAt(FunctionPosition pos) {
@@ -2097,7 +2176,7 @@ private module AssocFunctionResolution {
     }
   }
 
-  private class AssocFunctionCallCallExpr extends AssocFunctionCall instanceof CallExpr {
+  class AssocFunctionCallCallExpr extends AssocFunctionCall instanceof CallExpr {
     AssocFunctionCallCallExpr() {
       exists(getCallExprPathQualifier(this)) and
       // even if a target cannot be resolved by path resolution, it may still
@@ -2106,9 +2185,22 @@ private module AssocFunctionResolution {
     }
 
     pragma[nomagic]
-    override predicate hasNameAndArity(string name, int arity) {
+    private Type getNonTypeParameterTypeQualifier() {
+      result = getCallExprTypeQualifier(this, TypePath::nil(), _) and
+      not result instanceof TypeParameter
+    }
+
+    pragma[nomagic]
+    override predicate hasNameAndArity(string name, int arity, TypeOption implType, boolean isMethod) {
       name = CallExprImpl::getFunctionPath(this).getText() and
-      arity = super.getArgList().getNumberOfArgs()
+      arity = super.getArgList().getNumberOfArgs() and
+      (
+        not exists(this.getNonTypeParameterTypeQualifier()) and
+        implType.isNone()
+        or
+        implType.asSome() = this.getNonTypeParameterTypeQualifier()
+      ) and
+      isMethod = [false, true]
     }
 
     override Expr getNonReturnNodeAt(FunctionPosition pos) {
@@ -2129,9 +2221,11 @@ private module AssocFunctionResolution {
 
   final class AssocFunctionCallOperation extends AssocFunctionCall instanceof Operation {
     pragma[nomagic]
-    override predicate hasNameAndArity(string name, int arity) {
+    override predicate hasNameAndArity(string name, int arity, TypeOption implType, boolean isMethod) {
       super.isOverloaded(_, name, _) and
-      arity = super.getNumberOfOperands()
+      arity = super.getNumberOfOperands() and
+      implType.isNone() and
+      isMethod = true
     }
 
     override Expr getNonReturnNodeAt(FunctionPosition pos) {
@@ -2198,20 +2292,7 @@ private module AssocFunctionResolution {
       AssocFunctionCall afc, FunctionPosition selfPos, FunctionPosition selfPosAdj,
       DerefChain derefChain, BorrowKind borrow
     ) {
-      exists(TypePath strippedTypePath, Type strippedType |
-        strippedType =
-          substituteLookupTraits(afc.getANonPseudoSelfTypeAt(selfPos, derefChain, borrow,
-              strippedTypePath))
-      |
-        selfPos.isSelfOrTypeQualifier()
-        or
-        not afc.hasReceiver() and
-        (
-          blanketLikeCandidate(afc, _, _, selfPosAdj, _, _, _, _)
-          or
-          nonBlanketCandidate(afc, _, _, selfPosAdj, _, _, strippedTypePath, strippedType)
-        )
-      ) and
+      exists(afc.getANonPseudoSelfTypeAt(selfPos, derefChain, borrow, _)) and
       if afc.hasReceiver()
       then selfPosAdj = selfPos.getFunctionCallAdjusted()
       else selfPosAdj = selfPos
@@ -2260,7 +2341,7 @@ private module AssocFunctionResolution {
         selfPos.isTypeQualifier() and strippedTypePath.isEmpty()
       ) and
       afc = afc_ and
-      afc.hasNameAndArity(name, arity) and
+      afc.hasNameAndArity(name, arity, _, _) and
       pos = selfPosAdj
     }
 
@@ -2286,8 +2367,8 @@ private module AssocFunctionResolution {
       |
         this.hasSignature(_, selfPosAdj, strippedTypePath, strippedType, name, arity) and
         forall(Impl i |
-          assocFunctionInfoNonBlanket(_, name, arity, _, selfPosAdj, i, _, strippedTypePath,
-            strippedType) and
+          assocFunctionInfoNonBlanketLike(_, name, arity, _, selfPosAdj, i, _, strippedTypePath,
+            strippedType, _, _) and
           not i.hasTrait()
         |
           this.hasIncompatibleInherentTarget(i)
@@ -2298,7 +2379,7 @@ private module AssocFunctionResolution {
     pragma[nomagic]
     private predicate argIsInstantiationOf(ImplOrTraitItemNode i, string name, int arity) {
       ArgIsInstantiationOfSelfParam::argIsInstantiationOf(this, i, _) and
-      afc_.hasNameAndArity(name, arity)
+      afc_.hasNameAndArity(name, arity, _, _)
     }
 
     pragma[nomagic]
@@ -2437,7 +2518,7 @@ private module AssocFunctionResolution {
       |
         afcc.hasSignature(afc, pos, strippedTypePath, strippedType, _, _)
       |
-        nonBlanketCandidate(afc, f, _, pos, i, selfType, strippedTypePath, strippedType)
+        nonBlanketLikeCandidate(afc, f, _, pos, i, selfType, strippedTypePath, strippedType)
         or
         blanketLikeCandidate(afc, f, _, pos, i, selfType, _, _) and
         ArgSatisfiesBlanketLikeConstraint::satisfiesBlanketConstraint(afcc, i)
@@ -2458,7 +2539,7 @@ private module AssocFunctionResolution {
     }
 
     predicate relevantConstraint(AssocFunctionType constraint) {
-      assocFunctionInfo(_, _, _, _, _, _, constraint, _, _)
+      assocFunctionInfo(_, _, _, _, _, _, constraint, _, _, _, _)
     }
   }
 
