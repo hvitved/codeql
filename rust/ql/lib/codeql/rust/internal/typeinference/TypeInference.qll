@@ -1633,7 +1633,7 @@ private module AssocFunctionResolution {
      * Same as `getTypeAt`, but without borrows.
      */
     pragma[nomagic]
-    Type getTypeAtNoBorrow(FunctionPosition selfPos, DerefChain derefChain, TypePath path) {
+    Type getSelfTypeAtNoBorrow(FunctionPosition selfPos, DerefChain derefChain, TypePath path) {
       result = this.getTypeAt(selfPos, path) and
       derefChain.isEmpty()
       or
@@ -1692,19 +1692,19 @@ private module AssocFunctionResolution {
      * Same as `getTypeAt`, but excludes pseudo types `!` and `unknown`.
      */
     pragma[nomagic]
-    Type getANonPseudoTypeAt(
+    Type getANonPseudoSelfTypeAt(
       FunctionPosition selfPos, DerefChain derefChain, BorrowKind borrow, TypePath path
     ) {
-      result = this.getTypeAt(selfPos, derefChain, borrow, path) and
+      result = this.getSelfTypeAt(selfPos, derefChain, borrow, path) and
       result != TNeverType() and
       result != TUnknownType()
     }
 
     pragma[nomagic]
-    private Type getComplexStrippedType(
+    private Type getComplexStrippedSelfType(
       FunctionPosition selfPos, DerefChain derefChain, BorrowKind borrow, TypePath strippedTypePath
     ) {
-      result = this.getANonPseudoTypeAt(selfPos, derefChain, borrow, strippedTypePath) and
+      result = this.getANonPseudoSelfTypeAt(selfPos, derefChain, borrow, strippedTypePath) and
       (
         isComplexRootStripped(strippedTypePath, result)
         or
@@ -1766,7 +1766,7 @@ private module AssocFunctionResolution {
         derefChain.isEmpty()
       ) and
       strippedType =
-        this.getComplexStrippedType(selfPos, derefChain, TNoBorrowKind(), strippedTypePath) and
+        this.getComplexStrippedSelfType(selfPos, derefChain, TNoBorrowKind(), strippedTypePath) and
       n = -1
       or
       this.hasNoCompatibleTargetNoBorrowToIndex(selfPos, derefChain, strippedTypePath, strippedType,
@@ -1803,7 +1803,7 @@ private module AssocFunctionResolution {
         derefChain.isEmpty()
       ) and
       strippedType =
-        this.getComplexStrippedType(selfPos, derefChain, TNoBorrowKind(), strippedTypePath) and
+        this.getComplexStrippedSelfType(selfPos, derefChain, TNoBorrowKind(), strippedTypePath) and
       n = -1
       or
       this.hasNoCompatibleNonBlanketTargetNoBorrowToIndex(selfPos, derefChain, strippedTypePath,
@@ -1836,7 +1836,8 @@ private module AssocFunctionResolution {
     ) {
       this.hasNoCompatibleTargetNoBorrow(selfPos, derefChain) and
       strippedType =
-        this.getComplexStrippedType(selfPos, derefChain, TSomeBorrowKind(false), strippedTypePath) and
+        this.getComplexStrippedSelfType(selfPos, derefChain, TSomeBorrowKind(false),
+          strippedTypePath) and
       n = -1
       or
       this.hasNoCompatibleTargetSharedBorrowToIndex(selfPos, derefChain, strippedTypePath,
@@ -1867,7 +1868,7 @@ private module AssocFunctionResolution {
     ) {
       this.hasNoCompatibleTargetSharedBorrow(selfPos, derefChain) and
       strippedType =
-        this.getComplexStrippedType(selfPos, derefChain, TSomeBorrowKind(true), strippedTypePath) and
+        this.getComplexStrippedSelfType(selfPos, derefChain, TSomeBorrowKind(true), strippedTypePath) and
       n = -1
       or
       this.hasNoCompatibleTargetMutBorrowToIndex(selfPos, derefChain, strippedTypePath,
@@ -1898,7 +1899,8 @@ private module AssocFunctionResolution {
     ) {
       this.hasNoCompatibleTargetNoBorrow(selfPos, derefChain) and
       strippedType =
-        this.getComplexStrippedType(selfPos, derefChain, TSomeBorrowKind(false), strippedTypePath) and
+        this.getComplexStrippedSelfType(selfPos, derefChain, TSomeBorrowKind(false),
+          strippedTypePath) and
       n = -1
       or
       this.hasNoCompatibleNonBlanketTargetSharedBorrowToIndex(selfPos, derefChain, strippedTypePath,
@@ -1931,7 +1933,7 @@ private module AssocFunctionResolution {
     ) {
       this.hasNoCompatibleNonBlanketTargetSharedBorrow(selfPos, derefChain) and
       strippedType =
-        this.getComplexStrippedType(selfPos, derefChain, TSomeBorrowKind(true), strippedTypePath) and
+        this.getComplexStrippedSelfType(selfPos, derefChain, TSomeBorrowKind(true), strippedTypePath) and
       n = -1
       or
       this.hasNoCompatibleNonBlanketTargetMutBorrowToIndex(selfPos, derefChain, strippedTypePath,
@@ -1972,8 +1974,10 @@ private module AssocFunctionResolution {
      * [1]: https://doc.rust-lang.org/reference/expressions/method-call-expr.html#r-expr.method.candidate-receivers
      */
     pragma[nomagic]
-    Type getTypeAt(FunctionPosition selfPos, DerefChain derefChain, BorrowKind borrow, TypePath path) {
-      result = this.getTypeAtNoBorrow(selfPos, derefChain, path) and
+    Type getSelfTypeAt(
+      FunctionPosition selfPos, DerefChain derefChain, BorrowKind borrow, TypePath path
+    ) {
+      result = this.getSelfTypeAtNoBorrow(selfPos, derefChain, path) and
       borrow.isNoBorrow()
       or
       exists(RefType rt |
@@ -1993,7 +1997,7 @@ private module AssocFunctionResolution {
           result = rt
           or
           exists(TypePath suffix |
-            result = this.getTypeAtNoBorrow(selfPos, derefChain, suffix) and
+            result = this.getSelfTypeAtNoBorrow(selfPos, derefChain, suffix) and
             path = TypePath::cons(rt.getPositionalTypeParameter(0), suffix)
           )
         )
@@ -2178,14 +2182,17 @@ private module AssocFunctionResolution {
     ) {
       exists(TypePath strippedTypePath, Type strippedType |
         strippedType =
-          substituteLookupTraits(afc.getANonPseudoTypeAt(selfPos, derefChain, borrow,
+          substituteLookupTraits(afc.getANonPseudoSelfTypeAt(selfPos, derefChain, borrow,
               strippedTypePath))
       |
         selfPos.isSelfOrTypeQualifier()
         or
-        blanketLikeCandidate(afc, _, _, selfPosAdj, _, _, _, _)
-        or
-        nonBlanketCandidate(afc, _, _, selfPosAdj, _, _, strippedTypePath, strippedType)
+        not afc.hasReceiver() and
+        (
+          blanketLikeCandidate(afc, _, _, selfPosAdj, _, _, _, _)
+          or
+          nonBlanketCandidate(afc, _, _, selfPosAdj, _, _, strippedTypePath, strippedType)
+        )
       ) and
       if afc.hasReceiver()
       then selfPosAdj = selfPos.getFunctionCallAdjusted()
@@ -2207,7 +2214,8 @@ private module AssocFunctionResolution {
     AssocFunctionCall getAssocFunctionCall() { result = afc_ }
 
     Type getTypeAt(TypePath path) {
-      result = substituteLookupTraits(afc_.getANonPseudoTypeAt(selfPos, derefChain, borrow, path))
+      result =
+        substituteLookupTraits(afc_.getANonPseudoSelfTypeAt(selfPos, derefChain, borrow, path))
     }
 
     pragma[nomagic]
@@ -2308,7 +2316,7 @@ private module AssocFunctionResolution {
         mc.supportsAutoDerefAndBorrow() and
         selfPos.isSelf() and
         mc.hasNoCompatibleTargetMutBorrow(selfPos, derefChain) and
-        exists(mc.getTypeAtNoBorrow(selfPos, derefChain, TypePath::nil()))
+        exists(mc.getSelfTypeAtNoBorrow(selfPos, derefChain, TypePath::nil()))
       }
 
     /** A method call with a dereference chain. */
@@ -2320,7 +2328,7 @@ private module AssocFunctionResolution {
       MethodCallDerefCand() { this = MkMethodCallDerefCand(mc, selfPos, derefChain) }
 
       Type getTypeAt(TypePath path) {
-        result = substituteLookupTraits(mc.getTypeAtNoBorrow(selfPos, derefChain, path)) and
+        result = substituteLookupTraits(mc.getSelfTypeAtNoBorrow(selfPos, derefChain, path)) and
         result != TNeverType() and
         result != TUnknownType()
       }
@@ -2623,7 +2631,7 @@ private module MethodCallMatchingInput implements MatchingWithEnvironmentInputSi
       FunctionPosition pos, AccessPosition apos, string derefChainBorrow, TypePath path
     ) {
       exists(DerefChain derefChain, BorrowKind borrow |
-        result = this.getTypeAt(pos, derefChain, borrow, path) and
+        result = this.getSelfTypeAt(pos, derefChain, borrow, path) and
         derefChainBorrow = encodeDerefChainBorrow(pos, derefChain, borrow) and
         if this.hasReceiver() then apos = pos else pos = apos.getFunctionCallAdjusted()
       )
@@ -2632,7 +2640,7 @@ private module MethodCallMatchingInput implements MatchingWithEnvironmentInputSi
     pragma[nomagic]
     private Type getInferredNonSelfType(FunctionPosition pos, AccessPosition apos, TypePath path) {
       exists(DerefChain derefChain, BorrowKind borrow |
-        result = this.getTypeAt(pos, derefChain, borrow, path) and
+        result = this.getSelfTypeAt(pos, derefChain, borrow, path) and
         derefChain.isEmpty() and
         borrow.isNoBorrow() and
         if this.hasReceiver() then apos = pos else pos = apos.getFunctionCallAdjusted()
