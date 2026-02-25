@@ -2030,11 +2030,9 @@ private module AssocFunctionResolution {
      * and `borrow`.
      */
     pragma[nomagic]
-    AssocFunction resolveCallTarget(
-      ImplOrTraitItemNode i, FunctionPosition selfPos, DerefChain derefChain, BorrowKind borrow
-    ) {
+    AssocFunction resolveCallTarget(ImplOrTraitItemNode i, DerefChain derefChain, BorrowKind borrow) {
       exists(AssocFunctionCallCand afcc |
-        afcc = MkAssocFunctionCallCand(this, selfPos, _, derefChain, borrow) and
+        afcc = MkAssocFunctionCallCand(this, _, _, derefChain, borrow) and
         result = afcc.resolveCallTarget(i)
       )
     }
@@ -2047,7 +2045,7 @@ private module AssocFunctionResolution {
     predicate argumentHasImplicitDerefChainBorrow(Expr arg, DerefChain derefChain, BorrowKind borrow) {
       exists(FunctionPosition self |
         self.isSelf() and
-        exists(this.resolveCallTarget(_, self, derefChain, borrow)) and
+        exists(this.resolveCallTarget(_, derefChain, borrow)) and
         arg = this.getNodeAt(self) and
         not (derefChain.isEmpty() and borrow.isNoBorrow())
       )
@@ -2605,24 +2603,19 @@ private module MethodCallMatchingInput implements MatchingWithEnvironmentInputSi
 
   class AccessEnvironment = string;
 
-  bindingset[pos, derefChain, borrow]
-  private AccessEnvironment encodeDerefChainBorrow(
-    FunctionPosition pos, DerefChain derefChain, BorrowKind borrow
-  ) {
-    result = pos + ":" + derefChain + ";" + borrow
+  bindingset[derefChain, borrow]
+  private AccessEnvironment encodeDerefChainBorrow(DerefChain derefChain, BorrowKind borrow) {
+    result = derefChain + ";" + borrow
   }
 
   bindingset[derefChainBorrow]
   additional predicate decodeDerefChainBorrow(
-    string derefChainBorrow, FunctionPosition pos, DerefChain derefChain, BorrowKind borrow
+    string derefChainBorrow, DerefChain derefChain, BorrowKind borrow
   ) {
-    exists(int i, string rest, int j |
-      i = derefChainBorrow.indexOf(":") and
-      pos.toString() = derefChainBorrow.prefix(i) and
-      rest = derefChainBorrow.suffix(i + 1) and
-      j = rest.indexOf(";") and
-      derefChain = rest.prefix(j) and
-      borrow.toString() = rest.suffix(j + 1)
+    exists(int i |
+      i = derefChainBorrow.indexOf(";") and
+      derefChain = derefChainBorrow.prefix(i) and
+      borrow.toString() = derefChainBorrow.suffix(i + 1)
     )
   }
 
@@ -2650,9 +2643,8 @@ private module MethodCallMatchingInput implements MatchingWithEnvironmentInputSi
     private Type getInferredSelfType(FunctionPosition pos, string derefChainBorrow, TypePath path) {
       exists(DerefChain derefChain, BorrowKind borrow |
         result = this.getSelfTypeAt(pos, derefChain, borrow, path) and
-        derefChainBorrow = encodeDerefChainBorrow(pos, derefChain, borrow) and
+        derefChainBorrow = encodeDerefChainBorrow(derefChain, borrow) and
         pos.isSelf()
-        // if this.hasReceiver() then apos = pos else pos = apos.getFunctionCallAdjusted()
       )
     }
 
@@ -2673,9 +2665,9 @@ private module MethodCallMatchingInput implements MatchingWithEnvironmentInputSi
     }
 
     Method getTarget(ImplOrTraitItemNode i, string derefChainBorrow) {
-      exists(FunctionPosition pos, DerefChain derefChain, BorrowKind borrow |
-        derefChainBorrow = encodeDerefChainBorrow(pos, derefChain, borrow) and
-        result = this.resolveCallTarget(i, pos, derefChain, borrow) // mutual recursion; resolving method calls requires resolving types and vice versa
+      exists(DerefChain derefChain, BorrowKind borrow |
+        derefChainBorrow = encodeDerefChainBorrow(derefChain, borrow) and
+        result = this.resolveCallTarget(i, derefChain, borrow) // mutual recursion; resolving method calls requires resolving types and vice versa
       )
     }
 
@@ -2726,7 +2718,7 @@ private Type inferMethodCallType0(
       if a.hasReceiver() then apos = pos else apos = pos.getFunctionCallAdjusted()
     |
       exists(string derefChainBorrow |
-        MethodCallMatchingInput::decodeDerefChainBorrow(derefChainBorrow, _, derefChain, borrow)
+        MethodCallMatchingInput::decodeDerefChainBorrow(derefChainBorrow, derefChain, borrow)
       |
         result = MethodCallMatching::inferAccessType(a, derefChainBorrow, pos, path0)
         or
@@ -2999,7 +2991,7 @@ private module NonMethodCallMatchingInput implements MatchingInputSig {
       exists(ImplOrTraitItemNodeOption i, NonMethodFunctionDeclaration f |
         result = TNonMethodFunctionDeclaration(i, f)
       |
-        f = this.(AssocFunctionResolution::AssocFunctionCall).resolveCallTarget(i.asSome(), _, _, _) // mutual recursion; resolving some associated function calls requires resolving types
+        f = this.(AssocFunctionResolution::AssocFunctionCall).resolveCallTarget(i.asSome(), _, _) // mutual recursion; resolving some associated function calls requires resolving types
         or
         f = this.resolveCallTargetViaPathResolution() and
         f.isDirectlyFor(i)
@@ -3106,7 +3098,7 @@ private module OperationMatchingInput implements MatchingInputSig {
 
     Declaration getTarget() {
       exists(ImplOrTraitItemNode i |
-        result.isMethod(i, this.resolveCallTarget(i, _, _, _)) // mutual recursion
+        result.isMethod(i, this.resolveCallTarget(i, _, _)) // mutual recursion
       )
     }
   }
@@ -3850,7 +3842,7 @@ private module Cached {
       or
       i instanceof ImplItemNode and dispatch = false
     |
-      result = call.(AssocFunctionResolution::AssocFunctionCall).resolveCallTarget(i, _, _, _)
+      result = call.(AssocFunctionResolution::AssocFunctionCall).resolveCallTarget(i, _, _)
     )
   }
 
