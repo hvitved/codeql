@@ -1630,12 +1630,32 @@ private module AssocFunctionResolution {
     }
 
     /**
-     * Same as `getTypeAt`, but without borrows.
+     * Holds if `selfPos` is a potentially relevant position for resolving this call.
+     */
+    pragma[nomagic]
+    private predicate isRelevantSelfPos(FunctionPosition selfPos) {
+      exists(TypePath strippedTypePath, Type strippedType |
+        strippedType = substituteLookupTraits(this.getTypeAt(selfPos, strippedTypePath))
+      |
+        selfPos.isSelfOrTypeQualifier()
+        or
+        not this.hasReceiver() and
+        (
+          blanketLikeCandidate(this, _, _, selfPos, _, _, _, _)
+          or
+          nonBlanketCandidate(this, _, _, selfPos, _, _, strippedTypePath, strippedType)
+        )
+      )
+    }
+
+    /**
+     * Same as `getSelfTypeAt`, but without borrows.
      */
     pragma[nomagic]
     Type getSelfTypeAtNoBorrow(FunctionPosition selfPos, DerefChain derefChain, TypePath path) {
       result = this.getTypeAt(selfPos, path) and
-      derefChain.isEmpty()
+      derefChain.isEmpty() and
+      this.isRelevantSelfPos(selfPos)
       or
       exists(DerefImplItemNode impl, DerefChain suffix |
         result =
@@ -2627,37 +2647,29 @@ private module MethodCallMatchingInput implements MatchingWithEnvironmentInputSi
     }
 
     pragma[nomagic]
-    private Type getInferredSelfType(
-      FunctionPosition pos, AccessPosition apos, string derefChainBorrow, TypePath path
-    ) {
+    private Type getInferredSelfType(FunctionPosition pos, string derefChainBorrow, TypePath path) {
       exists(DerefChain derefChain, BorrowKind borrow |
         result = this.getSelfTypeAt(pos, derefChain, borrow, path) and
         derefChainBorrow = encodeDerefChainBorrow(pos, derefChain, borrow) and
-        if this.hasReceiver() then apos = pos else pos = apos.getFunctionCallAdjusted()
+        pos.isSelf()
+        // if this.hasReceiver() then apos = pos else pos = apos.getFunctionCallAdjusted()
       )
     }
 
     pragma[nomagic]
-    private Type getInferredNonSelfType(FunctionPosition pos, AccessPosition apos, TypePath path) {
-      exists(DerefChain derefChain, BorrowKind borrow |
-        result = this.getSelfTypeAt(pos, derefChain, borrow, path) and
-        derefChain.isEmpty() and
-        borrow.isNoBorrow() and
+    private Type getInferredNonSelfType(AccessPosition apos, TypePath path) {
+      exists(FunctionPosition pos |
+        result = this.getTypeAt(pos, path) and
+        not pos.isSelf() and
         if this.hasReceiver() then apos = pos else pos = apos.getFunctionCallAdjusted()
       )
     }
 
     bindingset[derefChainBorrow]
     Type getInferredType(string derefChainBorrow, AccessPosition apos, TypePath path) {
-      exists(FunctionPosition pos |
-        result = this.getInferredSelfType(pos, apos, derefChainBorrow, path)
-        or
-        exists(FunctionPosition selfPos |
-          MethodCallMatchingInput::decodeDerefChainBorrow(derefChainBorrow, selfPos, _, _) and
-          result = this.getInferredNonSelfType(pos, apos, path) and
-          pos != selfPos
-        )
-      )
+      result = this.getInferredSelfType(apos, derefChainBorrow, path)
+      or
+      result = this.getInferredNonSelfType(apos, path)
     }
 
     Method getTarget(ImplOrTraitItemNode i, string derefChainBorrow) {
