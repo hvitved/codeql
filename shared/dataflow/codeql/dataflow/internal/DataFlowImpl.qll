@@ -279,6 +279,8 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
 
     private predicate hasSourceCallCtx = Stage1::hasSourceCallCtx/0;
 
+    private predicate hasSourceSummaryCtx = Stage1::hasSourceSummaryCtx/0;
+
     private predicate hasSinkCallCtx = Stage1::hasSinkCallCtx/0;
 
     private predicate jumpStepEx = Stage1::jumpStepEx/2;
@@ -567,7 +569,11 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
         ) {
           sourceNode(node) and
           (if hasSourceCallCtx() then cc = ccSomeCall() else cc = ccNone()) and
-          summaryCtx = TSummaryCtxNone() and
+          (
+            if hasSourceSummaryCtx()
+            then summaryCtx = TSummaryCtxAny()
+            else summaryCtx = TSummaryCtxNone()
+          ) and
           t = getNodeTyp(node) and
           ap instanceof ApNil and
           apa = getApprox(ap) and
@@ -611,9 +617,15 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
           not Config::getAFeature() instanceof FeatureEqualSourceSinkCallContext
           or
           // flow into a callable with summary context (non-linear recursion)
-          fwdFlowInFlowThrough(node, cc, t, ap, stored) and
-          apa = getApprox(ap) and
-          summaryCtx = TSummaryCtxSome(node, t, ap, stored)
+          exists(SummaryCtx innerSummaryCtx |
+          fwdFlowInFlowThrough(node, cc, innerSummaryCtx t, ap, stored) and
+          apa = getApprox(ap) |
+          summaryCtx =
+             TSummaryCtxSome(node, t, ap, stored)
+             or
+             innerSummaryCtx = TSummaryCtxNone() and
+             summaryCtx = TSummaryCtxNone()
+          )
           or
           // flow out of a callable
           fwdFlowOut(_, _, node, cc, summaryCtx, t, ap, stored) and
@@ -630,6 +642,7 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
 
         private newtype TSummaryCtx =
           TSummaryCtxNone() or
+          TSummaryCtxAny() or
           TSummaryCtxSome(ParamNd p, Typ t, Ap ap, TypOption stored) {
             fwdFlowInFlowThrough(p, _, t, ap, stored)
           }
@@ -649,6 +662,13 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
         /** A summary context from which no flow summary can be generated. */
         private class SummaryCtxNone extends SummaryCtx, TSummaryCtxNone {
           override string toString() { result = "<none>" }
+
+          override Location getLocation() { result.hasLocationInfo("", 0, 0, 0, 0) }
+        }
+
+        /** A summary context from which any flow summary can be generated. */
+        private class SummaryCtxAny extends SummaryCtx, TSummaryCtxAny {
+          override string toString() { result = "<any>" }
 
           override Location getLocation() { result.hasLocationInfo("", 0, 0, 0, 0) }
         }
@@ -917,7 +937,7 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
         private predicate fwdFlowInNoFlowThrough(
           ParamNd p, CcCall innercc, Typ t, Ap ap, TypOption stored
         ) {
-          FwdFlowInNoThrough::fwdFlowIn(_, _, _, p, _, innercc, _, t, ap, stored, _)
+          FwdFlowInNoThrough::fwdFlowIn(_, _, _, p, _, innercc, TSummaryCtxNone(), t, ap, stored, _)
         }
 
         private predicate top() { any() }
@@ -926,9 +946,9 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
 
         pragma[nomagic]
         private predicate fwdFlowInFlowThrough(
-          ParamNd p, CcCall innercc, Typ t, Ap ap, TypOption stored
+          ParamNd p, CcCall innercc, SummaryCtx summaryCtx, Typ t, Ap ap, TypOption stored
         ) {
-          FwdFlowInThrough::fwdFlowIn(_, _, _, p, _, innercc, _, t, ap, stored, _)
+          FwdFlowInThrough::fwdFlowIn(_, _, _, p, _, innercc, summaryCtx, t, ap, stored, _)
         }
 
         pragma[nomagic]
@@ -1216,7 +1236,7 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
 
         pragma[nomagic]
         private predicate revFlow0(Nd node, ReturnCtx returnCtx, ApOption returnAp, Ap ap) {
-          fwdFlow(node, _, _, _, ap, _) and
+          fwdFlow(node, _, TSummaryCtxNone(), _, ap, _) and
           sinkNode(node) and
           (
             if hasSinkCallCtx()
@@ -1991,6 +2011,7 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
             predicate isAtSink() {
               sinkNode(node) and
               ap instanceof ApNil and
+              summaryCtx = TSummaryCtxNone() and // todo
               // For `FeatureHasSinkCallContext` the condition `cc instanceof CallContextNoCall`
               // is exactly what we need to check.
               // For `FeatureEqualSourceSinkCallContext` the initial call
@@ -2059,7 +2080,12 @@ module MakeImpl<LocationSig Location, InputSig<Location> Lang> {
             or
             FwdFlowInThrough::fwdFlowIn(_, arg, _, p, outercc, innercc, outerSummaryCtx, t, ap,
               stored, _) and
-            innerSummaryCtx = mkSummaryCtxSome(p, t, ap, stored)
+              (
+                innerSummaryCtx = mkSummaryCtxSome(p, t, ap, stored)
+                or
+                outerSummaryCtx = TSummaryCtxNone() and
+            innerSummaryCtx = TSummaryCtxNone()
+              )
           }
 
           pragma[nomagic]

@@ -48,6 +48,7 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
 
     private newtype TFlowFeature =
       TFeatureHasSourceCallContext() or
+      TFeatureHasSourceSummaryContext() or
       TFeatureHasSinkCallContext() or
       TFeatureEqualSourceSinkCallContext()
 
@@ -62,6 +63,14 @@ module MakeImplCommon<LocationSig Location, InputSig<Location> Lang> {
      */
     class FeatureHasSourceCallContext extends FlowFeature, TFeatureHasSourceCallContext {
       override string toString() { result = "FeatureHasSourceCallContext" }
+    }
+
+    /**
+     * A flow configuration feature that implies that sources have some existing
+     * summary context.
+     */
+    class FeatureHasSourceSummaryContext extends FlowFeature, TFeatureHasSourceSummaryContext {
+      override string toString() { result = "FeatureHasSourceSummaryContext" }
     }
 
     /**

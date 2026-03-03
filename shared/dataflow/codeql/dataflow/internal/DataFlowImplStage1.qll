@@ -64,6 +64,8 @@ module MakeImplStage1<LocationSig Location, InputSig<Location> Lang> {
 
     predicate hasSourceCallCtx();
 
+    predicate hasSourceSummaryCtx();
+
     predicate hasSinkCallCtx();
 
     predicate jumpStepEx(Nd node1, Nd node2);
@@ -1013,6 +1015,12 @@ module MakeImplStage1<LocationSig Location, InputSig<Location> Lang> {
         exists(FlowFeature feature | feature = Config::getAFeature() |
           feature instanceof FeatureHasSourceCallContext or
           feature instanceof FeatureEqualSourceSinkCallContext
+        )
+      }
+
+      predicate hasSourceSummaryCtx() {
+        exists(FlowFeature feature | feature = Config::getAFeature() |
+          feature instanceof FeatureHasSourceSummaryContext
         )
       }
 
