@@ -1587,7 +1587,7 @@ module Make<
     /**
      * Holds if `barrierGuard` is a relevant barrier guard element with input specification `inSpec`.
      */
-    predicate barrierSpec(
+    predicate barrierGuardSpec(
       BarrierGuardElement barrierGuard, SummaryComponentStack inSpec, string branch, string kind,
       string model
     ) {

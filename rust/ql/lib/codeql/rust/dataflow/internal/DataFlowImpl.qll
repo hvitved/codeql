@@ -1158,7 +1158,9 @@ private module Cached {
   predicate sinkNode(Node n, string kind) { n.(FlowSummaryNode).isSink(kind, _) }
 
   private newtype TKindModelPair =
-    TMkPair(string kind, string model) { FlowSummaryImpl::Private::barrierSpec(_, _, kind, model) }
+    TMkPair(string kind, string model) {
+      FlowSummaryImpl::Private::barrierGuardSpec(_, _, _, kind, model)
+    }
 
   private boolean convertAcceptingValue(FlowSummaryImpl::Public::AcceptingValue av) {
     av.isTrue() and result = true
@@ -1177,17 +1179,17 @@ private module Cached {
     // av.isNotNull() and result.isNonNullValue()
   }
 
-  private predicate barrierGuardChecks(Node g, Expr e, boolean gv, TKindModelPair kmp) {
+  private predicate barrierGuardChecks(AstNode g, Expr e, boolean gv, TKindModelPair kmp) {
     exists(
-      FlowSummaryImpl::Public::BarrierElement n,
+      FlowSummaryImpl::Public::BarrierGuardElement b,
+      FlowSummaryImpl::Private::SummaryComponentStack stack,
       FlowSummaryImpl::Public::AcceptingValue acceptingvalue, string kind, string model
     |
-      FlowSummaryImpl::Private::barrierSpec(n, acceptingvalue, kind, model) and
-      n.asNode().asExpr() = e and
+      FlowSummaryImpl::Private::barrierGuardSpec(b, stack, acceptingvalue, kind, model) and
+      e = FlowSummaryImpl::StepsInput::getSinkNode(b, stack.headOfSingleton()).asExpr() and
       kmp = TMkPair(kind, model) and
-      gv = convertAcceptingValue(acceptingvalue)
-    |
-      g.asExpr().(CallExpr).getAnArgument() = e // TODO: qualifier?
+      gv = convertAcceptingValue(acceptingvalue) and
+      g = b.getCall()
     )
   }
 
