@@ -1,0 +1,26 @@
+edges
+| test.py:10:17:10:22 | ControlFlowNode for kwargs [Dictionary element at key key] | test.py:11:10:11:15 | ControlFlowNode for kwargs [Dictionary element at key key] | provenance |  |
+| test.py:11:10:11:15 | ControlFlowNode for kwargs [Dictionary element at key key] | test.py:11:10:11:22 | ControlFlowNode for Subscript | provenance |  |
+| test.py:17:15:17:22 | ControlFlowNode for source() | test.py:10:17:10:22 | ControlFlowNode for kwargs [Dictionary element at key key] | provenance |  |
+| test.py:21:1:21:1 | [post] ControlFlowNode for a [Dictionary element at key key] | test.py:22:6:22:6 | ControlFlowNode for a [Dictionary element at key key] | provenance |  |
+| test.py:21:1:21:1 | [post] ControlFlowNode for a [Dictionary element at key key] | test.py:25:13:25:13 | ControlFlowNode for a [Dictionary element at key key] | provenance |  |
+| test.py:21:12:21:19 | ControlFlowNode for source() | test.py:21:1:21:1 | [post] ControlFlowNode for a [Dictionary element at key key] | provenance |  |
+| test.py:22:6:22:6 | ControlFlowNode for a [Dictionary element at key key] | test.py:22:6:22:13 | ControlFlowNode for Subscript | provenance |  |
+| test.py:25:13:25:13 | ControlFlowNode for a [Dictionary element at key key] | test.py:10:17:10:22 | ControlFlowNode for kwargs [Dictionary element at key key] | provenance |  |
+nodes
+| test.py:10:17:10:22 | ControlFlowNode for kwargs [Dictionary element at key key] | semmle.label | ControlFlowNode for kwargs [Dictionary element at key key] |
+| test.py:11:10:11:15 | ControlFlowNode for kwargs [Dictionary element at key key] | semmle.label | ControlFlowNode for kwargs [Dictionary element at key key] |
+| test.py:11:10:11:22 | ControlFlowNode for Subscript | semmle.label | ControlFlowNode for Subscript |
+| test.py:14:6:14:13 | ControlFlowNode for source() | semmle.label | ControlFlowNode for source() |
+| test.py:17:15:17:22 | ControlFlowNode for source() | semmle.label | ControlFlowNode for source() |
+| test.py:21:1:21:1 | [post] ControlFlowNode for a [Dictionary element at key key] | semmle.label | [post] ControlFlowNode for a [Dictionary element at key key] |
+| test.py:21:12:21:19 | ControlFlowNode for source() | semmle.label | ControlFlowNode for source() |
+| test.py:22:6:22:6 | ControlFlowNode for a [Dictionary element at key key] | semmle.label | ControlFlowNode for a [Dictionary element at key key] |
+| test.py:22:6:22:13 | ControlFlowNode for Subscript | semmle.label | ControlFlowNode for Subscript |
+| test.py:25:13:25:13 | ControlFlowNode for a [Dictionary element at key key] | semmle.label | ControlFlowNode for a [Dictionary element at key key] |
+subpaths
+#select
+| test.py:11:10:11:22 | ControlFlowNode for Subscript | test.py:17:15:17:22 | ControlFlowNode for source() | test.py:11:10:11:22 | ControlFlowNode for Subscript | This does not work |
+| test.py:11:10:11:22 | ControlFlowNode for Subscript | test.py:21:12:21:19 | ControlFlowNode for source() | test.py:11:10:11:22 | ControlFlowNode for Subscript | This does not work |
+| test.py:14:6:14:13 | ControlFlowNode for source() | test.py:14:6:14:13 | ControlFlowNode for source() | test.py:14:6:14:13 | ControlFlowNode for source() | This does not work |
+| test.py:22:6:22:13 | ControlFlowNode for Subscript | test.py:21:12:21:19 | ControlFlowNode for source() | test.py:22:6:22:13 | ControlFlowNode for Subscript | This does not work |
