@@ -76,4 +76,9 @@ module Unified {
       result = this.getParent().(PatternElement).getParent()
     }
   }
+
+  class FunctionExpr extends G::FunctionExpr {
+    /** Gets the number of parameters of this function. */
+    int getNumberOfParameters() { result = count(this.getAParameter()) }
+  }
 }

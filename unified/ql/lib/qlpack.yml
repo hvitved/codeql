@@ -8,5 +8,6 @@ upgrades: upgrades
 dependencies:
   codeql/util: ${workspace}
   codeql/namebinding: ${workspace}
+  codeql/typeinference: ${workspace}
 warnOnImplicitThis: true
 compileForOverlayEval: true
