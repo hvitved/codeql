@@ -27,6 +27,8 @@ predicate isInTypeContext(Expr expr) {
   or
   expr = any(AssociatedTypeDeclaration n).getBound()
   or
+  expr = any(ClassLikeDeclaration c).getExtensionTarget()
+  or
   expr.getParent() instanceof TypeConstraint
   or
   isInTypeContext(expr.getEnclosingExpr())

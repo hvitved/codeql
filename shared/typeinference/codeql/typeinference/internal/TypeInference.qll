@@ -96,7 +96,9 @@ signature module InputSig1<LocationSig Location> {
   class PseudoType extends Type;
 
   /** A type parameter. */
-  class TypeParameter extends Type;
+  class TypeParameter extends Type {
+    int getPosition();
+  }
 
   /**
    * A type abstraction. I.e., a place in the program where type variables may
@@ -2041,7 +2043,7 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
        * item in Rust.
        */
       class Variable {
-        /** Gets the AST node that defines this variable. */
+        /** Gets the AST node that defines this variable, if any. */
         AstNode getDefiningNode();
 
         /** Gets an access to this variable. */
@@ -2055,7 +2057,7 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
       }
 
       /** A declaration. */
-      class Declaration extends AstNode {
+      class Declaration {
         /**
          * Gets the type mention of the entity that contains this declaration, if any.
          *
@@ -2088,6 +2090,12 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
          * a function.
          */
         TypeMention getType();
+
+        /** Gets a textual representation of this declaration. */
+        string toString();
+
+        /** Gets the location of this declaration. */
+        Location getLocation();
       }
 
       /**
@@ -2166,6 +2174,8 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
 
       /** A parameter. */
       class Parameter extends VariableDeclaration;
+
+      default predicate implicitParameterDecl(Parameter p, Variable v) { none() }
 
       /** A callable. This may include for example variant constructors. */
       class Callable extends Declaration {
@@ -2368,7 +2378,9 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
       }
 
       /** A closure/lambda expression. */
-      class Closure extends Callable, Expr;
+      class Closure extends Callable {
+        Expr getDefiningExpr();
+      }
 
       /**
        * A special pseudo type representing a particular closure parameter without
@@ -2484,12 +2496,14 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
     module Make3<InputSig3 Input3> {
       private import Input3
 
-      private predicate closureStep(AstNode pattern, TypePath prefix1, Closure c, TypePath prefix2) {
-        exists(Parameter p |
+      pragma[nomagic]
+      private predicate closureStep(AstNode pattern, TypePath prefix1, Expr c, TypePath prefix2) {
+        exists(Closure c0, Parameter p |
           pattern = p.getPattern() and
-          p = c.getParameter(_) and
+          p = c0.getParameter(_) and
           prefix1.isEmpty() and
-          prefix2 = getClosureParameterTypePath(p)
+          prefix2 = getClosureParameterTypePath(p) and
+          c = c0.getDefiningExpr()
         )
       }
 
@@ -2513,10 +2527,16 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
               tm = decl.getType() and
               n = decl.getPattern()
             )
+            or
+            exists(Parameter p, Variable v |
+              implicitParameterDecl(p, v) and
+              result = p.getType().getTypeAt(path) and
+              n = v.getAnAccess()
+            )
           )
           or
           exists(Closure c, TypePath suffix |
-            n = c and
+            n = c.getDefiningExpr() and
             result = getCallableReturnType(c, suffix) and
             path = getClosureReturnTypePath(c).append(suffix)
           )
@@ -2615,8 +2635,11 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
             or
             result = inferLogicalOperationType(n, path)
             or
-            result = getClosureType(n) and
-            path.isEmpty()
+            exists(Closure c |
+              n = c.getDefiningExpr() and
+              result = getClosureType(c) and
+              path.isEmpty()
+            )
             or
             infersCertainTypeAt(n, path, result.getATypeParameter())
           ) and
@@ -2709,9 +2732,9 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
         or
         exists(Closure c |
           n1 = c.getBody() and
-          n2 = c and
+          n2 = c.getDefiningExpr() and
           prefix1.isEmpty() and
-          prefix2 = getClosureReturnTypePath(n2)
+          prefix2 = getClosureReturnTypePath(c)
         )
       }
 
@@ -2725,7 +2748,10 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
           or
           closureStep(n2, prefix2, n, prefix1) and
           // prevent closure parameter pseudo types from escaping the closure
-          not result.(ClosureParameterPseudoType).getParameter() = n.(Closure).getParameter(_)
+          not exists(Closure c |
+            n = c.getDefiningExpr() and
+            result.(ClosureParameterPseudoType).getParameter() = c.getParameter(_)
+          )
         )
       }
 
@@ -3076,7 +3102,7 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
         }
 
         pragma[nomagic]
-        private predicate hasUnknownTypeAt(AstNode n, TypePath path) {
+        predicate hasUnknownTypeAt(AstNode n, TypePath path) {
           inferType(n, path) instanceof UnknownType
         }
 
@@ -3209,8 +3235,8 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
             result.(ClosureParameterPseudoType).getParameter() = p
             or
             // step 3
-            hasClosureParameterPseudoType(c, path, p) and
-            n = c and
+            hasClosureParameterPseudoType(c.getDefiningExpr(), path, p) and
+            n = c.getDefiningExpr() and
             result instanceof UnknownType
           )
           or
@@ -3232,16 +3258,59 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
             not exists(p.getType())
           |
             // step 1
-            n = c and
+            n = c.getDefiningExpr() and
             path = getClosureParameterTypePath(p) and
             result instanceof UnknownType
             or
             // step 3
             n = p.getPattern() and
-            result = inferType(c, getClosureParameterTypePath(p).appendInverse(path)) and
+            result =
+              inferType(c.getDefiningExpr(), getClosureParameterTypePath(p).appendInverse(path)) and
             not (path.isEmpty() and result instanceof UnknownType)
           )
         }
+      }
+
+      /**
+       * Holds if `n` has unknown type at at `prefix`, but is still able to
+       * infer a known type at `suffix` for the `i`th type parameter of whatever
+       * the unknown type is.
+       *
+       * For example, in
+       *
+       * ```rust
+       * let mut x: Unresolvable<i32> = ...;
+       *
+       * x = resolvable(...);
+       * ```
+       *
+       * even though the root type is unresolvable at the declaration, we are still
+       * able to infer that the first type argument is `i32`. We can then combine this
+       * information with later inferrable type information.
+       */
+      pragma[nomagic]
+      private predicate infersUnknownTypeArg(
+        AstNode n, TypePath prefix, int i, TypePath suffix, Type t
+      ) {
+        exists(TypeParameter tp, TypePath suffix0 |
+          ContextualTyping::hasUnknownTypeAt(n, prefix) and
+          suffix0.isCons(tp, suffix) and
+          tp = any(UnknownType ut).getATypeParameter() and
+          t = inferType(n, prefix.appendInverse(suffix0)) and
+          not t instanceof UnknownType and
+          i = tp.getPosition()
+        )
+      }
+
+      pragma[nomagic]
+      private predicate infersKnownAndUnknownType(AstNode n, TypePath path, int i, TypeParameter tp) {
+        ContextualTyping::hasUnknownTypeAt(n, path) and
+        exists(Type t |
+          t = inferType(n, path) and
+          not t instanceof UnknownType and
+          tp = t.getATypeParameter() and
+          i = tp.getPosition()
+        )
       }
 
       /**
@@ -3275,6 +3344,12 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
         result instanceof UnknownType
         or
         result = ContextualTyping::inferTypeContextual(n, path)
+        or
+        exists(TypePath prefix, int i, TypePath suffix, Type t, TypeParameter tp |
+          infersUnknownTypeArg(n, prefix, i, suffix, result) and
+          infersKnownAndUnknownType(n, prefix, i, tp) and
+          path = prefix.append(TypePath::cons(tp, suffix))
+        )
       }
 
       /**
@@ -3298,7 +3373,10 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
           result instanceof ClosureParameterPseudoType
         ) and
         // prevent closure parameter pseudo types from escaping from the closure
-        not result.(ClosureParameterPseudoType).getParameter() = n.(Closure).getParameter(_)
+        not exists(Closure c |
+          n = c.getDefiningExpr() and
+          result.(ClosureParameterPseudoType).getParameter() = c.getParameter(_)
+        )
         or
         // If `n` has an explicitly unknown type at `prefix` and at the same time a certain
         // type at `prefix.suffix`, then extend the unknown type information to any path

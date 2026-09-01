@@ -1,0 +1,1620 @@
+inferCertainType
+| basics.swift:1:5:1:16 | topLevelDecl |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:3:1:3:12 | topLevelDecl |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:6:7:6:11 | myInt |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:7:8:7:8 | n |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:8:5:8:9 | myInt |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:8:13:8:13 | n |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:12:12:12:16 | myInt |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:28:7:28:11 | value |  | basics.swift:27:15:27:15 | T |
+| basics.swift:29:8:29:8 | v |  | basics.swift:27:15:27:15 | T |
+| basics.swift:30:5:30:9 | value |  | basics.swift:27:15:27:15 | T |
+| basics.swift:30:13:30:13 | v |  | basics.swift:27:15:27:15 | T |
+| basics.swift:34:12:34:16 | value |  | basics.swift:27:15:27:15 | T |
+| classes.swift:4:22:4:22 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:5:12:5:12 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:5:16:5:16 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:8:19:8:19 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:9:12:9:12 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:9:16:9:16 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:9:20:9:20 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:21:18:21:18 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:22:12:22:12 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:25:18:25:18 | s |  | {EXTERNAL LOCATION} | String |
+| classes.swift:26:12:26:12 | s |  | {EXTERNAL LOCATION} | String |
+| classes.swift:39:7:39:10 | data |  | {EXTERNAL LOCATION} | Array |
+| classes.swift:39:7:39:10 | data | T | {EXTERNAL LOCATION} | Array |
+| classes.swift:39:7:39:10 | data | T.T | {EXTERNAL LOCATION} | Int |
+| classes.swift:41:8:41:11 | data |  | {EXTERNAL LOCATION} | Array |
+| classes.swift:41:8:41:11 | data | T | {EXTERNAL LOCATION} | Array |
+| classes.swift:41:8:41:11 | data | T.T | {EXTERNAL LOCATION} | Int |
+| classes.swift:42:5:42:8 | self |  | classes.swift:38:1:48:1 | Matrix |
+| classes.swift:42:17:42:20 | data |  | {EXTERNAL LOCATION} | Array |
+| classes.swift:42:17:42:20 | data | T | {EXTERNAL LOCATION} | Array |
+| classes.swift:42:17:42:20 | data | T.T | {EXTERNAL LOCATION} | Int |
+| classes.swift:46:12:46:15 | data |  | {EXTERNAL LOCATION} | Array |
+| classes.swift:46:12:46:15 | data | T | {EXTERNAL LOCATION} | Array |
+| classes.swift:46:12:46:15 | data | T.T | {EXTERNAL LOCATION} | Int |
+| classes.swift:59:9:59:13 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:61:10:61:14 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:62:7:62:10 | self |  | classes.swift:58:3:68:3 | Inner |
+| classes.swift:62:20:62:24 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:66:14:66:17 | self |  | classes.swift:58:3:68:3 | Inner |
+| classes.swift:79:7:79:11 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:83:14:83:14 | v |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:84:5:84:9 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:84:13:84:13 | v |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:85:12:85:15 | self |  | classes.swift:78:1:96:1 | Builder |
+| classes.swift:88:14:88:14 | v |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:89:5:89:9 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:89:14:89:14 | v |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:90:12:90:15 | self |  | classes.swift:78:1:96:1 | Builder |
+| classes.swift:94:12:94:16 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:108:14:108:20 | retries |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:108:32:108:38 | timeout |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:109:12:109:18 | retries |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:123:7:123:13 | celsius |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:125:8:125:14 | celsius |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:126:5:126:8 | self |  | classes.swift:122:1:136:1 | Temperature |
+| classes.swift:126:20:126:26 | celsius |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:130:12:130:18 | celsius |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:134:12:134:18 | celsius |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:190:7:190:11 | count |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:193:5:193:9 | count |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:197:12:197:16 | count |  | {EXTERNAL LOCATION} | Int |
+| context.swift:4:29:6:3 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| context.swift:4:29:6:3 | FunctionExpr | Args | {EXTERNAL LOCATION} | Tuple1 |
+| generics.swift:3:20:3:20 | x |  | generics.swift:3:15:3:15 | T |
+| generics.swift:4:10:4:10 | x |  | generics.swift:3:15:3:15 | T |
+| generics.swift:7:23:7:23 | a |  | generics.swift:7:15:7:16 | A |
+| generics.swift:7:31:7:31 | b |  | generics.swift:7:18:7:18 | B |
+| generics.swift:8:11:8:11 | a |  | generics.swift:7:15:7:16 | A |
+| generics.swift:8:14:8:14 | b |  | generics.swift:7:18:7:18 | B |
+| generics.swift:20:7:20:11 | first |  | generics.swift:19:13:19:14 | A |
+| generics.swift:21:7:21:12 | second |  | generics.swift:19:16:19:16 | B |
+| generics.swift:23:8:23:12 | first |  | generics.swift:19:13:19:14 | A |
+| generics.swift:23:18:23:23 | second |  | generics.swift:19:16:19:16 | B |
+| generics.swift:24:5:24:8 | self |  | generics.swift:19:1:35:1 | Pair |
+| generics.swift:24:5:24:8 | self | A | generics.swift:19:13:19:14 | A |
+| generics.swift:24:5:24:8 | self | B | generics.swift:19:16:19:16 | B |
+| generics.swift:24:18:24:22 | first |  | generics.swift:19:13:19:14 | A |
+| generics.swift:25:5:25:8 | self |  | generics.swift:19:1:35:1 | Pair |
+| generics.swift:25:5:25:8 | self | A | generics.swift:19:13:19:14 | A |
+| generics.swift:25:5:25:8 | self | B | generics.swift:19:16:19:16 | B |
+| generics.swift:25:19:25:24 | second |  | generics.swift:19:16:19:16 | B |
+| generics.swift:29:12:29:16 | first |  | generics.swift:19:13:19:14 | A |
+| generics.swift:33:12:33:17 | second |  | generics.swift:19:16:19:16 | B |
+| generics.swift:50:12:50:15 | self |  | generics.swift:45:1:57:1 | Result |
+| generics.swift:50:12:50:15 | self | T | generics.swift:45:13:45:13 | T |
+| generics.swift:63:7:63:8 | r2 |  | generics.swift:45:1:57:1 | Result |
+| generics.swift:63:7:63:8 | r2 | T | {EXTERNAL LOCATION} | Int |
+| generics.swift:64:12:64:13 | r2 |  | generics.swift:45:1:57:1 | Result |
+| generics.swift:64:12:64:13 | r2 | T | {EXTERNAL LOCATION} | Int |
+| generics.swift:69:29:69:33 | value |  | generics.swift:69:21:69:22 | T |
+| generics.swift:69:41:69:49 | transform |  | {EXTERNAL LOCATION} | Function |
+| generics.swift:69:41:69:49 | transform | Args | {EXTERNAL LOCATION} | Tuple1 |
+| generics.swift:69:41:69:49 | transform | Args.T0 | generics.swift:69:21:69:22 | T |
+| generics.swift:69:41:69:49 | transform | Return | generics.swift:69:24:69:24 | U |
+| generics.swift:69:52:69:59 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| generics.swift:69:52:69:59 | FunctionExpr | Return | generics.swift:69:24:69:24 | U |
+| generics.swift:70:10:70:18 | transform |  | {EXTERNAL LOCATION} | Function |
+| generics.swift:70:10:70:18 | transform | Args | {EXTERNAL LOCATION} | Tuple1 |
+| generics.swift:70:10:70:18 | transform | Args.T0 | generics.swift:69:21:69:22 | T |
+| generics.swift:70:10:70:18 | transform | Return | generics.swift:69:24:69:24 | U |
+| generics.swift:70:20:70:24 | value |  | generics.swift:69:21:69:22 | T |
+| generics.swift:74:34:74:47 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| generics.swift:74:34:74:47 | FunctionExpr | Args | {EXTERNAL LOCATION} | Tuple1 |
+| generics.swift:75:36:75:53 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| generics.swift:75:36:75:53 | FunctionExpr | Args | {EXTERNAL LOCATION} | Tuple1 |
+| generics.swift:89:7:89:11 | inner |  | generics.swift:88:15:88:27 | T |
+| generics.swift:91:10:91:14 | inner |  | generics.swift:88:15:88:27 | T |
+| generics.swift:92:5:92:8 | self |  | generics.swift:88:1:108:1 | Wrapper |
+| generics.swift:92:5:92:8 | self | T | generics.swift:88:15:88:27 | T |
+| generics.swift:92:18:92:22 | inner |  | generics.swift:88:15:88:27 | T |
+| generics.swift:96:12:96:16 | inner |  | generics.swift:88:15:88:27 | T |
+| generics.swift:100:13:100:17 | inner |  | generics.swift:88:15:88:27 | T |
+| generics.swift:105:13:105:17 | inner |  | generics.swift:88:15:88:27 | T |
+| generics.swift:114:12:114:15 | self |  | {EXTERNAL LOCATION} | Int |
+| generics.swift:131:7:131:12 | value1 |  | generics.swift:130:12:130:14 | T1 |
+| generics.swift:132:7:132:12 | value2 |  | generics.swift:130:16:130:17 | T2 |
+| generics.swift:134:10:134:11 | v1 |  | generics.swift:130:12:130:14 | T1 |
+| generics.swift:134:20:134:21 | v2 |  | generics.swift:130:16:130:17 | T2 |
+| generics.swift:135:5:135:8 | self |  | generics.swift:130:1:146:1 | Base |
+| generics.swift:135:5:135:8 | self | T1 | generics.swift:130:12:130:14 | T1 |
+| generics.swift:135:5:135:8 | self | T2 | generics.swift:130:16:130:17 | T2 |
+| generics.swift:135:19:135:20 | v1 |  | generics.swift:130:12:130:14 | T1 |
+| generics.swift:136:5:136:8 | self |  | generics.swift:130:1:146:1 | Base |
+| generics.swift:136:5:136:8 | self | T1 | generics.swift:130:12:130:14 | T1 |
+| generics.swift:136:5:136:8 | self | T2 | generics.swift:130:16:130:17 | T2 |
+| generics.swift:136:19:136:20 | v2 |  | generics.swift:130:16:130:17 | T2 |
+| generics.swift:140:12:140:17 | value1 |  | generics.swift:130:12:130:14 | T1 |
+| generics.swift:144:12:144:17 | value2 |  | generics.swift:130:16:130:17 | T2 |
+| generics.swift:149:10:149:11 | v1 |  | generics.swift:148:15:148:17 | T1 |
+| generics.swift:149:20:149:21 | v2 |  | generics.swift:148:19:148:20 | T2 |
+| generics.swift:150:16:150:17 | v2 |  | generics.swift:148:19:148:20 | T2 |
+| generics.swift:150:20:150:21 | v1 |  | generics.swift:148:15:148:17 | T1 |
+| generics.swift:155:10:155:10 | v |  | generics.swift:154:22:154:22 | D |
+| generics.swift:156:16:156:16 | v |  | generics.swift:154:22:154:22 | D |
+| generics.swift:180:12:180:15 | self |  | generics.swift:172:1:176:1 | MyProtocol2 |
+| generics.swift:185:7:185:11 | value |  | generics.swift:184:15:184:15 | T |
+| generics.swift:187:10:187:14 | value |  | generics.swift:184:15:184:15 | T |
+| generics.swift:188:5:188:8 | self |  | generics.swift:184:1:190:1 | MyClass |
+| generics.swift:188:5:188:8 | self | T | generics.swift:184:15:184:15 | T |
+| generics.swift:188:18:188:22 | value |  | generics.swift:184:15:184:15 | T |
+| generics.swift:200:33:200:33 | c |  | generics.swift:200:14:200:28 | T |
+| generics.swift:201:10:201:10 | c |  | generics.swift:200:14:200:28 | T |
+| generics.swift:204:33:204:33 | c |  | generics.swift:204:14:204:28 | T |
+| generics.swift:205:10:205:10 | c |  | generics.swift:204:14:204:28 | T |
+| generics.swift:239:66:239:70 | value |  | generics.swift:239:33:239:61 | T |
+| generics.swift:240:10:240:14 | value |  | generics.swift:239:33:239:61 | T |
+| key_paths.swift:4:7:4:7 | x |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:5:7:5:7 | y |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:7:8:7:8 | x |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:7:19:7:19 | y |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:8:5:8:8 | self |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:8:14:8:14 | x |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:9:5:9:8 | self |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:9:14:9:14 | y |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:13:13:13:13 | x |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:13:17:13:17 | x |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:13:21:13:21 | y |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:13:25:13:25 | y |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:18:7:18:11 | start |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:19:7:19:9 | end |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:21:8:21:12 | start |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:21:22:21:24 | end |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:22:5:22:8 | self |  | key_paths.swift:17:1:25:1 | Line |
+| key_paths.swift:22:18:22:22 | start |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:23:5:23:8 | self |  | key_paths.swift:17:1:25:1 | Line |
+| key_paths.swift:23:16:23:18 | end |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:59:7:59:10 | name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:60:7:60:13 | address |  | {EXTERNAL LOCATION} | Optional |
+| key_paths.swift:60:7:60:13 | address | Wrapped | key_paths.swift:68:1:76:1 | Address |
+| key_paths.swift:62:8:62:11 | name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:62:22:62:28 | address |  | {EXTERNAL LOCATION} | Optional |
+| key_paths.swift:62:22:62:28 | address | Wrapped | key_paths.swift:68:1:76:1 | Address |
+| key_paths.swift:63:5:63:8 | self |  | key_paths.swift:58:1:66:1 | Person |
+| key_paths.swift:63:17:63:20 | name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:64:5:64:8 | self |  | key_paths.swift:58:1:66:1 | Person |
+| key_paths.swift:64:20:64:26 | address |  | {EXTERNAL LOCATION} | Optional |
+| key_paths.swift:64:20:64:26 | address | Wrapped | key_paths.swift:68:1:76:1 | Address |
+| key_paths.swift:69:7:69:10 | city |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:70:7:70:9 | zip |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:72:8:72:11 | city |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:72:22:72:24 | zip |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:73:5:73:8 | self |  | key_paths.swift:68:1:76:1 | Address |
+| key_paths.swift:73:17:73:20 | city |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:74:5:74:8 | self |  | key_paths.swift:68:1:76:1 | Address |
+| key_paths.swift:74:16:74:18 | zip |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:89:7:89:10 | name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:90:7:90:12 | salary |  | {EXTERNAL LOCATION} | Int |
+| key_paths.swift:92:8:92:11 | name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:92:22:92:27 | salary |  | {EXTERNAL LOCATION} | Int |
+| key_paths.swift:93:5:93:8 | self |  | key_paths.swift:88:1:96:1 | Employee |
+| key_paths.swift:93:17:93:20 | name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:94:5:94:8 | self |  | key_paths.swift:88:1:96:1 | Employee |
+| key_paths.swift:94:19:94:24 | salary |  | {EXTERNAL LOCATION} | Int |
+| key_paths.swift:98:27:98:31 | items |  | {EXTERNAL LOCATION} | Array |
+| key_paths.swift:98:27:98:31 | items | T | key_paths.swift:98:19:98:20 | T |
+| key_paths.swift:98:39:98:45 | keyPath | unknown type parameter 0 | key_paths.swift:98:19:98:20 | T |
+| key_paths.swift:98:39:98:45 | keyPath | unknown type parameter 1 | key_paths.swift:98:22:98:22 | V |
+| key_paths.swift:99:10:99:14 | items |  | {EXTERNAL LOCATION} | Array |
+| key_paths.swift:99:10:99:14 | items | T | key_paths.swift:98:19:98:20 | T |
+| key_paths.swift:99:20:99:43 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| key_paths.swift:99:34:99:40 | keyPath | unknown type parameter 0 | key_paths.swift:98:19:98:20 | T |
+| key_paths.swift:99:34:99:40 | keyPath | unknown type parameter 1 | key_paths.swift:98:22:98:22 | V |
+| key_paths.swift:115:7:115:10 | item |  | key_paths.swift:114:19:114:19 | T |
+| key_paths.swift:117:8:117:11 | item |  | key_paths.swift:114:19:114:19 | T |
+| key_paths.swift:118:5:118:8 | self |  | key_paths.swift:114:1:120:1 | KPContainer |
+| key_paths.swift:118:5:118:8 | self | T | key_paths.swift:114:19:114:19 | T |
+| key_paths.swift:118:17:118:20 | item |  | key_paths.swift:114:19:114:19 | T |
+| key_paths.swift:165:7:165:11 | color |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:167:8:167:12 | color |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:168:5:168:8 | self |  | key_paths.swift:164:1:170:1 | Shape2 |
+| key_paths.swift:168:18:168:22 | color |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:173:7:173:12 | radius |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:175:8:175:12 | color |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:175:23:175:28 | radius |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:176:5:176:8 | self |  | key_paths.swift:172:1:179:1 | Circle2 |
+| key_paths.swift:176:19:176:24 | radius |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:177:23:177:27 | color |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:4:17:4:17 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:8:17:8:17 | x |  | {EXTERNAL LOCATION} | Double |
+| overload_resolution.swift:12:17:12:17 | x |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:16:17:16:17 | x |  | {EXTERNAL LOCATION} | Bool |
+| overload_resolution.swift:32:18:32:22 | width |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:36:18:36:23 | height |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:40:18:40:22 | width |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:40:30:40:35 | height |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:44:18:44:21 | size |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:64:18:64:18 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:65:12:65:12 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:68:18:68:18 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:68:28:68:28 | y |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:69:12:69:12 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:69:16:69:16 | y |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:72:18:72:18 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:72:28:72:28 | y |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:72:38:72:38 | z |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:73:12:73:12 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:73:16:73:16 | y |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:73:20:73:20 | z |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:103:7:103:8 | r1 |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:104:7:104:8 | r2 |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:105:7:105:8 | r3 |  | {EXTERNAL LOCATION} | Double |
+| overload_resolution.swift:111:18:111:18 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:115:21:115:21 | x |  | overload_resolution.swift:115:16:115:16 | T |
+| overload_resolution.swift:129:21:129:21 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:133:21:133:21 | x |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:137:21:137:21 | x |  | {EXTERNAL LOCATION} | Double |
+| overload_resolution.swift:150:7:150:11 | value |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:153:5:153:9 | value |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:156:8:156:10 | int |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:157:5:157:9 | value |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:160:8:160:10 | str |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:161:5:161:9 | value |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:161:13:161:15 | str |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:164:8:164:8 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:164:16:164:16 | y |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:165:5:165:9 | value |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:169:12:169:16 | value |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:287:16:287:21 | target |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:288:12:288:17 | target |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:291:18:291:23 | source |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:292:12:292:17 | source |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:295:16:295:21 | target |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:295:37:295:42 | source |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:296:12:296:17 | target |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:296:21:296:26 | source |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:321:35:321:35 | x |  | overload_resolution.swift:321:20:321:30 | T |
+| overload_resolution.swift:322:10:322:10 | x |  | overload_resolution.swift:321:20:321:30 | T |
+| overload_resolution.swift:325:36:325:36 | x |  | overload_resolution.swift:325:20:325:31 | T |
+| overload_resolution.swift:326:10:326:10 | x |  | overload_resolution.swift:325:20:325:31 | T |
+| overload_resolution.swift:337:7:337:10 | item |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:339:10:339:13 | item |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:340:5:340:8 | self |  | overload_resolution.swift:336:1:350:1 | Box |
+| overload_resolution.swift:340:5:340:8 | self | T | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:340:17:340:20 | item |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:344:12:344:15 | item |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:347:18:347:24 | newItem |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:348:5:348:8 | item |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:348:12:348:18 | newItem |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:364:7:364:10 | name |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:365:7:365:10 | size |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:367:8:367:11 | name |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:367:22:367:25 | size |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:368:5:368:8 | self |  | overload_resolution.swift:363:1:380:1 | Widget |
+| overload_resolution.swift:368:17:368:20 | name |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:369:5:369:8 | self |  | overload_resolution.swift:363:1:380:1 | Widget |
+| overload_resolution.swift:369:17:369:20 | size |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:373:20:373:23 | name |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:374:5:374:8 | self |  | overload_resolution.swift:363:1:380:1 | Widget |
+| overload_resolution.swift:374:21:374:24 | name |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:377:20:377:23 | size |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:378:5:378:8 | self |  | overload_resolution.swift:363:1:380:1 | Widget |
+| overload_resolution.swift:378:38:378:41 | size |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:393:16:393:16 | f |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:393:16:393:16 | f | Args | {EXTERNAL LOCATION} | Tuple1 |
+| overload_resolution.swift:393:16:393:16 | f | Args.T0 | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:393:16:393:16 | f | Return | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:393:19:393:30 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:393:19:393:30 | FunctionExpr | Return | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:394:12:394:12 | f |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:394:12:394:12 | f | Args | {EXTERNAL LOCATION} | Tuple1 |
+| overload_resolution.swift:394:12:394:12 | f | Args.T0 | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:394:12:394:12 | f | Return | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:397:16:397:16 | f |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:397:16:397:16 | f | Args | {EXTERNAL LOCATION} | Tuple1 |
+| overload_resolution.swift:397:16:397:16 | f | Args.T0 | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:397:16:397:16 | f | Return | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:397:19:397:36 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:397:19:397:36 | FunctionExpr | Return | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:398:12:398:12 | f |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:398:12:398:12 | f | Args | {EXTERNAL LOCATION} | Tuple1 |
+| overload_resolution.swift:398:12:398:12 | f | Args.T0 | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:398:12:398:12 | f | Return | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:401:16:401:16 | f |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:401:16:401:16 | f | Args | {EXTERNAL LOCATION} | Tuple2 |
+| overload_resolution.swift:401:16:401:16 | f | Args.T0 | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:401:16:401:16 | f | Args.T1 | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:401:16:401:16 | f | Return | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:401:19:401:35 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:401:19:401:35 | FunctionExpr | Return | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:402:12:402:12 | f |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:402:12:402:12 | f | Args | {EXTERNAL LOCATION} | Tuple2 |
+| overload_resolution.swift:402:12:402:12 | f | Args.T0 | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:402:12:402:12 | f | Args.T1 | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:402:12:402:12 | f | Return | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:408:20:408:33 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:408:20:408:33 | FunctionExpr | Args | {EXTERNAL LOCATION} | Tuple1 |
+| overload_resolution.swift:409:20:409:35 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:409:20:409:35 | FunctionExpr | Args | {EXTERNAL LOCATION} | Tuple1 |
+| overload_resolution.swift:410:20:410:36 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:416:7:416:10 | data |  | {EXTERNAL LOCATION} | Array |
+| overload_resolution.swift:416:7:416:10 | data | T | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:417:7:417:10 | dict |  | {EXTERNAL LOCATION} | Dictionary |
+| overload_resolution.swift:417:7:417:10 | dict | Key | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:417:7:417:10 | dict | Value | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:421:14:421:18 | index |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:422:12:422:15 | data |  | {EXTERNAL LOCATION} | Array |
+| overload_resolution.swift:422:12:422:15 | data | T | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:422:17:422:21 | index |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:425:14:425:16 | key |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:426:12:426:15 | dict |  | {EXTERNAL LOCATION} | Dictionary |
+| overload_resolution.swift:426:12:426:15 | dict | Key | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:426:12:426:15 | dict | Value | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:426:17:426:19 | key |  | {EXTERNAL LOCATION} | String |
+| protocols.swift:8:7:8:12 | radius |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:10:8:10:13 | radius |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:11:5:11:8 | self |  | protocols.swift:7:1:17:1 | Circle |
+| protocols.swift:11:19:11:24 | radius |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:15:22:15:27 | radius |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:15:31:15:36 | radius |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:20:7:20:11 | width |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:21:7:21:12 | height |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:23:8:23:12 | width |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:23:23:23:28 | height |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:24:5:24:8 | self |  | protocols.swift:19:1:31:1 | Rectangle |
+| protocols.swift:24:18:24:22 | width |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:25:5:25:8 | self |  | protocols.swift:19:1:31:1 | Rectangle |
+| protocols.swift:25:19:25:24 | height |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:29:12:29:16 | width |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:29:20:29:25 | height |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:51:7:51:11 | items |  | {EXTERNAL LOCATION} | Array |
+| protocols.swift:51:7:51:11 | items | T | {EXTERNAL LOCATION} | Int |
+| protocols.swift:53:8:53:12 | items |  | {EXTERNAL LOCATION} | Array |
+| protocols.swift:53:8:53:12 | items | T | {EXTERNAL LOCATION} | Int |
+| protocols.swift:54:5:54:8 | self |  | protocols.swift:49:1:64:1 | IntContainer |
+| protocols.swift:54:18:54:22 | items |  | {EXTERNAL LOCATION} | Array |
+| protocols.swift:54:18:54:22 | items | T | {EXTERNAL LOCATION} | Int |
+| protocols.swift:58:12:58:16 | items |  | {EXTERNAL LOCATION} | Array |
+| protocols.swift:58:12:58:16 | items | T | {EXTERNAL LOCATION} | Int |
+| protocols.swift:62:12:62:16 | items |  | {EXTERNAL LOCATION} | Array |
+| protocols.swift:62:12:62:16 | items | T | {EXTERNAL LOCATION} | Int |
+| protocols.swift:83:7:83:10 | name |  | {EXTERNAL LOCATION} | String |
+| protocols.swift:84:7:84:14 | entityId |  | {EXTERNAL LOCATION} | Int |
+| protocols.swift:86:8:86:11 | name |  | {EXTERNAL LOCATION} | String |
+| protocols.swift:86:22:86:29 | entityId |  | {EXTERNAL LOCATION} | Int |
+| protocols.swift:87:5:87:8 | self |  | protocols.swift:82:1:98:1 | Entity |
+| protocols.swift:87:17:87:20 | name |  | {EXTERNAL LOCATION} | String |
+| protocols.swift:88:5:88:8 | self |  | protocols.swift:82:1:98:1 | Entity |
+| protocols.swift:88:21:88:28 | entityId |  | {EXTERNAL LOCATION} | Int |
+| protocols.swift:92:12:92:15 | name |  | {EXTERNAL LOCATION} | String |
+| protocols.swift:96:12:96:19 | entityId |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:3:29:3:29 | a |  | type_constraints.swift:3:12:3:24 | T |
+| type_constraints.swift:3:37:3:37 | b |  | type_constraints.swift:3:12:3:24 | T |
+| type_constraints.swift:4:6:4:6 | a |  | type_constraints.swift:3:12:3:24 | T |
+| type_constraints.swift:4:10:4:10 | b |  | type_constraints.swift:3:12:3:24 | T |
+| type_constraints.swift:4:21:4:21 | a |  | type_constraints.swift:3:12:3:24 | T |
+| type_constraints.swift:4:39:4:39 | b |  | type_constraints.swift:3:12:3:24 | T |
+| type_constraints.swift:7:17:7:17 | a |  | type_constraints.swift:7:12:7:12 | T |
+| type_constraints.swift:7:25:7:25 | b |  | type_constraints.swift:7:12:7:12 | T |
+| type_constraints.swift:8:6:8:6 | a |  | type_constraints.swift:7:12:7:12 | T |
+| type_constraints.swift:8:10:8:10 | b |  | type_constraints.swift:7:12:7:12 | T |
+| type_constraints.swift:8:21:8:21 | a |  | type_constraints.swift:7:12:7:12 | T |
+| type_constraints.swift:8:39:8:39 | b |  | type_constraints.swift:7:12:7:12 | T |
+| type_constraints.swift:29:7:29:9 | tag |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:30:7:30:14 | priority |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:32:8:32:10 | tag |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:32:21:32:28 | priority |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:33:5:33:8 | self |  | type_constraints.swift:28:1:44:1 | TaggedItem |
+| type_constraints.swift:33:16:33:18 | tag |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:34:5:34:8 | self |  | type_constraints.swift:28:1:44:1 | TaggedItem |
+| type_constraints.swift:34:21:34:28 | priority |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:38:12:38:14 | tag |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:42:12:42:19 | priority |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:46:48:46:51 | item |  | type_constraints.swift:46:18:46:43 | T |
+| type_constraints.swift:47:10:47:13 | item |  | type_constraints.swift:46:18:46:43 | T |
+| type_constraints.swift:50:30:50:30 | a |  | type_constraints.swift:50:25:50:25 | T |
+| type_constraints.swift:50:38:50:38 | b |  | type_constraints.swift:50:25:50:25 | T |
+| type_constraints.swift:51:10:51:10 | a |  | type_constraints.swift:50:25:50:25 | T |
+| type_constraints.swift:51:15:51:15 | b |  | type_constraints.swift:50:25:50:25 | T |
+| type_constraints.swift:63:7:63:11 | first |  | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:64:7:64:12 | second |  | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:66:8:66:12 | first |  | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:66:18:66:23 | second |  | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:67:5:67:8 | self |  | type_constraints.swift:62:1:78:1 | SortedPair |
+| type_constraints.swift:67:5:67:8 | self | T | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:67:5:67:8 | self | U | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:67:18:67:22 | first |  | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:68:5:68:8 | self |  | type_constraints.swift:62:1:78:1 | SortedPair |
+| type_constraints.swift:68:5:68:8 | self | T | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:68:5:68:8 | self | U | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:68:19:68:24 | second |  | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:71:28:71:32 | other |  | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:72:12:72:16 | first |  | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:72:20:72:24 | other |  | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:75:29:75:33 | other |  | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:76:12:76:17 | second |  | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:76:21:76:25 | other |  | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:95:7:95:11 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:95:7:95:11 | items | T | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:97:8:97:12 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:97:8:97:12 | items | T | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:98:5:98:8 | self |  | type_constraints.swift:93:1:104:1 | IntArray |
+| type_constraints.swift:98:18:98:22 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:98:18:98:22 | items | T | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:102:12:102:16 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:102:12:102:16 | items | T | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:108:7:108:11 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:108:7:108:11 | items | T | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:110:8:110:12 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:110:8:110:12 | items | T | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:111:5:111:8 | self |  | type_constraints.swift:106:1:117:1 | StringArray |
+| type_constraints.swift:111:18:111:22 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:111:18:111:22 | items | T | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:115:12:115:16 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:115:12:115:16 | items | T | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:119:45:119:53 | container |  | type_constraints.swift:119:19:119:37 | C |
+| type_constraints.swift:120:10:120:18 | container |  | type_constraints.swift:119:19:119:37 | C |
+| type_constraints.swift:123:45:123:53 | container |  | type_constraints.swift:123:19:123:37 | C |
+| type_constraints.swift:124:10:124:18 | container |  | type_constraints.swift:123:19:123:37 | C |
+| type_constraints.swift:137:7:137:11 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:139:8:139:12 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:140:5:140:8 | self |  | type_constraints.swift:136:1:146:1 | Vehicle |
+| type_constraints.swift:140:18:140:22 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:149:17:149:21 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:150:23:150:27 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:163:17:163:21 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:164:23:164:27 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:176:36:176:36 | v |  | type_constraints.swift:176:22:176:31 | T |
+| type_constraints.swift:177:10:177:10 | v |  | type_constraints.swift:176:22:176:31 | T |
+| type_constraints.swift:192:17:192:19 | lhs |  | type_constraints.swift:191:1:193:1 | Summable |
+| type_constraints.swift:192:28:192:30 | rhs |  | type_constraints.swift:191:1:193:1 | Summable |
+| type_constraints.swift:200:7:200:12 | values |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:200:7:200:12 | values | T | type_constraints.swift:199:20:199:20 | T |
+| type_constraints.swift:202:8:202:13 | values |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:202:8:202:13 | values | T | type_constraints.swift:199:20:199:20 | T |
+| type_constraints.swift:203:5:203:8 | self |  | type_constraints.swift:199:1:209:1 | Accumulator |
+| type_constraints.swift:203:5:203:8 | self | T | type_constraints.swift:199:20:199:20 | T |
+| type_constraints.swift:203:19:203:24 | values |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:203:19:203:24 | values | T | type_constraints.swift:199:20:199:20 | T |
+| type_constraints.swift:207:12:207:17 | values |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:207:12:207:17 | values | T | type_constraints.swift:199:20:199:20 | T |
+| type_constraints.swift:219:35:219:48 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| type_constraints.swift:235:33:235:37 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:235:33:235:37 | items | T | type_constraints.swift:235:18:235:28 | T |
+| type_constraints.swift:236:12:236:16 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:236:12:236:16 | items | T | type_constraints.swift:235:18:235:28 | T |
+| type_constraints.swift:236:23:236:27 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:236:23:236:27 | items | T | type_constraints.swift:235:18:235:28 | T |
+| type_constraints.swift:239:44:239:44 | a |  | type_constraints.swift:239:14:239:26 | A |
+| type_constraints.swift:239:52:239:52 | b |  | type_constraints.swift:239:28:239:39 | B |
+| type_constraints.swift:253:29:253:33 | value |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:253:43:253:47 | lower |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:253:57:253:61 | upper |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:254:6:254:10 | value |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:254:14:254:18 | lower |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:254:29:254:33 | lower |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:255:6:255:10 | value |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:255:14:255:18 | upper |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:255:29:255:33 | upper |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:256:10:256:14 | value |  | type_constraints.swift:253:12:253:24 | T |
+inferType
+| basics.swift:1:5:1:16 | topLevelDecl |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:3:1:3:12 | topLevelDecl |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:6:7:6:11 | myInt |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:7:8:7:8 | n |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:8:5:8:9 | myInt |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:8:13:8:13 | n |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:11:3:13:3 | Block |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:12:12:12:16 | myInt |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:21:3:24:3 | Block |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:22:9:22:9 | x |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:22:13:22:22 | getMyInt(...) |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:23:12:23:12 | x |  | {EXTERNAL LOCATION} | Int |
+| basics.swift:28:7:28:11 | value |  | basics.swift:27:15:27:15 | T |
+| basics.swift:29:8:29:8 | v |  | basics.swift:27:15:27:15 | T |
+| basics.swift:30:5:30:9 | value |  | basics.swift:27:15:27:15 | T |
+| basics.swift:30:13:30:13 | v |  | basics.swift:27:15:27:15 | T |
+| basics.swift:33:3:35:3 | Block |  | basics.swift:27:15:27:15 | T |
+| basics.swift:34:12:34:16 | value |  | basics.swift:27:15:27:15 | T |
+| classes.swift:4:22:4:22 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:5:12:5:12 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:5:16:5:16 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:8:19:8:19 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:9:12:9:12 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:9:16:9:16 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:9:20:9:20 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:21:18:21:18 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:22:12:22:12 | x |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:25:3:27:3 | Block |  | {EXTERNAL LOCATION} | String |
+| classes.swift:25:18:25:18 | s |  | {EXTERNAL LOCATION} | String |
+| classes.swift:26:12:26:12 | s |  | {EXTERNAL LOCATION} | String |
+| classes.swift:39:7:39:10 | data |  | {EXTERNAL LOCATION} | Array |
+| classes.swift:39:7:39:10 | data | T | {EXTERNAL LOCATION} | Array |
+| classes.swift:39:7:39:10 | data | T.T | {EXTERNAL LOCATION} | Int |
+| classes.swift:41:8:41:11 | data |  | {EXTERNAL LOCATION} | Array |
+| classes.swift:41:8:41:11 | data | T | {EXTERNAL LOCATION} | Array |
+| classes.swift:41:8:41:11 | data | T.T | {EXTERNAL LOCATION} | Int |
+| classes.swift:42:5:42:8 | self |  | classes.swift:38:1:48:1 | Matrix |
+| classes.swift:42:5:42:13 | ... .data |  | {EXTERNAL LOCATION} | Array |
+| classes.swift:42:5:42:13 | ... .data | T | {EXTERNAL LOCATION} | Array |
+| classes.swift:42:5:42:13 | ... .data | T.T | {EXTERNAL LOCATION} | Int |
+| classes.swift:42:17:42:20 | data |  | {EXTERNAL LOCATION} | Array |
+| classes.swift:42:17:42:20 | data | T | {EXTERNAL LOCATION} | Array |
+| classes.swift:42:17:42:20 | data | T.T | {EXTERNAL LOCATION} | Int |
+| classes.swift:46:12:46:15 | data |  | {EXTERNAL LOCATION} | Array |
+| classes.swift:46:12:46:15 | data | T | {EXTERNAL LOCATION} | Array |
+| classes.swift:46:12:46:15 | data | T.T | {EXTERNAL LOCATION} | Int |
+| classes.swift:59:9:59:13 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:61:10:61:14 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:62:7:62:10 | self |  | classes.swift:58:3:68:3 | Inner |
+| classes.swift:62:7:62:16 | ... .value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:62:20:62:24 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:66:14:66:17 | self |  | classes.swift:58:3:68:3 | Inner |
+| classes.swift:79:7:79:11 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:83:3:86:3 | Block |  | classes.swift:78:1:96:1 | Builder |
+| classes.swift:83:14:83:14 | v |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:84:5:84:9 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:84:13:84:13 | v |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:85:12:85:15 | self |  | classes.swift:78:1:96:1 | Builder |
+| classes.swift:88:3:91:3 | Block |  | classes.swift:78:1:96:1 | Builder |
+| classes.swift:88:14:88:14 | v |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:89:5:89:9 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:89:14:89:14 | v |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:90:12:90:15 | self |  | classes.swift:78:1:96:1 | Builder |
+| classes.swift:93:3:95:3 | Block |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:94:12:94:16 | value |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:108:3:110:3 | Block |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:108:14:108:20 | retries |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:108:32:108:38 | timeout |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:109:12:109:18 | retries |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:123:7:123:13 | celsius |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:125:8:125:14 | celsius |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:126:5:126:8 | self |  | classes.swift:122:1:136:1 | Temperature |
+| classes.swift:126:5:126:16 | ... .celsius |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:126:20:126:26 | celsius |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:129:3:131:3 | Block |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:130:12:130:18 | celsius |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:134:12:134:18 | celsius |  | {EXTERNAL LOCATION} | Double |
+| classes.swift:190:7:190:11 | count |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:193:5:193:9 | count |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:196:3:198:3 | Block |  | {EXTERNAL LOCATION} | Int |
+| classes.swift:197:12:197:16 | count |  | {EXTERNAL LOCATION} | Int |
+| context.swift:4:29:6:3 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| context.swift:4:29:6:3 | FunctionExpr | Args | {EXTERNAL LOCATION} | Tuple1 |
+| generics.swift:3:1:5:1 | Block |  | generics.swift:3:15:3:15 | T |
+| generics.swift:3:20:3:20 | x |  | generics.swift:3:15:3:15 | T |
+| generics.swift:4:10:4:10 | x |  | generics.swift:3:15:3:15 | T |
+| generics.swift:7:23:7:23 | a |  | generics.swift:7:15:7:16 | A |
+| generics.swift:7:31:7:31 | b |  | generics.swift:7:18:7:18 | B |
+| generics.swift:8:11:8:11 | a |  | generics.swift:7:15:7:16 | A |
+| generics.swift:8:14:8:14 | b |  | generics.swift:7:18:7:18 | B |
+| generics.swift:14:7:14:7 | p |  | {EXTERNAL LOCATION} | Tuple2 |
+| generics.swift:14:11:14:28 | makePair(...) |  | {EXTERNAL LOCATION} | Tuple2 |
+| generics.swift:20:7:20:11 | first |  | generics.swift:19:13:19:14 | A |
+| generics.swift:21:7:21:12 | second |  | generics.swift:19:16:19:16 | B |
+| generics.swift:23:8:23:12 | first |  | generics.swift:19:13:19:14 | A |
+| generics.swift:23:18:23:23 | second |  | generics.swift:19:16:19:16 | B |
+| generics.swift:24:5:24:8 | self |  | generics.swift:19:1:35:1 | Pair |
+| generics.swift:24:5:24:8 | self | A | generics.swift:19:13:19:14 | A |
+| generics.swift:24:5:24:8 | self | B | generics.swift:19:16:19:16 | B |
+| generics.swift:24:5:24:14 | ... .first |  | generics.swift:19:13:19:14 | A |
+| generics.swift:24:18:24:22 | first |  | generics.swift:19:13:19:14 | A |
+| generics.swift:25:5:25:8 | self |  | generics.swift:19:1:35:1 | Pair |
+| generics.swift:25:5:25:8 | self | A | generics.swift:19:13:19:14 | A |
+| generics.swift:25:5:25:8 | self | B | generics.swift:19:16:19:16 | B |
+| generics.swift:25:5:25:15 | ... .second |  | generics.swift:19:16:19:16 | B |
+| generics.swift:25:19:25:24 | second |  | generics.swift:19:16:19:16 | B |
+| generics.swift:28:3:30:3 | Block |  | generics.swift:19:13:19:14 | A |
+| generics.swift:29:12:29:16 | first |  | generics.swift:19:13:19:14 | A |
+| generics.swift:32:3:34:3 | Block |  | generics.swift:19:16:19:16 | B |
+| generics.swift:33:12:33:17 | second |  | generics.swift:19:16:19:16 | B |
+| generics.swift:50:12:50:15 | self |  | generics.swift:45:1:57:1 | Result |
+| generics.swift:50:12:50:15 | self | T | generics.swift:45:13:45:13 | T |
+| generics.swift:51:10:51:24 | ... .success(...) |  | generics.swift:45:1:57:1 | Result |
+| generics.swift:51:10:51:24 | ... .success(...) | T | generics.swift:45:13:45:13 | T |
+| generics.swift:53:10:53:17 | ... .failure |  | generics.swift:45:1:57:1 | Result |
+| generics.swift:53:10:53:17 | ... .failure | T | generics.swift:45:13:45:13 | T |
+| generics.swift:63:7:63:8 | r2 |  | generics.swift:45:1:57:1 | Result |
+| generics.swift:63:7:63:8 | r2 | T | {EXTERNAL LOCATION} | Int |
+| generics.swift:64:7:64:8 | v2 |  | {EXTERNAL LOCATION} | Optional |
+| generics.swift:64:7:64:8 | v2 | Wrapped | {EXTERNAL LOCATION} | Int |
+| generics.swift:64:12:64:13 | r2 |  | generics.swift:45:1:57:1 | Result |
+| generics.swift:64:12:64:13 | r2 | T | {EXTERNAL LOCATION} | Int |
+| generics.swift:64:12:64:24 | ... .getValue(...) |  | {EXTERNAL LOCATION} | Optional |
+| generics.swift:64:12:64:24 | ... .getValue(...) | Wrapped | {EXTERNAL LOCATION} | Int |
+| generics.swift:69:29:69:33 | value |  | generics.swift:69:21:69:22 | T |
+| generics.swift:69:41:69:49 | transform |  | {EXTERNAL LOCATION} | Function |
+| generics.swift:69:41:69:49 | transform | Args | {EXTERNAL LOCATION} | Tuple1 |
+| generics.swift:69:41:69:49 | transform | Args.T0 | generics.swift:69:21:69:22 | T |
+| generics.swift:69:41:69:49 | transform | Return | generics.swift:69:24:69:24 | U |
+| generics.swift:69:52:69:59 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| generics.swift:69:52:69:59 | FunctionExpr | Return | generics.swift:69:24:69:24 | U |
+| generics.swift:70:10:70:18 | transform |  | {EXTERNAL LOCATION} | Function |
+| generics.swift:70:10:70:18 | transform | Args | {EXTERNAL LOCATION} | Tuple1 |
+| generics.swift:70:10:70:18 | transform | Args.T0 | generics.swift:69:21:69:22 | T |
+| generics.swift:70:10:70:18 | transform | Return | generics.swift:69:24:69:24 | U |
+| generics.swift:70:20:70:24 | value |  | generics.swift:69:21:69:22 | T |
+| generics.swift:74:34:74:47 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| generics.swift:74:34:74:47 | FunctionExpr | Args | {EXTERNAL LOCATION} | Tuple1 |
+| generics.swift:75:36:75:53 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| generics.swift:75:36:75:53 | FunctionExpr | Args | {EXTERNAL LOCATION} | Tuple1 |
+| generics.swift:89:7:89:11 | inner |  | generics.swift:88:15:88:27 | T |
+| generics.swift:91:10:91:14 | inner |  | generics.swift:88:15:88:27 | T |
+| generics.swift:92:5:92:8 | self |  | generics.swift:88:1:108:1 | Wrapper |
+| generics.swift:92:5:92:8 | self | T | generics.swift:88:15:88:27 | T |
+| generics.swift:92:5:92:14 | ... .inner |  | generics.swift:88:15:88:27 | T |
+| generics.swift:92:18:92:22 | inner |  | generics.swift:88:15:88:27 | T |
+| generics.swift:95:3:97:3 | Block |  | generics.swift:88:15:88:27 | T |
+| generics.swift:96:12:96:16 | inner |  | generics.swift:88:15:88:27 | T |
+| generics.swift:100:13:100:17 | inner |  | generics.swift:88:15:88:27 | T |
+| generics.swift:105:13:105:17 | inner |  | generics.swift:88:15:88:27 | T |
+| generics.swift:114:12:114:15 | self |  | {EXTERNAL LOCATION} | Int |
+| generics.swift:131:7:131:12 | value1 |  | generics.swift:130:12:130:14 | T1 |
+| generics.swift:132:7:132:12 | value2 |  | generics.swift:130:16:130:17 | T2 |
+| generics.swift:134:10:134:11 | v1 |  | generics.swift:130:12:130:14 | T1 |
+| generics.swift:134:20:134:21 | v2 |  | generics.swift:130:16:130:17 | T2 |
+| generics.swift:135:5:135:8 | self |  | generics.swift:130:1:146:1 | Base |
+| generics.swift:135:5:135:8 | self | T1 | generics.swift:130:12:130:14 | T1 |
+| generics.swift:135:5:135:8 | self | T2 | generics.swift:130:16:130:17 | T2 |
+| generics.swift:135:5:135:15 | ... .value1 |  | generics.swift:130:12:130:14 | T1 |
+| generics.swift:135:19:135:20 | v1 |  | generics.swift:130:12:130:14 | T1 |
+| generics.swift:136:5:136:8 | self |  | generics.swift:130:1:146:1 | Base |
+| generics.swift:136:5:136:8 | self | T1 | generics.swift:130:12:130:14 | T1 |
+| generics.swift:136:5:136:8 | self | T2 | generics.swift:130:16:130:17 | T2 |
+| generics.swift:136:5:136:15 | ... .value2 |  | generics.swift:130:16:130:17 | T2 |
+| generics.swift:136:19:136:20 | v2 |  | generics.swift:130:16:130:17 | T2 |
+| generics.swift:139:3:141:3 | Block |  | generics.swift:130:12:130:14 | T1 |
+| generics.swift:140:12:140:17 | value1 |  | generics.swift:130:12:130:14 | T1 |
+| generics.swift:143:3:145:3 | Block |  | generics.swift:130:16:130:17 | T2 |
+| generics.swift:144:12:144:17 | value2 |  | generics.swift:130:16:130:17 | T2 |
+| generics.swift:149:10:149:11 | v1 |  | generics.swift:148:15:148:17 | T1 |
+| generics.swift:149:20:149:21 | v2 |  | generics.swift:148:19:148:20 | T2 |
+| generics.swift:150:16:150:17 | v2 |  | generics.swift:148:19:148:20 | T2 |
+| generics.swift:150:20:150:21 | v1 |  | generics.swift:148:15:148:17 | T1 |
+| generics.swift:155:10:155:10 | v |  | generics.swift:154:22:154:22 | D |
+| generics.swift:156:16:156:16 | v |  | generics.swift:154:22:154:22 | D |
+| generics.swift:179:3:181:3 | Block |  | generics.swift:172:1:176:1 | MyProtocol2 |
+| generics.swift:180:12:180:15 | self |  | generics.swift:172:1:176:1 | MyProtocol2 |
+| generics.swift:185:7:185:11 | value |  | generics.swift:184:15:184:15 | T |
+| generics.swift:187:10:187:14 | value |  | generics.swift:184:15:184:15 | T |
+| generics.swift:188:5:188:8 | self |  | generics.swift:184:1:190:1 | MyClass |
+| generics.swift:188:5:188:8 | self | T | generics.swift:184:15:184:15 | T |
+| generics.swift:188:5:188:14 | ... .value |  | generics.swift:184:15:184:15 | T |
+| generics.swift:188:18:188:22 | value |  | generics.swift:184:15:184:15 | T |
+| generics.swift:200:33:200:33 | c |  | generics.swift:200:14:200:28 | T |
+| generics.swift:201:10:201:10 | c |  | generics.swift:200:14:200:28 | T |
+| generics.swift:204:33:204:33 | c |  | generics.swift:204:14:204:28 | T |
+| generics.swift:205:10:205:10 | c |  | generics.swift:204:14:204:28 | T |
+| generics.swift:239:66:239:70 | value |  | generics.swift:239:33:239:61 | T |
+| generics.swift:240:10:240:14 | value |  | generics.swift:239:33:239:61 | T |
+| generics.swift:268:7:268:11 | value |  | {EXTERNAL LOCATION} | Int |
+| generics.swift:268:15:268:66 | getPrimaryAssociatedType(...) |  | {EXTERNAL LOCATION} | Int |
+| key_paths.swift:4:7:4:7 | x |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:5:7:5:7 | y |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:7:8:7:8 | x |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:7:19:7:19 | y |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:8:5:8:8 | self |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:8:5:8:10 | ... .x |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:8:14:8:14 | x |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:9:5:9:8 | self |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:9:5:9:10 | ... .y |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:9:14:9:14 | y |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:13:13:13:13 | x |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:13:17:13:17 | x |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:13:21:13:21 | y |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:13:25:13:25 | y |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:18:7:18:11 | start |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:19:7:19:9 | end |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:21:8:21:12 | start |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:21:22:21:24 | end |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:22:5:22:8 | self |  | key_paths.swift:17:1:25:1 | Line |
+| key_paths.swift:22:5:22:14 | ... .start |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:22:18:22:22 | start |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:23:5:23:8 | self |  | key_paths.swift:17:1:25:1 | Line |
+| key_paths.swift:23:5:23:12 | ... .end |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:23:16:23:18 | end |  | key_paths.swift:3:1:15:1 | Point |
+| key_paths.swift:59:7:59:10 | name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:60:7:60:13 | address |  | {EXTERNAL LOCATION} | Optional |
+| key_paths.swift:60:7:60:13 | address | Wrapped | key_paths.swift:68:1:76:1 | Address |
+| key_paths.swift:62:8:62:11 | name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:62:22:62:28 | address |  | {EXTERNAL LOCATION} | Optional |
+| key_paths.swift:62:22:62:28 | address | Wrapped | key_paths.swift:68:1:76:1 | Address |
+| key_paths.swift:63:5:63:8 | self |  | key_paths.swift:58:1:66:1 | Person |
+| key_paths.swift:63:5:63:13 | ... .name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:63:17:63:20 | name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:64:5:64:8 | self |  | key_paths.swift:58:1:66:1 | Person |
+| key_paths.swift:64:5:64:16 | ... .address |  | {EXTERNAL LOCATION} | Optional |
+| key_paths.swift:64:5:64:16 | ... .address | Wrapped | key_paths.swift:68:1:76:1 | Address |
+| key_paths.swift:64:20:64:26 | address |  | {EXTERNAL LOCATION} | Optional |
+| key_paths.swift:64:20:64:26 | address | Wrapped | key_paths.swift:68:1:76:1 | Address |
+| key_paths.swift:69:7:69:10 | city |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:70:7:70:9 | zip |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:72:8:72:11 | city |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:72:22:72:24 | zip |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:73:5:73:8 | self |  | key_paths.swift:68:1:76:1 | Address |
+| key_paths.swift:73:5:73:13 | ... .city |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:73:17:73:20 | city |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:74:5:74:8 | self |  | key_paths.swift:68:1:76:1 | Address |
+| key_paths.swift:74:5:74:12 | ... .zip |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:74:16:74:18 | zip |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:89:7:89:10 | name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:90:7:90:12 | salary |  | {EXTERNAL LOCATION} | Int |
+| key_paths.swift:92:8:92:11 | name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:92:22:92:27 | salary |  | {EXTERNAL LOCATION} | Int |
+| key_paths.swift:93:5:93:8 | self |  | key_paths.swift:88:1:96:1 | Employee |
+| key_paths.swift:93:5:93:13 | ... .name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:93:17:93:20 | name |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:94:5:94:8 | self |  | key_paths.swift:88:1:96:1 | Employee |
+| key_paths.swift:94:5:94:15 | ... .salary |  | {EXTERNAL LOCATION} | Int |
+| key_paths.swift:94:19:94:24 | salary |  | {EXTERNAL LOCATION} | Int |
+| key_paths.swift:98:27:98:31 | items |  | {EXTERNAL LOCATION} | Array |
+| key_paths.swift:98:27:98:31 | items | T | key_paths.swift:98:19:98:20 | T |
+| key_paths.swift:98:39:98:45 | keyPath | unknown type parameter 0 | key_paths.swift:98:19:98:20 | T |
+| key_paths.swift:98:39:98:45 | keyPath | unknown type parameter 1 | key_paths.swift:98:22:98:22 | V |
+| key_paths.swift:99:10:99:14 | items |  | {EXTERNAL LOCATION} | Array |
+| key_paths.swift:99:10:99:14 | items | T | key_paths.swift:98:19:98:20 | T |
+| key_paths.swift:99:20:99:43 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| key_paths.swift:99:34:99:40 | keyPath | unknown type parameter 0 | key_paths.swift:98:19:98:20 | T |
+| key_paths.swift:99:34:99:40 | keyPath | unknown type parameter 1 | key_paths.swift:98:22:98:22 | V |
+| key_paths.swift:106:7:106:11 | names |  | {EXTERNAL LOCATION} | Array |
+| key_paths.swift:106:15:106:54 | extractField(...) |  | {EXTERNAL LOCATION} | Array |
+| key_paths.swift:107:14:107:18 | names |  | {EXTERNAL LOCATION} | Array |
+| key_paths.swift:108:7:108:14 | salaries |  | {EXTERNAL LOCATION} | Array |
+| key_paths.swift:108:18:108:59 | extractField(...) |  | {EXTERNAL LOCATION} | Array |
+| key_paths.swift:109:16:109:23 | salaries |  | {EXTERNAL LOCATION} | Array |
+| key_paths.swift:115:7:115:10 | item |  | key_paths.swift:114:19:114:19 | T |
+| key_paths.swift:117:8:117:11 | item |  | key_paths.swift:114:19:114:19 | T |
+| key_paths.swift:118:5:118:8 | self |  | key_paths.swift:114:1:120:1 | KPContainer |
+| key_paths.swift:118:5:118:8 | self | T | key_paths.swift:114:19:114:19 | T |
+| key_paths.swift:118:5:118:13 | ... .item |  | key_paths.swift:114:19:114:19 | T |
+| key_paths.swift:118:17:118:20 | item |  | key_paths.swift:114:19:114:19 | T |
+| key_paths.swift:165:7:165:11 | color |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:167:8:167:12 | color |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:168:5:168:8 | self |  | key_paths.swift:164:1:170:1 | Shape2 |
+| key_paths.swift:168:5:168:14 | ... .color |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:168:18:168:22 | color |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:173:7:173:12 | radius |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:175:8:175:12 | color |  | {EXTERNAL LOCATION} | String |
+| key_paths.swift:175:23:175:28 | radius |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:176:5:176:8 | self |  | key_paths.swift:172:1:179:1 | Circle2 |
+| key_paths.swift:176:5:176:15 | ... .radius |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:176:19:176:24 | radius |  | {EXTERNAL LOCATION} | Double |
+| key_paths.swift:177:23:177:27 | color |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:4:17:4:17 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:8:17:8:17 | x |  | {EXTERNAL LOCATION} | Double |
+| overload_resolution.swift:12:17:12:17 | x |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:16:17:16:17 | x |  | {EXTERNAL LOCATION} | Bool |
+| overload_resolution.swift:32:18:32:22 | width |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:36:18:36:23 | height |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:40:18:40:22 | width |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:40:30:40:35 | height |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:44:18:44:21 | size |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:64:3:66:3 | Block |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:64:18:64:18 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:65:12:65:12 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:68:18:68:18 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:68:28:68:28 | y |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:69:12:69:12 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:69:16:69:16 | y |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:72:18:72:18 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:72:28:72:28 | y |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:72:38:72:38 | z |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:73:12:73:12 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:73:16:73:16 | y |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:73:20:73:20 | z |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:103:7:103:8 | r1 |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:104:7:104:8 | r2 |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:105:7:105:8 | r3 |  | {EXTERNAL LOCATION} | Double |
+| overload_resolution.swift:111:18:111:18 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:115:21:115:21 | x |  | overload_resolution.swift:115:16:115:16 | T |
+| overload_resolution.swift:129:21:129:21 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:133:21:133:21 | x |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:137:21:137:21 | x |  | {EXTERNAL LOCATION} | Double |
+| overload_resolution.swift:142:7:142:8 | r1 |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:142:12:142:27 | freeOverload(...) |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:143:7:143:8 | r2 |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:143:12:143:29 | freeOverload(...) |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:144:7:144:8 | r3 |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:144:12:144:28 | freeOverload(...) |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:150:7:150:11 | value |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:153:5:153:9 | value |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:156:8:156:10 | int |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:157:5:157:9 | value |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:160:8:160:10 | str |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:161:5:161:9 | value |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:161:13:161:15 | str |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:164:8:164:8 | x |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:164:16:164:16 | y |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:165:5:165:9 | value |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:168:3:170:3 | Block |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:169:12:169:16 | value |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:287:3:289:3 | Block |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:287:16:287:21 | target |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:288:12:288:17 | target |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:291:3:293:3 | Block |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:291:18:291:23 | source |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:292:12:292:17 | source |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:295:16:295:21 | target |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:295:37:295:42 | source |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:296:12:296:17 | target |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:296:21:296:26 | source |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:321:1:323:1 | Block |  | overload_resolution.swift:321:20:321:30 | T |
+| overload_resolution.swift:321:35:321:35 | x |  | overload_resolution.swift:321:20:321:30 | T |
+| overload_resolution.swift:322:10:322:10 | x |  | overload_resolution.swift:321:20:321:30 | T |
+| overload_resolution.swift:325:1:327:1 | Block |  | overload_resolution.swift:325:20:325:31 | T |
+| overload_resolution.swift:325:36:325:36 | x |  | overload_resolution.swift:325:20:325:31 | T |
+| overload_resolution.swift:326:10:326:10 | x |  | overload_resolution.swift:325:20:325:31 | T |
+| overload_resolution.swift:337:7:337:10 | item |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:339:10:339:13 | item |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:340:5:340:8 | self |  | overload_resolution.swift:336:1:350:1 | Box |
+| overload_resolution.swift:340:5:340:8 | self | T | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:340:5:340:13 | ... .item |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:340:17:340:20 | item |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:343:3:345:3 | Block |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:344:12:344:15 | item |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:347:18:347:24 | newItem |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:348:5:348:8 | item |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:348:12:348:18 | newItem |  | overload_resolution.swift:336:11:336:11 | T |
+| overload_resolution.swift:364:7:364:10 | name |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:365:7:365:10 | size |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:367:8:367:11 | name |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:367:22:367:25 | size |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:368:5:368:8 | self |  | overload_resolution.swift:363:1:380:1 | Widget |
+| overload_resolution.swift:368:5:368:13 | ... .name |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:368:17:368:20 | name |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:369:5:369:8 | self |  | overload_resolution.swift:363:1:380:1 | Widget |
+| overload_resolution.swift:369:5:369:13 | ... .size |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:369:17:369:20 | size |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:373:20:373:23 | name |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:374:5:374:8 | self |  | overload_resolution.swift:363:1:380:1 | Widget |
+| overload_resolution.swift:374:21:374:24 | name |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:377:20:377:23 | size |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:378:5:378:8 | self |  | overload_resolution.swift:363:1:380:1 | Widget |
+| overload_resolution.swift:378:38:378:41 | size |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:393:16:393:16 | f |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:393:16:393:16 | f | Args | {EXTERNAL LOCATION} | Tuple1 |
+| overload_resolution.swift:393:16:393:16 | f | Args.T0 | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:393:16:393:16 | f | Return | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:393:19:393:30 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:393:19:393:30 | FunctionExpr | Return | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:394:12:394:12 | f |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:394:12:394:12 | f | Args | {EXTERNAL LOCATION} | Tuple1 |
+| overload_resolution.swift:394:12:394:12 | f | Args.T0 | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:394:12:394:12 | f | Return | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:397:16:397:16 | f |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:397:16:397:16 | f | Args | {EXTERNAL LOCATION} | Tuple1 |
+| overload_resolution.swift:397:16:397:16 | f | Args.T0 | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:397:16:397:16 | f | Return | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:397:19:397:36 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:397:19:397:36 | FunctionExpr | Return | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:398:12:398:12 | f |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:398:12:398:12 | f | Args | {EXTERNAL LOCATION} | Tuple1 |
+| overload_resolution.swift:398:12:398:12 | f | Args.T0 | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:398:12:398:12 | f | Return | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:401:16:401:16 | f |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:401:16:401:16 | f | Args | {EXTERNAL LOCATION} | Tuple2 |
+| overload_resolution.swift:401:16:401:16 | f | Args.T0 | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:401:16:401:16 | f | Args.T1 | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:401:16:401:16 | f | Return | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:401:19:401:35 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:401:19:401:35 | FunctionExpr | Return | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:402:12:402:12 | f |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:402:12:402:12 | f | Args | {EXTERNAL LOCATION} | Tuple2 |
+| overload_resolution.swift:402:12:402:12 | f | Args.T0 | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:402:12:402:12 | f | Args.T1 | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:402:12:402:12 | f | Return | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:408:20:408:33 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:408:20:408:33 | FunctionExpr | Args | {EXTERNAL LOCATION} | Tuple1 |
+| overload_resolution.swift:409:20:409:35 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:409:20:409:35 | FunctionExpr | Args | {EXTERNAL LOCATION} | Tuple1 |
+| overload_resolution.swift:410:20:410:36 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| overload_resolution.swift:410:20:410:36 | FunctionExpr | Args | {EXTERNAL LOCATION} | Tuple2 |
+| overload_resolution.swift:416:7:416:10 | data |  | {EXTERNAL LOCATION} | Array |
+| overload_resolution.swift:416:7:416:10 | data | T | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:417:7:417:10 | dict |  | {EXTERNAL LOCATION} | Dictionary |
+| overload_resolution.swift:417:7:417:10 | dict | Key | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:417:7:417:10 | dict | Value | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:421:14:421:18 | index |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:422:12:422:15 | data |  | {EXTERNAL LOCATION} | Array |
+| overload_resolution.swift:422:12:422:15 | data | T | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:422:17:422:21 | index |  | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:425:14:425:16 | key |  | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:426:12:426:15 | dict |  | {EXTERNAL LOCATION} | Dictionary |
+| overload_resolution.swift:426:12:426:15 | dict | Key | {EXTERNAL LOCATION} | String |
+| overload_resolution.swift:426:12:426:15 | dict | Value | {EXTERNAL LOCATION} | Int |
+| overload_resolution.swift:426:17:426:19 | key |  | {EXTERNAL LOCATION} | String |
+| protocols.swift:8:7:8:12 | radius |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:10:8:10:13 | radius |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:11:5:11:8 | self |  | protocols.swift:7:1:17:1 | Circle |
+| protocols.swift:11:5:11:15 | ... .radius |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:11:19:11:24 | radius |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:15:22:15:27 | radius |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:15:31:15:36 | radius |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:20:7:20:11 | width |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:21:7:21:12 | height |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:23:8:23:12 | width |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:23:23:23:28 | height |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:24:5:24:8 | self |  | protocols.swift:19:1:31:1 | Rectangle |
+| protocols.swift:24:5:24:14 | ... .width |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:24:18:24:22 | width |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:25:5:25:8 | self |  | protocols.swift:19:1:31:1 | Rectangle |
+| protocols.swift:25:5:25:15 | ... .height |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:25:19:25:24 | height |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:29:12:29:16 | width |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:29:20:29:25 | height |  | {EXTERNAL LOCATION} | Double |
+| protocols.swift:51:7:51:11 | items |  | {EXTERNAL LOCATION} | Array |
+| protocols.swift:51:7:51:11 | items | T | {EXTERNAL LOCATION} | Int |
+| protocols.swift:53:8:53:12 | items |  | {EXTERNAL LOCATION} | Array |
+| protocols.swift:53:8:53:12 | items | T | {EXTERNAL LOCATION} | Int |
+| protocols.swift:54:5:54:8 | self |  | protocols.swift:49:1:64:1 | IntContainer |
+| protocols.swift:54:5:54:14 | ... .items |  | {EXTERNAL LOCATION} | Array |
+| protocols.swift:54:5:54:14 | ... .items | T | {EXTERNAL LOCATION} | Int |
+| protocols.swift:54:18:54:22 | items |  | {EXTERNAL LOCATION} | Array |
+| protocols.swift:54:18:54:22 | items | T | {EXTERNAL LOCATION} | Int |
+| protocols.swift:58:12:58:16 | items |  | {EXTERNAL LOCATION} | Array |
+| protocols.swift:58:12:58:16 | items | T | {EXTERNAL LOCATION} | Int |
+| protocols.swift:62:12:62:16 | items |  | {EXTERNAL LOCATION} | Array |
+| protocols.swift:62:12:62:16 | items | T | {EXTERNAL LOCATION} | Int |
+| protocols.swift:83:7:83:10 | name |  | {EXTERNAL LOCATION} | String |
+| protocols.swift:84:7:84:14 | entityId |  | {EXTERNAL LOCATION} | Int |
+| protocols.swift:86:8:86:11 | name |  | {EXTERNAL LOCATION} | String |
+| protocols.swift:86:22:86:29 | entityId |  | {EXTERNAL LOCATION} | Int |
+| protocols.swift:87:5:87:8 | self |  | protocols.swift:82:1:98:1 | Entity |
+| protocols.swift:87:5:87:13 | ... .name |  | {EXTERNAL LOCATION} | String |
+| protocols.swift:87:17:87:20 | name |  | {EXTERNAL LOCATION} | String |
+| protocols.swift:88:5:88:8 | self |  | protocols.swift:82:1:98:1 | Entity |
+| protocols.swift:88:5:88:17 | ... .entityId |  | {EXTERNAL LOCATION} | Int |
+| protocols.swift:88:21:88:28 | entityId |  | {EXTERNAL LOCATION} | Int |
+| protocols.swift:91:3:93:3 | Block |  | {EXTERNAL LOCATION} | String |
+| protocols.swift:92:12:92:15 | name |  | {EXTERNAL LOCATION} | String |
+| protocols.swift:95:3:97:3 | Block |  | {EXTERNAL LOCATION} | Int |
+| protocols.swift:96:12:96:19 | entityId |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:3:1:5:1 | Block |  | type_constraints.swift:3:12:3:24 | T |
+| type_constraints.swift:3:29:3:29 | a |  | type_constraints.swift:3:12:3:24 | T |
+| type_constraints.swift:3:37:3:37 | b |  | type_constraints.swift:3:12:3:24 | T |
+| type_constraints.swift:4:6:4:6 | a |  | type_constraints.swift:3:12:3:24 | T |
+| type_constraints.swift:4:10:4:10 | b |  | type_constraints.swift:3:12:3:24 | T |
+| type_constraints.swift:4:21:4:21 | a |  | type_constraints.swift:3:12:3:24 | T |
+| type_constraints.swift:4:39:4:39 | b |  | type_constraints.swift:3:12:3:24 | T |
+| type_constraints.swift:7:1:9:1 | Block |  | type_constraints.swift:7:12:7:12 | T |
+| type_constraints.swift:7:17:7:17 | a |  | type_constraints.swift:7:12:7:12 | T |
+| type_constraints.swift:7:25:7:25 | b |  | type_constraints.swift:7:12:7:12 | T |
+| type_constraints.swift:8:6:8:6 | a |  | type_constraints.swift:7:12:7:12 | T |
+| type_constraints.swift:8:10:8:10 | b |  | type_constraints.swift:7:12:7:12 | T |
+| type_constraints.swift:8:21:8:21 | a |  | type_constraints.swift:7:12:7:12 | T |
+| type_constraints.swift:8:39:8:39 | b |  | type_constraints.swift:7:12:7:12 | T |
+| type_constraints.swift:29:7:29:9 | tag |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:30:7:30:14 | priority |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:32:8:32:10 | tag |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:32:21:32:28 | priority |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:33:5:33:8 | self |  | type_constraints.swift:28:1:44:1 | TaggedItem |
+| type_constraints.swift:33:5:33:12 | ... .tag |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:33:16:33:18 | tag |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:34:5:34:8 | self |  | type_constraints.swift:28:1:44:1 | TaggedItem |
+| type_constraints.swift:34:5:34:17 | ... .priority |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:34:21:34:28 | priority |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:37:3:39:3 | Block |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:38:12:38:14 | tag |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:41:3:43:3 | Block |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:42:12:42:19 | priority |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:46:48:46:51 | item |  | type_constraints.swift:46:18:46:43 | T |
+| type_constraints.swift:47:10:47:13 | item |  | type_constraints.swift:46:18:46:43 | T |
+| type_constraints.swift:50:30:50:30 | a |  | type_constraints.swift:50:25:50:25 | T |
+| type_constraints.swift:50:38:50:38 | b |  | type_constraints.swift:50:25:50:25 | T |
+| type_constraints.swift:51:10:51:10 | a |  | type_constraints.swift:50:25:50:25 | T |
+| type_constraints.swift:51:15:51:15 | b |  | type_constraints.swift:50:25:50:25 | T |
+| type_constraints.swift:56:7:56:7 | s |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:56:11:56:27 | showAndSort(...) |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:57:7:57:8 | eq |  | {EXTERNAL LOCATION} | Bool |
+| type_constraints.swift:57:12:57:41 | showSortAndCompare(...) |  | {EXTERNAL LOCATION} | Bool |
+| type_constraints.swift:63:7:63:11 | first |  | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:64:7:64:12 | second |  | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:66:8:66:12 | first |  | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:66:18:66:23 | second |  | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:67:5:67:8 | self |  | type_constraints.swift:62:1:78:1 | SortedPair |
+| type_constraints.swift:67:5:67:8 | self | T | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:67:5:67:8 | self | U | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:67:5:67:14 | ... .first |  | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:67:18:67:22 | first |  | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:68:5:68:8 | self |  | type_constraints.swift:62:1:78:1 | SortedPair |
+| type_constraints.swift:68:5:68:8 | self | T | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:68:5:68:8 | self | U | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:68:5:68:15 | ... .second |  | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:68:19:68:24 | second |  | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:71:28:71:32 | other |  | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:72:12:72:16 | first |  | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:72:20:72:24 | other |  | type_constraints.swift:62:18:62:31 | T |
+| type_constraints.swift:75:29:75:33 | other |  | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:76:12:76:17 | second |  | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:76:21:76:25 | other |  | type_constraints.swift:62:33:62:45 | U |
+| type_constraints.swift:95:7:95:11 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:95:7:95:11 | items | T | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:97:8:97:12 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:97:8:97:12 | items | T | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:98:5:98:8 | self |  | type_constraints.swift:93:1:104:1 | IntArray |
+| type_constraints.swift:98:5:98:14 | ... .items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:98:5:98:14 | ... .items | T | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:98:18:98:22 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:98:18:98:22 | items | T | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:102:12:102:16 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:102:12:102:16 | items | T | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:108:7:108:11 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:108:7:108:11 | items | T | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:110:8:110:12 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:110:8:110:12 | items | T | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:111:5:111:8 | self |  | type_constraints.swift:106:1:117:1 | StringArray |
+| type_constraints.swift:111:5:111:14 | ... .items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:111:5:111:14 | ... .items | T | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:111:18:111:22 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:111:18:111:22 | items | T | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:115:12:115:16 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:115:12:115:16 | items | T | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:119:45:119:53 | container |  | type_constraints.swift:119:19:119:37 | C |
+| type_constraints.swift:120:10:120:18 | container |  | type_constraints.swift:119:19:119:37 | C |
+| type_constraints.swift:123:45:123:53 | container |  | type_constraints.swift:123:19:123:37 | C |
+| type_constraints.swift:124:10:124:18 | container |  | type_constraints.swift:123:19:123:37 | C |
+| type_constraints.swift:137:7:137:11 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:139:8:139:12 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:140:5:140:8 | self |  | type_constraints.swift:136:1:146:1 | Vehicle |
+| type_constraints.swift:140:5:140:14 | ... .speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:140:18:140:22 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:149:17:149:21 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:150:23:150:27 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:163:17:163:21 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:164:23:164:27 | speed |  | {EXTERNAL LOCATION} | Int |
+| type_constraints.swift:176:36:176:36 | v |  | type_constraints.swift:176:22:176:31 | T |
+| type_constraints.swift:177:10:177:10 | v |  | type_constraints.swift:176:22:176:31 | T |
+| type_constraints.swift:183:7:183:8 | d1 |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:183:12:183:31 | describeVehicle(...) |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:184:7:184:8 | d2 |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:184:12:184:33 | describeVehicle(...) |  | {EXTERNAL LOCATION} | String |
+| type_constraints.swift:192:17:192:19 | lhs |  | type_constraints.swift:191:1:193:1 | Summable |
+| type_constraints.swift:192:28:192:30 | rhs |  | type_constraints.swift:191:1:193:1 | Summable |
+| type_constraints.swift:200:7:200:12 | values |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:200:7:200:12 | values | T | type_constraints.swift:199:20:199:20 | T |
+| type_constraints.swift:202:8:202:13 | values |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:202:8:202:13 | values | T | type_constraints.swift:199:20:199:20 | T |
+| type_constraints.swift:203:5:203:8 | self |  | type_constraints.swift:199:1:209:1 | Accumulator |
+| type_constraints.swift:203:5:203:8 | self | T | type_constraints.swift:199:20:199:20 | T |
+| type_constraints.swift:203:5:203:15 | ... .values |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:203:5:203:15 | ... .values | T | type_constraints.swift:199:20:199:20 | T |
+| type_constraints.swift:203:19:203:24 | values |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:203:19:203:24 | values | T | type_constraints.swift:199:20:199:20 | T |
+| type_constraints.swift:207:12:207:17 | values |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:207:12:207:17 | values | T | type_constraints.swift:199:20:199:20 | T |
+| type_constraints.swift:219:35:219:48 | FunctionExpr |  | {EXTERNAL LOCATION} | Function |
+| type_constraints.swift:235:33:235:37 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:235:33:235:37 | items | T | type_constraints.swift:235:18:235:28 | T |
+| type_constraints.swift:236:12:236:16 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:236:12:236:16 | items | T | type_constraints.swift:235:18:235:28 | T |
+| type_constraints.swift:236:23:236:27 | items |  | {EXTERNAL LOCATION} | Array |
+| type_constraints.swift:236:23:236:27 | items | T | type_constraints.swift:235:18:235:28 | T |
+| type_constraints.swift:239:44:239:44 | a |  | type_constraints.swift:239:14:239:26 | A |
+| type_constraints.swift:239:52:239:52 | b |  | type_constraints.swift:239:28:239:39 | B |
+| type_constraints.swift:253:1:257:1 | Block |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:253:29:253:33 | value |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:253:43:253:47 | lower |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:253:57:253:61 | upper |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:254:6:254:10 | value |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:254:14:254:18 | lower |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:254:29:254:33 | lower |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:255:6:255:10 | value |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:255:14:255:18 | upper |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:255:29:255:33 | upper |  | type_constraints.swift:253:12:253:24 | T |
+| type_constraints.swift:256:10:256:14 | value |  | type_constraints.swift:253:12:253:24 | T |
+testFailures
+| basics.swift:12:18:12:37 | // $ type=.myInt:Int | Missing result: type=.myInt:Int |
+| basics.swift:18:22:18:52 | // $ type=super:C target=C.init | Missing result: target=C.init |
+| basics.swift:18:22:18:52 | // $ type=super:C target=C.init | Missing result: type=super:C |
+| basics.swift:34:18:34:35 | // $ type=.value:T | Missing result: type=.value:T |
+| basics.swift:40:22:40:71 | // $ type=super@Generic<T>:Int target=Generic.init | Missing result: target=Generic.init |
+| basics.swift:40:22:40:71 | // $ type=super@Generic<T>:Int target=Generic.init | Missing result: type=super@Generic<T>:Int |
+| basics.swift:45:11:45:24 | Generic(...) | Unexpected result: target=Generic |
+| basics.swift:45:26:45:71 | // $ type=g@Generic<T>:Int target=Generic.init | Missing result: target=Generic.init |
+| basics.swift:45:26:45:71 | // $ type=g@Generic<T>:Int target=Generic.init | Missing result: type=g@Generic<T>:Int |
+| basics.swift:46:24:46:62 | // $ type=x:Int target=Generic.getValue | Missing result: target=Generic.getValue |
+| basics.swift:46:24:46:62 | // $ type=x:Int target=Generic.getValue | Missing result: type=x:Int |
+| basics.swift:48:12:48:27 | GenericDerived(...) | Unexpected result: target=GenericDerived |
+| basics.swift:48:29:48:82 | // $ type=gd:GenericDerived target=GenericDerived.init | Missing result: target=GenericDerived.init |
+| basics.swift:48:29:48:82 | // $ type=gd:GenericDerived target=GenericDerived.init | Missing result: type=gd:GenericDerived |
+| basics.swift:49:25:49:63 | // $ type=y:Int target=Generic.getValue | Missing result: target=Generic.getValue |
+| basics.swift:49:25:49:63 | // $ type=y:Int target=Generic.getValue | Missing result: type=y:Int |
+| basics.swift:56:22:56:41 | // $ type=.myInt:Int | Missing result: type=.myInt:Int |
+| basics.swift:61:13:61:20 | C(...) | Unexpected result: target=C |
+| basics.swift:61:22:61:39 | // $ target=C.init | Missing result: target=C.init |
+| basics.swift:62:25:62:56 | // $ type=d:Int target=C.doubled | Missing result: target=C.doubled |
+| basics.swift:62:25:62:56 | // $ type=d:Int target=C.doubled | Missing result: type=d:Int |
+| classes.swift:14:34:14:72 | // $ type=s:Int target=MathUtils.square | Missing result: target=MathUtils.square |
+| classes.swift:14:34:14:72 | // $ type=s:Int target=MathUtils.square | Missing result: type=s:Int |
+| classes.swift:15:33:15:70 | // $ type=cu:Int target=MathUtils.cube | Missing result: target=MathUtils.cube |
+| classes.swift:15:33:15:70 | // $ type=cu:Int target=MathUtils.cube | Missing result: type=cu:Int |
+| classes.swift:31:11:31:22 | Overloaded(...) | Unexpected result: target=Overloaded |
+| classes.swift:31:24:31:41 | // $ target=init() | Missing result: target=init() |
+| classes.swift:32:26:32:74 | // $ type=r1:Int target=Overloaded.process(_:Int) | Missing result: target=Overloaded.process(_:Int) |
+| classes.swift:32:26:32:74 | // $ type=r1:Int target=Overloaded.process(_:Int) | Missing result: type=r1:Int |
+| classes.swift:33:31:33:85 | // $ type=r2:String target=Overloaded.process(_:String) | Missing result: target=Overloaded.process(_:String) |
+| classes.swift:33:31:33:85 | // $ type=r2:String target=Overloaded.process(_:String) | Missing result: type=r2:String |
+| classes.swift:51:11:51:40 | Matrix(...) | Unexpected result: target=Matrix |
+| classes.swift:51:42:51:64 | // $ target=Matrix.init | Missing result: target=Matrix.init |
+| classes.swift:52:25:52:63 | // $ type=rc:Int target=Matrix.rowCount | Missing result: target=Matrix.rowCount |
+| classes.swift:52:25:52:63 | // $ type=rc:Int target=Matrix.rowCount | Missing result: type=rc:Int |
+| classes.swift:66:25:66:44 | // $ type=.value:Int | Missing result: type=.value:Int |
+| classes.swift:72:38:72:82 | // $ type=inner:Inner target=Outer.Inner.init | Missing result: target=Outer.Inner.init |
+| classes.swift:72:38:72:82 | // $ type=inner:Inner target=Outer.Inner.init | Missing result: type=inner:Inner |
+| classes.swift:73:28:73:70 | // $ type=v:Int target=Outer.Inner.getValue | Missing result: target=Outer.Inner.getValue |
+| classes.swift:73:28:73:70 | // $ type=v:Int target=Outer.Inner.getValue | Missing result: type=v:Int |
+| classes.swift:94:18:94:37 | // $ type=.value:Int | Missing result: type=.value:Int |
+| classes.swift:99:11:99:19 | Builder(...) | Unexpected result: target=Builder |
+| classes.swift:99:21:99:59 | // $ type=b:Builder target=Builder.init | Missing result: target=Builder.init |
+| classes.swift:99:21:99:59 | // $ type=b:Builder target=Builder.init | Missing result: type=b:Builder |
+| classes.swift:100:41:100:119 | // $ type=result:Int target=Builder.set target=Builder.add target=Builder.build | Missing result: target=Builder.add |
+| classes.swift:100:41:100:119 | // $ type=result:Int target=Builder.set target=Builder.add target=Builder.build | Missing result: target=Builder.build |
+| classes.swift:100:41:100:119 | // $ type=result:Int target=Builder.set target=Builder.add target=Builder.build | Missing result: target=Builder.set |
+| classes.swift:100:41:100:119 | // $ type=result:Int target=Builder.set target=Builder.add target=Builder.build | Missing result: type=result:Int |
+| classes.swift:114:13:114:20 | Config(...) | Unexpected result: target=Config |
+| classes.swift:114:22:114:60 | // $ type=cfg:Config target=Config.init | Missing result: target=Config.init |
+| classes.swift:114:22:114:60 | // $ type=cfg:Config target=Config.init | Missing result: type=cfg:Config |
+| classes.swift:115:24:115:59 | // $ type=r1:Int target=Config.setup | Missing result: target=Config.setup |
+| classes.swift:115:24:115:59 | // $ type=r1:Int target=Config.setup | Missing result: type=r1:Int |
+| classes.swift:116:34:116:69 | // $ type=r2:Int target=Config.setup | Missing result: target=Config.setup |
+| classes.swift:116:34:116:69 | // $ type=r2:Int target=Config.setup | Missing result: type=r2:Int |
+| classes.swift:117:49:117:84 | // $ type=r3:Int target=Config.setup | Missing result: target=Config.setup |
+| classes.swift:117:49:117:84 | // $ type=r3:Int target=Config.setup | Missing result: type=r3:Int |
+| classes.swift:130:20:130:44 | // $ type=.celsius:Double | Missing result: type=.celsius:Double |
+| classes.swift:134:39:134:63 | // $ type=.celsius:Double | Missing result: type=.celsius:Double |
+| classes.swift:139:11:139:37 | Temperature(...) | Unexpected result: target=Temperature |
+| classes.swift:139:39:139:85 | // $ type=t:Temperature target=Temperature.init | Missing result: target=Temperature.init |
+| classes.swift:139:39:139:85 | // $ type=t:Temperature target=Temperature.init | Missing result: type=t:Temperature |
+| classes.swift:140:25:140:71 | // $ type=c:Double target=Temperature.toCelsius | Missing result: target=Temperature.toCelsius |
+| classes.swift:140:25:140:71 | // $ type=c:Double target=Temperature.toCelsius | Missing result: type=c:Double |
+| classes.swift:141:28:141:77 | // $ type=f:Double target=Temperature.toFahrenheit | Missing result: target=Temperature.toFahrenheit |
+| classes.swift:141:28:141:77 | // $ type=f:Double target=Temperature.toFahrenheit | Missing result: type=f:Double |
+| classes.swift:156:18:156:40 | // $ target=Animal.init | Missing result: target=Animal.init |
+| classes.swift:170:18:170:40 | // $ target=Animal.init | Missing result: target=Animal.init |
+| classes.swift:179:11:179:15 | Dog(...) | Unexpected result: target=Dog |
+| classes.swift:179:17:179:47 | // $ type=d:Dog target=Dog.init | Missing result: target=Dog.init |
+| classes.swift:179:17:179:47 | // $ type=d:Dog target=Dog.init | Missing result: type=d:Dog |
+| classes.swift:180:22:180:57 | // $ type=ds:String target=Dog.speak | Missing result: target=Dog.speak |
+| classes.swift:180:22:180:57 | // $ type=ds:String target=Dog.speak | Missing result: type=ds:String |
+| classes.swift:181:22:181:57 | // $ type=df:String target=Dog.fetch | Missing result: target=Dog.fetch |
+| classes.swift:181:22:181:57 | // $ type=df:String target=Dog.fetch | Missing result: type=df:String |
+| classes.swift:183:12:183:16 | Cat(...) | Unexpected result: target=Cat |
+| classes.swift:183:18:183:49 | // $ type=ct:Cat target=Cat.init | Missing result: target=Cat.init |
+| classes.swift:183:18:183:49 | // $ type=ct:Cat target=Cat.init | Missing result: type=ct:Cat |
+| classes.swift:184:23:184:58 | // $ type=cs:String target=Cat.speak | Missing result: target=Cat.speak |
+| classes.swift:184:23:184:58 | // $ type=cs:String target=Cat.speak | Missing result: type=cs:String |
+| classes.swift:197:18:197:37 | // $ type=.count:Int | Missing result: type=.count:Int |
+| classes.swift:202:13:202:21 | Counter(...) | Unexpected result: target=Counter |
+| classes.swift:202:23:202:57 | // $ type=ctr:Counter target=init() | Missing result: target=init() |
+| classes.swift:202:23:202:57 | // $ type=ctr:Counter target=init() | Missing result: type=ctr:Counter |
+| classes.swift:203:19:203:47 | // $ target=Counter.increment | Missing result: target=Counter.increment |
+| classes.swift:204:28:204:68 | // $ type=val:Int target=Counter.getCount | Missing result: target=Counter.getCount |
+| classes.swift:204:28:204:68 | // $ type=val:Int target=Counter.getCount | Missing result: type=val:Int |
+| context.swift:2:27:2:62 | // $ type=numbers@Array<Element>:Int | Missing result: type=numbers@Array<Element>:Int |
+| context.swift:4:36:4:50 | // $ type=x:Int | Missing result: type=x:Int |
+| context.swift:5:7:5:15 | String(...) | Unexpected result: target=String |
+| context.swift:6:5:6:23 | // $ target=map(_:) | Missing result: target=map(_:) |
+| generics.swift:12:24:12:54 | // $ type=i:Int target=identity | Missing result: type=i:Int |
+| generics.swift:13:29:13:62 | // $ type=s:String target=identity | Missing result: type=s:String |
+| generics.swift:29:18:29:35 | // $ type=.first:A | Missing result: type=.first:A |
+| generics.swift:33:19:33:37 | // $ type=.second:B | Missing result: type=.second:B |
+| generics.swift:38:11:38:37 | Pair(...) | Unexpected result: target=Pair |
+| generics.swift:38:39:38:100 | // $ target=Pair.init type=p@Pair<A>:Int type=p@Pair<B>:String | Missing result: target=Pair.init |
+| generics.swift:38:39:38:100 | // $ target=Pair.init type=p@Pair<A>:Int type=p@Pair<B>:String | Missing result: type=p@Pair<A>:Int |
+| generics.swift:38:39:38:100 | // $ target=Pair.init type=p@Pair<A>:Int type=p@Pair<B>:String | Missing result: type=p@Pair<B>:String |
+| generics.swift:39:24:39:59 | // $ type=f:Int target=Pair.getFirst | Missing result: target=Pair.getFirst |
+| generics.swift:39:24:39:59 | // $ type=f:Int target=Pair.getFirst | Missing result: type=f:Int |
+| generics.swift:40:26:40:66 | // $ type=sc:String target=Pair.getSecond | Missing result: target=Pair.getSecond |
+| generics.swift:40:26:40:66 | // $ type=sc:String target=Pair.getSecond | Missing result: type=sc:String |
+| generics.swift:51:27:51:52 | // $ target=Result.success | Missing result: target=Result.success |
+| generics.swift:52:16:52:28 | // $ type=v:T | Missing result: type=v:T |
+| generics.swift:53:20:53:45 | // $ target=Result.failure | Missing result: target=Result.failure |
+| generics.swift:60:30:60:76 | // $ type=r@Result<T>:Int target=Result.success | Missing result: target=Result.success |
+| generics.swift:60:30:60:76 | // $ type=r@Result<T>:Int target=Result.success | Missing result: type=r@Result<T>:Int |
+| generics.swift:61:24:61:50 | // $ target=Result.getValue | Missing result: target=Result.getValue |
+| generics.swift:63:39:63:86 | // $ type=r2@Result<T>:Int target=Result.success | Missing result: target=Result.success |
+| generics.swift:70:10:70:25 | transform(...) | Unexpected result: target=transform |
+| generics.swift:74:50:74:91 | // $ target=applyTransform type=result:Int | Missing result: type=result:Int |
+| generics.swift:75:43:75:51 | String(...) | Unexpected result: target=String |
+| generics.swift:75:56:75:101 | // $ target=applyTransform type=strings:String | Missing result: type=strings:String |
+| generics.swift:96:18:96:35 | // $ type=.inner:T | Missing result: type=.inner:T |
+| generics.swift:100:26:100:60 | // $ type=x:T target=MyProtocol.foo | Missing result: target=MyProtocol.foo |
+| generics.swift:100:26:100:60 | // $ type=x:T target=MyProtocol.foo | Missing result: type=x:T |
+| generics.swift:105:26:105:65 | // $ type=x:MyType target=MyProtocol.bar | Missing result: target=MyProtocol.bar |
+| generics.swift:105:26:105:65 | // $ type=x:MyType target=MyProtocol.bar | Missing result: type=x:MyType |
+| generics.swift:123:11:123:21 | Wrapper(...) | Unexpected result: target=Wrapper |
+| generics.swift:123:23:123:68 | // $ type=w@Wrapper<T>:Int target=Wrapper.init | Missing result: target=Wrapper.init |
+| generics.swift:123:23:123:68 | // $ type=w@Wrapper<T>:Int target=Wrapper.init | Missing result: type=w@Wrapper<T>:Int |
+| generics.swift:124:19:124:52 | // $ type=v:Int target=Wrapper.get | Missing result: target=Wrapper.get |
+| generics.swift:124:19:124:52 | // $ type=v:Int target=Wrapper.get | Missing result: type=v:Int |
+| generics.swift:125:23:125:60 | // $ type=z:Int target=Wrapper.callFoo | Missing result: target=Wrapper.callFoo |
+| generics.swift:125:23:125:60 | // $ type=z:Int target=Wrapper.callFoo | Missing result: type=z:Int |
+| generics.swift:135:22:135:41 | // $ type=.value1:T1 | Missing result: type=.value1:T1 |
+| generics.swift:136:22:136:41 | // $ type=.value2:T2 | Missing result: type=.value2:T2 |
+| generics.swift:140:19:140:38 | // $ type=.value1:T1 | Missing result: type=.value1:T1 |
+| generics.swift:144:19:144:38 | // $ type=.value2:T2 | Missing result: type=.value2:T2 |
+| generics.swift:150:24:150:66 | // $ type=v2:T2 type=v1:T1 target=Base.init | Missing result: target=Base.init |
+| generics.swift:156:25:156:57 | // $ type=v:D target=Derived.init | Missing result: target=Derived.init |
+| generics.swift:161:11:161:25 | Derived(...) | Unexpected result: target=Derived |
+| generics.swift:161:27:161:99 | // $ type=d@Derived<T1>:Int type=d@Derived<T2>:String target=Derived.init | Missing result: target=Derived.init |
+| generics.swift:161:27:161:99 | // $ type=d@Derived<T1>:Int type=d@Derived<T2>:String target=Derived.init | Missing result: type=d@Derived<T1>:Int |
+| generics.swift:161:27:161:99 | // $ type=d@Derived<T1>:Int type=d@Derived<T2>:String target=Derived.init | Missing result: type=d@Derived<T2>:String |
+| generics.swift:162:26:162:66 | // $ type=v1:String target=Base.getValue1 | Missing result: target=Base.getValue1 |
+| generics.swift:162:26:162:66 | // $ type=v1:String target=Base.getValue1 | Missing result: type=v1:String |
+| generics.swift:163:26:163:63 | // $ type=v2:Int target=Base.getValue2 | Missing result: target=Base.getValue2 |
+| generics.swift:163:26:163:63 | // $ type=v2:Int target=Base.getValue2 | Missing result: type=v2:Int |
+| generics.swift:165:12:165:34 | DerivedDerived(...) | Unexpected result: target=DerivedDerived |
+| generics.swift:165:36:165:99 | // $ type=dd@DerivedDerived<D>:String target=DerivedDerived.init | Missing result: target=DerivedDerived.init |
+| generics.swift:165:36:165:99 | // $ type=dd@DerivedDerived<D>:String target=DerivedDerived.init | Missing result: type=dd@DerivedDerived<D>:String |
+| generics.swift:166:28:166:67 | // $ type=vv1:Bool target=Base.getValue1 | Missing result: target=Base.getValue1 |
+| generics.swift:166:28:166:67 | // $ type=vv1:Bool target=Base.getValue1 | Missing result: type=vv1:Bool |
+| generics.swift:167:28:167:69 | // $ type=vv2:String target=Base.getValue2 | Missing result: target=Base.getValue2 |
+| generics.swift:167:28:167:69 | // $ type=vv2:String target=Base.getValue2 | Missing result: type=vv2:String |
+| generics.swift:180:17:180:35 | // $ type=self:Self | Missing result: type=self:Self |
+| generics.swift:196:18:196:35 | // $ type=.value:T | Missing result: type=.value:T |
+| generics.swift:201:18:201:44 | // $ target=MyProtocol2.foo | Missing result: target=MyProtocol2.foo |
+| generics.swift:205:18:205:44 | // $ target=MyProtocol2.baz | Missing result: target=MyProtocol2.baz |
+| generics.swift:209:11:209:21 | MyClass(...) | Unexpected result: target=MyClass |
+| generics.swift:209:23:209:68 | // $ type=c@MyClass<T>:Int target=MyClass.init | Missing result: target=MyClass.init |
+| generics.swift:209:23:209:68 | // $ type=c@MyClass<T>:Int target=MyClass.init | Missing result: type=c@MyClass<T>:Int |
+| generics.swift:210:19:210:67 | // $ type=s@MyClass<T>:Int target=MyProtocol2.foo | Missing result: target=MyProtocol2.foo |
+| generics.swift:210:19:210:67 | // $ type=s@MyClass<T>:Int target=MyProtocol2.foo | Missing result: type=s@MyClass<T>:Int |
+| generics.swift:211:19:211:52 | // $ type=v:Int target=MyClass.baz | Missing result: target=MyClass.baz |
+| generics.swift:211:19:211:52 | // $ type=v:Int target=MyClass.baz | Missing result: type=v:Int |
+| generics.swift:212:23:212:53 | // $ type=v2:Int target=callBaz | Missing result: type=v2:Int |
+| generics.swift:240:27:240:72 | // $ target=SubAssociatedTypeProtocol.subValue | Missing result: target=SubAssociatedTypeProtocol.subValue |
+| generics.swift:244:42:244:63 | StringAssociatedType(...) | Unexpected result: target=StringAssociatedType |
+| generics.swift:244:66:244:121 | // $ type=value:String target=getInheritedAssociatedType | Missing result: type=value:String |
+| generics.swift:264:26:264:74 | // $ target=PrimaryAssociatedTypeProtocol.element | Missing result: target=PrimaryAssociatedTypeProtocol.element |
+| generics.swift:268:40:268:65 | IntPrimaryAssociatedType(...) | Unexpected result: target=IntPrimaryAssociatedType |
+| key_paths.swift:31:11:31:31 | Point(...) | Unexpected result: target=Point |
+| key_paths.swift:31:33:31:67 | // $ type=p:Point target=Point.init | Missing result: target=Point.init |
+| key_paths.swift:31:33:31:67 | // $ type=p:Point target=Point.init | Missing result: type=p:Point |
+| key_paths.swift:32:14:32:28 | p(...) | Unexpected result: target=p |
+| key_paths.swift:32:30:32:50 | // $ type=xVal:Double | Missing result: type=xVal:Double |
+| key_paths.swift:33:14:33:28 | p(...) | Unexpected result: target=p |
+| key_paths.swift:33:30:33:50 | // $ type=yVal:Double | Missing result: type=yVal:Double |
+| key_paths.swift:42:11:42:31 | Point(...) | Unexpected result: target=Point |
+| key_paths.swift:42:33:42:54 | // $ target=Point.init | Missing result: target=Point.init |
+| key_paths.swift:43:11:43:31 | Point(...) | Unexpected result: target=Point |
+| key_paths.swift:43:33:43:54 | // $ target=Point.init | Missing result: target=Point.init |
+| key_paths.swift:44:14:44:35 | Line(...) | Unexpected result: target=Line |
+| key_paths.swift:44:37:44:57 | // $ target=Line.init | Missing result: target=Line.init |
+| key_paths.swift:45:16:45:38 | line(...) | Unexpected result: target=line |
+| key_paths.swift:45:40:45:62 | // $ type=startX:Double | Missing result: type=startX:Double |
+| key_paths.swift:46:14:46:34 | line(...) | Unexpected result: target=line |
+| key_paths.swift:46:36:46:56 | // $ type=endY:Double | Missing result: type=endY:Double |
+| key_paths.swift:53:33:53:49 | // $ type=val:Int | Missing result: type=val:Int |
+| key_paths.swift:80:14:80:47 | Address(...) | Unexpected result: target=Address |
+| key_paths.swift:80:49:80:72 | // $ target=Address.init | Missing result: target=Address.init |
+| key_paths.swift:81:16:81:51 | Person(...) | Unexpected result: target=Person |
+| key_paths.swift:81:53:81:75 | // $ target=Person.init | Missing result: target=Person.init |
+| key_paths.swift:83:14:83:36 | person(...) | Unexpected result: target=person |
+| key_paths.swift:83:38:83:59 | // $ type=city:String? | Missing result: type=city:String? |
+| key_paths.swift:103:12:103:47 | Employee(...) | Unexpected result: target=Employee |
+| key_paths.swift:103:49:103:73 | // $ target=Employee.init | Missing result: target=Employee.init |
+| key_paths.swift:104:12:104:45 | Employee(...) | Unexpected result: target=Employee |
+| key_paths.swift:104:47:104:71 | // $ target=Employee.init | Missing result: target=Employee.init |
+| key_paths.swift:106:15:106:54 | extractField(...) | Unexpected result: target=extractField |
+| key_paths.swift:106:56:106:91 | // $ target=extractField(_:keyPath:) | Missing result: target=extractField(_:keyPath:) |
+| key_paths.swift:107:14:107:21 | names(...) | Unexpected result: target=names |
+| key_paths.swift:107:23:107:43 | // $ type=name:String | Missing result: type=name:String |
+| key_paths.swift:108:18:108:59 | extractField(...) | Unexpected result: target=extractField |
+| key_paths.swift:108:61:108:96 | // $ target=extractField(_:keyPath:) | Missing result: target=extractField(_:keyPath:) |
+| key_paths.swift:109:16:109:26 | salaries(...) | Unexpected result: target=salaries |
+| key_paths.swift:109:28:109:47 | // $ type=salary:Int | Missing result: type=salary:Int |
+| key_paths.swift:124:11:124:31 | KPContainer(...) | Unexpected result: target=KPContainer |
+| key_paths.swift:124:33:124:60 | // $ target=KPContainer.init | Missing result: target=KPContainer.init |
+| key_paths.swift:125:11:125:24 | c(...) | Unexpected result: target=c |
+| key_paths.swift:125:26:125:40 | // $ type=v:Int | Missing result: type=v:Int |
+| key_paths.swift:131:11:131:31 | Point(...) | Unexpected result: target=Point |
+| key_paths.swift:131:33:131:67 | // $ type=p:Point target=Point.init | Missing result: target=Point.init |
+| key_paths.swift:131:33:131:67 | // $ type=p:Point target=Point.init | Missing result: type=p:Point |
+| key_paths.swift:133:3:133:17 | p(...) | Unexpected result: target=p |
+| key_paths.swift:134:14:134:28 | p(...) | Unexpected result: target=p |
+| key_paths.swift:134:30:134:50 | // $ type=newX:Double | Missing result: type=newX:Double |
+| key_paths.swift:144:11:144:31 | Point(...) | Unexpected result: target=Point |
+| key_paths.swift:144:33:144:54 | // $ target=Point.init | Missing result: target=Point.init |
+| key_paths.swift:145:11:145:31 | Point(...) | Unexpected result: target=Point |
+| key_paths.swift:145:33:145:54 | // $ target=Point.init | Missing result: target=Point.init |
+| key_paths.swift:146:14:146:35 | Line(...) | Unexpected result: target=Line |
+| key_paths.swift:146:37:146:57 | // $ target=Line.init | Missing result: target=Line.init |
+| key_paths.swift:147:13:147:35 | line(...) | Unexpected result: target=line |
+| key_paths.swift:147:37:147:56 | // $ type=val:Double | Missing result: type=val:Double |
+| key_paths.swift:153:12:153:47 | Employee(...) | Unexpected result: target=Employee |
+| key_paths.swift:153:49:153:73 | // $ target=Employee.init | Missing result: target=Employee.init |
+| key_paths.swift:154:12:154:45 | Employee(...) | Unexpected result: target=Employee |
+| key_paths.swift:154:47:154:71 | // $ target=Employee.init | Missing result: target=Employee.init |
+| key_paths.swift:157:14:157:21 | names(...) | Unexpected result: target=names |
+| key_paths.swift:157:23:157:43 | // $ type=name:String | Missing result: type=name:String |
+| key_paths.swift:159:16:159:26 | salaries(...) | Unexpected result: target=salaries |
+| key_paths.swift:159:28:159:47 | // $ type=salary:Int | Missing result: type=salary:Int |
+| key_paths.swift:177:30:177:52 | // $ target=Shape2.init | Missing result: target=Shape2.init |
+| key_paths.swift:185:11:185:44 | Circle2(...) | Unexpected result: target=Circle2 |
+| key_paths.swift:185:46:185:84 | // $ type=c:Circle2 target=Circle2.init | Missing result: target=Circle2.init |
+| key_paths.swift:185:46:185:84 | // $ type=c:Circle2 target=Circle2.init | Missing result: type=c:Circle2 |
+| key_paths.swift:186:13:186:31 | c(...) | Unexpected result: target=c |
+| key_paths.swift:186:33:186:52 | // $ type=col:String | Missing result: type=col:String |
+| key_paths.swift:187:13:187:32 | c(...) | Unexpected result: target=c |
+| key_paths.swift:187:34:187:53 | // $ type=rad:Double | Missing result: type=rad:Double |
+| key_paths.swift:196:15:196:33 | tuple(...) | Unexpected result: target=tuple |
+| key_paths.swift:196:35:196:53 | // $ type=first:Int | Missing result: type=first:Int |
+| key_paths.swift:197:16:197:34 | tuple(...) | Unexpected result: target=tuple |
+| key_paths.swift:197:36:197:58 | // $ type=second:String | Missing result: type=second:String |
+| key_paths.swift:205:15:205:35 | arr(...) | Unexpected result: target=arr |
+| key_paths.swift:205:37:205:55 | // $ type=first:Int | Missing result: type=first:Int |
+| key_paths.swift:209:13:209:32 | dict(...) | Unexpected result: target=dict |
+| key_paths.swift:209:34:209:51 | // $ type=val:Int? | Missing result: type=val:Int? |
+| lub.swift:8:11:8:13 | B(...) | Unexpected result: target=B |
+| lub.swift:8:15:8:41 | // $ type=b:B target=init() | Missing result: target=init() |
+| lub.swift:8:15:8:41 | // $ type=b:B target=init() | Missing result: type=b:B |
+| lub.swift:9:11:9:13 | C(...) | Unexpected result: target=C |
+| lub.swift:9:15:9:41 | // $ type=c:C target=init() | Missing result: target=init() |
+| lub.swift:9:15:9:41 | // $ type=c:C target=init() | Missing result: type=c:C |
+| lub.swift:10:25:10:37 | // $ type=x:A | Missing result: type=x:A |
+| overload_resolution.swift:22:11:22:26 | OverloadByType(...) | Unexpected result: target=OverloadByType |
+| overload_resolution.swift:22:28:22:60 | // $ target=OverloadByType.init() | Missing result: target=OverloadByType.init() |
+| overload_resolution.swift:23:25:23:79 | // $ type=r1:String target=OverloadByType.handle(_:Int) | Missing result: target=OverloadByType.handle(_:Int) |
+| overload_resolution.swift:23:25:23:79 | // $ type=r1:String target=OverloadByType.handle(_:Int) | Missing result: type=r1:String |
+| overload_resolution.swift:24:27:24:84 | // $ type=r2:String target=OverloadByType.handle(_:Double) | Missing result: target=OverloadByType.handle(_:Double) |
+| overload_resolution.swift:24:27:24:84 | // $ type=r2:String target=OverloadByType.handle(_:Double) | Missing result: type=r2:String |
+| overload_resolution.swift:25:27:25:84 | // $ type=r3:String target=OverloadByType.handle(_:String) | Missing result: target=OverloadByType.handle(_:String) |
+| overload_resolution.swift:25:27:25:84 | // $ type=r3:String target=OverloadByType.handle(_:String) | Missing result: type=r3:String |
+| overload_resolution.swift:26:27:26:82 | // $ type=r4:String target=OverloadByType.handle(_:Bool) | Missing result: target=OverloadByType.handle(_:Bool) |
+| overload_resolution.swift:26:27:26:82 | // $ type=r4:String target=OverloadByType.handle(_:Bool) | Missing result: type=r4:String |
+| overload_resolution.swift:50:11:50:27 | OverloadByLabel(...) | Unexpected result: target=OverloadByLabel |
+| overload_resolution.swift:50:29:50:62 | // $ target=OverloadByLabel.init() | Missing result: target=OverloadByLabel.init() |
+| overload_resolution.swift:51:35:51:94 | // $ type=r1:String target=OverloadByLabel.configure(width:) | Missing result: target=OverloadByLabel.configure(width:) |
+| overload_resolution.swift:51:35:51:94 | // $ type=r1:String target=OverloadByLabel.configure(width:) | Missing result: type=r1:String |
+| overload_resolution.swift:52:36:52:96 | // $ type=r2:String target=OverloadByLabel.configure(height:) | Missing result: target=OverloadByLabel.configure(height:) |
+| overload_resolution.swift:52:36:52:96 | // $ type=r2:String target=OverloadByLabel.configure(height:) | Missing result: type=r2:String |
+| overload_resolution.swift:53:47:53:113 | // $ type=r3:String target=OverloadByLabel.configure(width:height:) | Missing result: target=OverloadByLabel.configure(width:height:) |
+| overload_resolution.swift:53:47:53:113 | // $ type=r3:String target=OverloadByLabel.configure(width:height:) | Missing result: type=r3:String |
+| overload_resolution.swift:54:34:54:92 | // $ type=r4:String target=OverloadByLabel.configure(size:) | Missing result: target=OverloadByLabel.configure(size:) |
+| overload_resolution.swift:54:34:54:92 | // $ type=r4:String target=OverloadByLabel.configure(size:) | Missing result: type=r4:String |
+| overload_resolution.swift:78:11:78:27 | OverloadByArity(...) | Unexpected result: target=OverloadByArity |
+| overload_resolution.swift:78:29:78:62 | // $ target=OverloadByArity.init() | Missing result: target=OverloadByArity.init() |
+| overload_resolution.swift:79:24:79:72 | // $ type=r0:Int target=OverloadByArity.compute() | Missing result: target=OverloadByArity.compute() |
+| overload_resolution.swift:79:24:79:72 | // $ type=r0:Int target=OverloadByArity.compute() | Missing result: type=r0:Int |
+| overload_resolution.swift:80:25:80:78 | // $ type=r1:Int target=OverloadByArity.compute(_:Int) | Missing result: target=OverloadByArity.compute(_:Int) |
+| overload_resolution.swift:80:25:80:78 | // $ type=r1:Int target=OverloadByArity.compute(_:Int) | Missing result: type=r1:Int |
+| overload_resolution.swift:81:28:81:87 | // $ type=r2:Int target=OverloadByArity.compute(_:Int,_:Int) | Missing result: target=OverloadByArity.compute(_:Int,_:Int) |
+| overload_resolution.swift:81:28:81:87 | // $ type=r2:Int target=OverloadByArity.compute(_:Int,_:Int) | Missing result: type=r2:Int |
+| overload_resolution.swift:82:31:82:96 | // $ type=r3:Int target=OverloadByArity.compute(_:Int,_:Int,_:Int) | Missing result: target=OverloadByArity.compute(_:Int,_:Int,_:Int) |
+| overload_resolution.swift:82:31:82:96 | // $ type=r3:Int target=OverloadByArity.compute(_:Int,_:Int,_:Int) | Missing result: type=r3:Int |
+| overload_resolution.swift:102:11:102:28 | OverloadByReturn(...) | Unexpected result: target=OverloadByReturn |
+| overload_resolution.swift:102:30:102:47 | // $ target=init() | Missing result: target=init() |
+| overload_resolution.swift:103:29:103:82 | // $ type=r1:Int target=OverloadByReturn.create()->Int | Missing result: target=OverloadByReturn.create()->Int |
+| overload_resolution.swift:104:32:104:91 | // $ type=r2:String target=OverloadByReturn.create()->String | Missing result: target=OverloadByReturn.create()->String |
+| overload_resolution.swift:105:32:105:91 | // $ type=r3:Double target=OverloadByReturn.create()->Double | Missing result: target=OverloadByReturn.create()->Double |
+| overload_resolution.swift:121:11:121:37 | OverloadGenericVsConcrete(...) | Unexpected result: target=OverloadGenericVsConcrete |
+| overload_resolution.swift:121:39:121:56 | // $ target=init() | Missing result: target=init() |
+| overload_resolution.swift:122:26:122:92 | // $ type=r1:String target=OverloadGenericVsConcrete.process(_:Int) | Missing result: target=OverloadGenericVsConcrete.process(_:Int) |
+| overload_resolution.swift:122:26:122:92 | // $ type=r1:String target=OverloadGenericVsConcrete.process(_:Int) | Missing result: type=r1:String |
+| overload_resolution.swift:123:31:123:97 | // $ type=r2:String target=OverloadGenericVsConcrete.process<T>(_:) | Missing result: target=OverloadGenericVsConcrete.process<T>(_:) |
+| overload_resolution.swift:123:31:123:97 | // $ type=r2:String target=OverloadGenericVsConcrete.process<T>(_:) | Missing result: type=r2:String |
+| overload_resolution.swift:124:28:124:94 | // $ type=r3:String target=OverloadGenericVsConcrete.process<T>(_:) | Missing result: target=OverloadGenericVsConcrete.process<T>(_:) |
+| overload_resolution.swift:124:28:124:94 | // $ type=r3:String target=OverloadGenericVsConcrete.process<T>(_:) | Missing result: type=r3:String |
+| overload_resolution.swift:142:12:142:27 | freeOverload(...) | Unexpected result: target=freeOverload |
+| overload_resolution.swift:142:29:142:74 | // $ type=r1:String target=freeOverload(_:Int) | Missing result: target=freeOverload(_:Int) |
+| overload_resolution.swift:143:12:143:29 | freeOverload(...) | Unexpected result: target=freeOverload |
+| overload_resolution.swift:143:31:143:79 | // $ type=r2:String target=freeOverload(_:String) | Missing result: target=freeOverload(_:String) |
+| overload_resolution.swift:144:12:144:28 | freeOverload(...) | Unexpected result: target=freeOverload |
+| overload_resolution.swift:144:30:144:78 | // $ type=r3:String target=freeOverload(_:Double) | Missing result: target=freeOverload(_:Double) |
+| overload_resolution.swift:169:18:169:40 | // $ type=.value:String | Missing result: type=.value:String |
+| overload_resolution.swift:174:12:174:22 | MultiInit(...) | Unexpected result: target=MultiInit |
+| overload_resolution.swift:174:24:174:69 | // $ type=m1:MultiInit target=MultiInit.init() | Missing result: target=MultiInit.init() |
+| overload_resolution.swift:174:24:174:69 | // $ type=m1:MultiInit target=MultiInit.init() | Missing result: type=m1:MultiInit |
+| overload_resolution.swift:175:12:175:28 | MultiInit(...) | Unexpected result: target=MultiInit |
+| overload_resolution.swift:175:30:175:79 | // $ type=m2:MultiInit target=MultiInit.init(int:) | Missing result: target=MultiInit.init(int:) |
+| overload_resolution.swift:175:30:175:79 | // $ type=m2:MultiInit target=MultiInit.init(int:) | Missing result: type=m2:MultiInit |
+| overload_resolution.swift:176:12:176:30 | MultiInit(...) | Unexpected result: target=MultiInit |
+| overload_resolution.swift:176:32:176:81 | // $ type=m3:MultiInit target=MultiInit.init(str:) | Missing result: target=MultiInit.init(str:) |
+| overload_resolution.swift:176:32:176:81 | // $ type=m3:MultiInit target=MultiInit.init(str:) | Missing result: type=m3:MultiInit |
+| overload_resolution.swift:177:12:177:32 | MultiInit(...) | Unexpected result: target=MultiInit |
+| overload_resolution.swift:177:34:177:83 | // $ type=m4:MultiInit target=MultiInit.init(x:y:) | Missing result: target=MultiInit.init(x:y:) |
+| overload_resolution.swift:177:34:177:83 | // $ type=m4:MultiInit target=MultiInit.init(x:y:) | Missing result: type=m4:MultiInit |
+| overload_resolution.swift:178:25:178:68 | // $ type=v:String target=MultiInit.getValue | Missing result: target=MultiInit.getValue |
+| overload_resolution.swift:178:25:178:68 | // $ type=v:String target=MultiInit.getValue | Missing result: type=v:String |
+| overload_resolution.swift:196:11:196:28 | StaticVsInstance(...) | Unexpected result: target=StaticVsInstance |
+| overload_resolution.swift:196:30:196:62 | // $ target=StaticVsInstance.init | Missing result: target=StaticVsInstance.init |
+| overload_resolution.swift:197:23:197:84 | // $ type=r1:String target=StaticVsInstance.action()->instance | Missing result: target=StaticVsInstance.action()->instance |
+| overload_resolution.swift:197:23:197:84 | // $ type=r1:String target=StaticVsInstance.action()->instance | Missing result: type=r1:String |
+| overload_resolution.swift:198:38:198:97 | // $ type=r2:String target=StaticVsInstance.action()->static | Missing result: target=StaticVsInstance.action()->static |
+| overload_resolution.swift:198:38:198:97 | // $ type=r2:String target=StaticVsInstance.action()->static | Missing result: type=r2:String |
+| overload_resolution.swift:226:11:226:27 | DescribableImpl(...) | Unexpected result: target=DescribableImpl |
+| overload_resolution.swift:226:29:226:60 | // $ target=DescribableImpl.init | Missing result: target=DescribableImpl.init |
+| overload_resolution.swift:227:25:227:75 | // $ type=r1:String target=DescribableImpl.describe | Missing result: target=DescribableImpl.describe |
+| overload_resolution.swift:227:25:227:75 | // $ type=r1:String target=DescribableImpl.describe | Missing result: type=r1:String |
+| overload_resolution.swift:228:22:228:65 | // $ type=r2:String target=Describable.extra | Missing result: target=Describable.extra |
+| overload_resolution.swift:228:22:228:65 | // $ type=r2:String target=Describable.extra | Missing result: type=r2:String |
+| overload_resolution.swift:247:18:247:38 | // $ target=Base.init | Missing result: target=Base.init |
+| overload_resolution.swift:261:18:261:37 | // $ target=Sub.init | Missing result: target=Sub.init |
+| overload_resolution.swift:270:11:270:16 | Base(...) | Unexpected result: target=Base |
+| overload_resolution.swift:270:18:270:38 | // $ target=Base.init | Missing result: target=Base.init |
+| overload_resolution.swift:271:23:271:60 | // $ type=rb:String target=Base.action | Missing result: target=Base.action |
+| overload_resolution.swift:271:23:271:60 | // $ type=rb:String target=Base.action | Missing result: type=rb:String |
+| overload_resolution.swift:273:11:273:15 | Sub(...) | Unexpected result: target=Sub |
+| overload_resolution.swift:273:17:273:36 | // $ target=Sub.init | Missing result: target=Sub.init |
+| overload_resolution.swift:274:23:274:59 | // $ type=rs:String target=Sub.action | Missing result: target=Sub.action |
+| overload_resolution.swift:274:23:274:59 | // $ type=rs:String target=Sub.action | Missing result: type=rs:String |
+| overload_resolution.swift:275:26:275:66 | // $ type=rbo:String target=Base.baseOnly | Missing result: target=Base.baseOnly |
+| overload_resolution.swift:275:26:275:66 | // $ type=rbo:String target=Base.baseOnly | Missing result: type=rbo:String |
+| overload_resolution.swift:276:25:276:63 | // $ type=rso:String target=Sub.subOnly | Missing result: target=Sub.subOnly |
+| overload_resolution.swift:276:25:276:63 | // $ type=rso:String target=Sub.subOnly | Missing result: type=rso:String |
+| overload_resolution.swift:278:12:278:19 | SubSub(...) | Unexpected result: target=SubSub |
+| overload_resolution.swift:278:21:278:43 | // $ target=SubSub.init | Missing result: target=SubSub.init |
+| overload_resolution.swift:279:25:279:65 | // $ type=rss:String target=SubSub.action | Missing result: target=SubSub.action |
+| overload_resolution.swift:279:25:279:65 | // $ type=rss:String target=SubSub.action | Missing result: type=rss:String |
+| overload_resolution.swift:280:28:280:69 | // $ type=rbo2:String target=Base.baseOnly | Missing result: target=Base.baseOnly |
+| overload_resolution.swift:280:28:280:69 | // $ type=rbo2:String target=Base.baseOnly | Missing result: type=rbo2:String |
+| overload_resolution.swift:281:27:281:66 | // $ type=rso2:String target=Sub.subOnly | Missing result: target=Sub.subOnly |
+| overload_resolution.swift:281:27:281:66 | // $ type=rso2:String target=Sub.subOnly | Missing result: type=rso2:String |
+| overload_resolution.swift:301:11:301:25 | LabelVariants(...) | Unexpected result: target=LabelVariants |
+| overload_resolution.swift:301:27:301:44 | // $ target=init() | Missing result: target=init() |
+| overload_resolution.swift:302:28:302:77 | // $ type=r1:String target=LabelVariants.send(to:) | Missing result: target=LabelVariants.send(to:) |
+| overload_resolution.swift:302:28:302:77 | // $ type=r1:String target=LabelVariants.send(to:) | Missing result: type=r1:String |
+| overload_resolution.swift:303:30:303:81 | // $ type=r2:String target=LabelVariants.send(from:) | Missing result: target=LabelVariants.send(from:) |
+| overload_resolution.swift:303:30:303:81 | // $ type=r2:String target=LabelVariants.send(from:) | Missing result: type=r2:String |
+| overload_resolution.swift:304:39:304:93 | // $ type=r3:String target=LabelVariants.send(to:from:) | Missing result: target=LabelVariants.send(to:from:) |
+| overload_resolution.swift:304:39:304:93 | // $ type=r3:String target=LabelVariants.send(to:from:) | Missing result: type=r3:String |
+| overload_resolution.swift:330:12:330:28 | constrainedId(...) | Unexpected result: target=constrainedId |
+| overload_resolution.swift:330:30:330:78 | // $ type=r1:Int target=constrainedId(_:Numeric2) | Missing result: target=constrainedId(_:Numeric2) |
+| overload_resolution.swift:330:30:330:78 | // $ type=r1:Int target=constrainedId(_:Numeric2) | Missing result: type=r1:Int |
+| overload_resolution.swift:331:12:331:33 | constrainedId(...) | Unexpected result: target=constrainedId |
+| overload_resolution.swift:331:35:331:87 | // $ type=r2:String target=constrainedId(_:Equatable) | Missing result: target=constrainedId(_:Equatable) |
+| overload_resolution.swift:331:35:331:87 | // $ type=r2:String target=constrainedId(_:Equatable) | Missing result: type=r2:String |
+| overload_resolution.swift:344:17:344:33 | // $ type=.item:T | Missing result: type=.item:T |
+| overload_resolution.swift:353:16:353:22 | Box(...) | Unexpected result: target=Box |
+| overload_resolution.swift:353:24:353:66 | // $ type=intBox@Box<T>:Int target=Box.init | Missing result: target=Box.init |
+| overload_resolution.swift:353:24:353:66 | // $ type=intBox@Box<T>:Int target=Box.init | Missing result: type=intBox@Box<T>:Int |
+| overload_resolution.swift:354:16:354:24 | Box(...) | Unexpected result: target=Box |
+| overload_resolution.swift:354:26:354:71 | // $ type=strBox@Box<T>:String target=Box.init | Missing result: target=Box.init |
+| overload_resolution.swift:354:26:354:71 | // $ type=strBox@Box<T>:String target=Box.init | Missing result: type=strBox@Box<T>:String |
+| overload_resolution.swift:355:25:355:55 | // $ type=v1:Int target=Box.get | Missing result: target=Box.get |
+| overload_resolution.swift:355:25:355:55 | // $ type=v1:Int target=Box.get | Missing result: type=v1:Int |
+| overload_resolution.swift:356:25:356:58 | // $ type=v2:String target=Box.get | Missing result: target=Box.get |
+| overload_resolution.swift:356:25:356:58 | // $ type=v2:String target=Box.get | Missing result: type=v2:String |
+| overload_resolution.swift:357:22:357:44 | // $ target=Box.replace | Missing result: target=Box.replace |
+| overload_resolution.swift:358:25:358:47 | // $ target=Box.replace | Missing result: target=Box.replace |
+| overload_resolution.swift:374:36:374:70 | // $ target=Widget.init(name:size:) | Missing result: target=Widget.init(name:size:) |
+| overload_resolution.swift:378:44:378:78 | // $ target=Widget.init(name:size:) | Missing result: target=Widget.init(name:size:) |
+| overload_resolution.swift:383:12:383:37 | Widget(...) | Unexpected result: target=Widget |
+| overload_resolution.swift:383:39:383:88 | // $ type=w1:Widget target=Widget.init(name:size:) | Missing result: target=Widget.init(name:size:) |
+| overload_resolution.swift:383:39:383:88 | // $ type=w1:Widget target=Widget.init(name:size:) | Missing result: type=w1:Widget |
+| overload_resolution.swift:384:12:384:28 | Widget(...) | Unexpected result: target=Widget |
+| overload_resolution.swift:384:30:384:74 | // $ type=w2:Widget target=Widget.init(name:) | Missing result: target=Widget.init(name:) |
+| overload_resolution.swift:384:30:384:74 | // $ type=w2:Widget target=Widget.init(name:) | Missing result: type=w2:Widget |
+| overload_resolution.swift:385:12:385:27 | Widget(...) | Unexpected result: target=Widget |
+| overload_resolution.swift:385:29:385:73 | // $ type=w3:Widget target=Widget.init(size:) | Missing result: target=Widget.init(size:) |
+| overload_resolution.swift:385:29:385:73 | // $ type=w3:Widget target=Widget.init(size:) | Missing result: type=w3:Widget |
+| overload_resolution.swift:394:12:394:15 | f(...) | Unexpected result: target=Processor.apply |
+| overload_resolution.swift:398:12:398:16 | f(...) | Unexpected result: target=Processor.apply |
+| overload_resolution.swift:402:12:402:18 | f(...) | Unexpected result: target=Processor.apply |
+| overload_resolution.swift:407:11:407:21 | Processor(...) | Unexpected result: target=Processor |
+| overload_resolution.swift:407:23:407:48 | // $ target=Processor.init | Missing result: target=Processor.init |
+| overload_resolution.swift:408:36:408:88 | // $ type=r1:Int target=Processor.apply(_:(Int)->Int) | Missing result: target=Processor.apply(_:(Int)->Int) |
+| overload_resolution.swift:408:36:408:88 | // $ type=r1:Int target=Processor.apply(_:(Int)->Int) | Missing result: type=r1:Int |
+| overload_resolution.swift:409:38:409:99 | // $ type=r2:String target=Processor.apply(_:(String)->String) | Missing result: target=Processor.apply(_:(String)->String) |
+| overload_resolution.swift:409:38:409:99 | // $ type=r2:String target=Processor.apply(_:(String)->String) | Missing result: type=r2:String |
+| overload_resolution.swift:410:39:410:95 | // $ type=r3:Int target=Processor.apply(_:(Int,Int)->Int) | Missing result: target=Processor.apply(_:(Int,Int)->Int) |
+| overload_resolution.swift:410:39:410:95 | // $ type=r3:Int target=Processor.apply(_:(Int,Int)->Int) | Missing result: type=r3:Int |
+| overload_resolution.swift:422:12:422:22 | data(...) | Unexpected result: target=MultiSubscript.data |
+| overload_resolution.swift:426:12:426:20 | dict(...) | Unexpected result: target=MultiSubscript.dict |
+| overload_resolution.swift:431:12:431:27 | MultiSubscript(...) | Unexpected result: target=MultiSubscript |
+| overload_resolution.swift:431:29:431:59 | // $ target=MultiSubscript.init | Missing result: target=MultiSubscript.init |
+| overload_resolution.swift:432:22:432:67 | // $ type=r1:Int target=MultiSubscript.get(_:) | Missing result: target=MultiSubscript.get(_:) |
+| overload_resolution.swift:432:22:432:67 | // $ type=r1:Int target=MultiSubscript.get(_:) | Missing result: type=r1:Int |
+| overload_resolution.swift:433:24:433:75 | // $ type=r2:Int target=MultiSubscript.get(_:String) | Missing result: target=MultiSubscript.get(_:String) |
+| overload_resolution.swift:433:24:433:75 | // $ type=r2:Int target=MultiSubscript.get(_:String) | Missing result: type=r2:Int |
+| protocols.swift:15:38:15:61 | // $ type=.radius:Double | Missing result: type=.radius:Double |
+| protocols.swift:29:27:29:49 | // $ type=.width:Double | Missing result: type=.width:Double |
+| protocols.swift:34:11:34:29 | Circle(...) | Unexpected result: target=Circle |
+| protocols.swift:34:31:34:67 | // $ type=c:Circle target=Circle.init | Missing result: target=Circle.init |
+| protocols.swift:34:31:34:67 | // $ type=c:Circle target=Circle.init | Missing result: type=c:Circle |
+| protocols.swift:35:21:35:58 | // $ type=a1:Double target=Circle.area | Missing result: target=Circle.area |
+| protocols.swift:35:21:35:58 | // $ type=a1:Double target=Circle.area | Missing result: type=a1:Double |
+| protocols.swift:37:11:37:44 | Rectangle(...) | Unexpected result: target=Rectangle |
+| protocols.swift:37:46:37:88 | // $ type=r:Rectangle target=Rectangle.init | Missing result: target=Rectangle.init |
+| protocols.swift:37:46:37:88 | // $ type=r:Rectangle target=Rectangle.init | Missing result: type=r:Rectangle |
+| protocols.swift:38:21:38:61 | // $ type=a2:Double target=Rectangle.area | Missing result: target=Rectangle.area |
+| protocols.swift:38:21:38:61 | // $ type=a2:Double target=Rectangle.area | Missing result: type=a2:Double |
+| protocols.swift:58:12:58:19 | items(...) | Unexpected result: target=IntContainer.items |
+| protocols.swift:67:12:67:41 | IntContainer(...) | Unexpected result: target=IntContainer |
+| protocols.swift:67:43:67:92 | // $ type=ic:IntContainer target=IntContainer.init | Missing result: target=IntContainer.init |
+| protocols.swift:67:43:67:92 | // $ type=ic:IntContainer target=IntContainer.init | Missing result: type=ic:IntContainer |
+| protocols.swift:68:27:68:72 | // $ type=item:Int target=IntContainer.getItem | Missing result: target=IntContainer.getItem |
+| protocols.swift:68:27:68:72 | // $ type=item:Int target=IntContainer.getItem | Missing result: type=item:Int |
+| protocols.swift:69:24:69:66 | // $ type=cnt:Int target=IntContainer.count | Missing result: target=IntContainer.count |
+| protocols.swift:69:24:69:66 | // $ type=cnt:Int target=IntContainer.count | Missing result: type=cnt:Int |
+| protocols.swift:92:17:92:38 | // $ type=.name:String | Missing result: type=.name:String |
+| protocols.swift:96:21:96:43 | // $ type=.entityId:Int | Missing result: type=.entityId:Int |
+| protocols.swift:101:11:101:44 | Entity(...) | Unexpected result: target=Entity |
+| protocols.swift:101:46:101:82 | // $ type=e:Entity target=Entity.init | Missing result: target=Entity.init |
+| protocols.swift:101:46:101:82 | // $ type=e:Entity target=Entity.init | Missing result: type=e:Entity |
+| protocols.swift:102:23:102:62 | // $ type=d:String target=Entity.display | Missing result: target=Entity.display |
+| protocols.swift:102:23:102:62 | // $ type=d:String target=Entity.display | Missing result: type=d:String |
+| protocols.swift:103:20:103:53 | // $ type=eid:Int target=Entity.id | Missing result: target=Entity.id |
+| protocols.swift:103:20:103:53 | // $ type=eid:Int target=Entity.id | Missing result: type=eid:Int |
+| type_constraints.swift:12:12:12:22 | minOf(...) | Unexpected result: target=minOf |
+| type_constraints.swift:12:24:12:58 | // $ type=m1:Int target=minOf(_:_:) | Missing result: target=minOf(_:_:) |
+| type_constraints.swift:12:24:12:58 | // $ type=m1:Int target=minOf(_:_:) | Missing result: type=m1:Int |
+| type_constraints.swift:13:12:13:26 | minOf(...) | Unexpected result: target=minOf |
+| type_constraints.swift:13:28:13:65 | // $ type=m2:String target=minOf(_:_:) | Missing result: target=minOf(_:_:) |
+| type_constraints.swift:13:28:13:65 | // $ type=m2:String target=minOf(_:_:) | Missing result: type=m2:String |
+| type_constraints.swift:14:12:14:22 | maxOf(...) | Unexpected result: target=maxOf |
+| type_constraints.swift:14:24:14:58 | // $ type=m3:Int target=maxOf(_:_:) | Missing result: target=maxOf(_:_:) |
+| type_constraints.swift:14:24:14:58 | // $ type=m3:Int target=maxOf(_:_:) | Missing result: type=m3:Int |
+| type_constraints.swift:15:12:15:26 | maxOf(...) | Unexpected result: target=maxOf |
+| type_constraints.swift:15:28:15:65 | // $ type=m4:String target=maxOf(_:_:) | Missing result: target=maxOf(_:_:) |
+| type_constraints.swift:15:28:15:65 | // $ type=m4:String target=maxOf(_:_:) | Missing result: type=m4:String |
+| type_constraints.swift:38:16:38:36 | // $ type=.tag:String | Missing result: type=.tag:String |
+| type_constraints.swift:42:21:42:43 | // $ type=.priority:Int | Missing result: type=.priority:Int |
+| type_constraints.swift:47:25:47:56 | // $ target=Displayable2.display | Missing result: target=Displayable2.display |
+| type_constraints.swift:55:14:55:46 | TaggedItem(...) | Unexpected result: target=TaggedItem |
+| type_constraints.swift:55:48:55:74 | // $ target=TaggedItem.init | Missing result: target=TaggedItem.init |
+| type_constraints.swift:56:11:56:27 | showAndSort(...) | Unexpected result: target=showAndSort |
+| type_constraints.swift:56:29:56:69 | // $ type=s:String target=showAndSort(_:) | Missing result: target=showAndSort(_:) |
+| type_constraints.swift:57:12:57:41 | showSortAndCompare(...) | Unexpected result: target=showSortAndCompare |
+| type_constraints.swift:57:43:57:91 | // $ type=eq:Bool target=showSortAndCompare(_:_:) | Missing result: target=showSortAndCompare(_:_:) |
+| type_constraints.swift:81:12:81:44 | SortedPair(...) | Unexpected result: target=SortedPair |
+| type_constraints.swift:81:46:81:72 | // $ target=SortedPair.init | Missing result: target=SortedPair.init |
+| type_constraints.swift:82:39:82:88 | // $ type=r1:Bool target=SortedPair.isFirstSmaller | Missing result: target=SortedPair.isFirstSmaller |
+| type_constraints.swift:82:39:82:88 | // $ type=r1:Bool target=SortedPair.isFirstSmaller | Missing result: type=r1:Bool |
+| type_constraints.swift:83:42:83:92 | // $ type=r2:Bool target=SortedPair.isSecondSmaller | Missing result: target=SortedPair.isSecondSmaller |
+| type_constraints.swift:83:42:83:92 | // $ type=r2:Bool target=SortedPair.isSecondSmaller | Missing result: type=r2:Bool |
+| type_constraints.swift:102:12:102:19 | items(...) | Unexpected result: target=IntArray.items |
+| type_constraints.swift:115:12:115:19 | items(...) | Unexpected result: target=StringArray.items |
+| type_constraints.swift:120:28:120:61 | // $ target=ElementContainer.first | Missing result: target=ElementContainer.first |
+| type_constraints.swift:124:28:124:61 | // $ target=ElementContainer.first | Missing result: target=ElementContainer.first |
+| type_constraints.swift:128:12:128:36 | IntArray(...) | Unexpected result: target=IntArray |
+| type_constraints.swift:128:38:128:62 | // $ target=IntArray.init | Missing result: target=IntArray.init |
+| type_constraints.swift:129:12:129:46 | StringArray(...) | Unexpected result: target=StringArray |
+| type_constraints.swift:129:48:129:75 | // $ target=StringArray.init | Missing result: target=StringArray.init |
+| type_constraints.swift:130:12:130:33 | extractFirst(...) | Unexpected result: target=extractFirst |
+| type_constraints.swift:130:35:130:80 | // $ type=r1:Int target=extractFirst(from:Int) | Missing result: target=extractFirst(from:Int) |
+| type_constraints.swift:130:35:130:80 | // $ type=r1:Int target=extractFirst(from:Int) | Missing result: type=r1:Int |
+| type_constraints.swift:131:12:131:33 | extractFirst(...) | Unexpected result: target=extractFirst |
+| type_constraints.swift:131:35:131:86 | // $ type=r2:String target=extractFirst(from:String) | Missing result: target=extractFirst(from:String) |
+| type_constraints.swift:131:35:131:86 | // $ type=r2:String target=extractFirst(from:String) | Missing result: type=r2:String |
+| type_constraints.swift:150:30:150:53 | // $ target=Vehicle.init | Missing result: target=Vehicle.init |
+| type_constraints.swift:164:30:164:53 | // $ target=Vehicle.init | Missing result: target=Vehicle.init |
+| type_constraints.swift:177:23:177:50 | // $ target=Vehicle.describe | Missing result: target=Vehicle.describe |
+| type_constraints.swift:181:13:181:27 | Car(...) | Unexpected result: target=Car |
+| type_constraints.swift:181:29:181:61 | // $ type=car:Car target=Car.init | Missing result: target=Car.init |
+| type_constraints.swift:181:29:181:61 | // $ type=car:Car target=Car.init | Missing result: type=car:Car |
+| type_constraints.swift:182:15:182:30 | Truck(...) | Unexpected result: target=Truck |
+| type_constraints.swift:182:32:182:70 | // $ type=truck:Truck target=Truck.init | Missing result: target=Truck.init |
+| type_constraints.swift:182:32:182:70 | // $ type=truck:Truck target=Truck.init | Missing result: type=truck:Truck |
+| type_constraints.swift:183:12:183:31 | describeVehicle(...) | Unexpected result: target=describeVehicle |
+| type_constraints.swift:183:33:183:78 | // $ type=d1:String target=describeVehicle(_:) | Missing result: target=describeVehicle(_:) |
+| type_constraints.swift:184:12:184:33 | describeVehicle(...) | Unexpected result: target=describeVehicle |
+| type_constraints.swift:184:35:184:80 | // $ type=d2:String target=describeVehicle(_:) | Missing result: target=describeVehicle(_:) |
+| type_constraints.swift:185:22:185:55 | // $ type=h:String target=Car.honk | Missing result: target=Car.honk |
+| type_constraints.swift:185:22:185:55 | // $ type=h:String target=Car.honk | Missing result: type=h:String |
+| type_constraints.swift:186:25:186:61 | // $ type=hl:String target=Truck.haul | Missing result: target=Truck.haul |
+| type_constraints.swift:186:25:186:61 | // $ type=hl:String target=Truck.haul | Missing result: type=hl:String |
+| type_constraints.swift:213:12:213:20 | values(...) | Unexpected result: target=Accumulator.values |
+| type_constraints.swift:213:24:213:32 | values(...) | Unexpected result: target=Accumulator.values |
+| type_constraints.swift:213:34:213:55 | // $ target=Summable.+ | Missing result: target=Summable.+ |
+| type_constraints.swift:224:16:224:45 | Accumulator(...) | Unexpected result: target=Accumulator |
+| type_constraints.swift:224:47:224:74 | // $ target=Accumulator.init | Missing result: target=Accumulator.init |
+| type_constraints.swift:225:28:225:69 | // $ type=cnt:Int target=Accumulator.count | Missing result: target=Accumulator.count |
+| type_constraints.swift:225:28:225:69 | // $ type=cnt:Int target=Accumulator.count | Missing result: type=cnt:Int |
+| type_constraints.swift:226:28:226:69 | // $ type=tot:Int target=Accumulator.total | Missing result: target=Accumulator.total |
+| type_constraints.swift:226:28:226:69 | // $ type=tot:Int target=Accumulator.total | Missing result: type=tot:Int |
+| type_constraints.swift:227:32:227:77 | // $ type=has:Bool target=Accumulator.contains | Missing result: target=Accumulator.contains |
+| type_constraints.swift:227:32:227:77 | // $ type=has:Bool target=Accumulator.contains | Missing result: type=has:Bool |
+| type_constraints.swift:236:12:236:19 | items(...) | Unexpected result: target=items |
+| type_constraints.swift:236:23:236:30 | items(...) | Unexpected result: target=items |
+| type_constraints.swift:236:32:236:53 | // $ target=Summable.+ | Missing result: target=Summable.+ |
+| type_constraints.swift:245:11:245:23 | Transformer(...) | Unexpected result: target=Transformer |
+| type_constraints.swift:245:25:245:52 | // $ target=Transformer.init | Missing result: target=Transformer.init |
+| type_constraints.swift:246:35:246:79 | // $ type=r1:Int target=Transformer.transform | Missing result: target=Transformer.transform |
+| type_constraints.swift:246:35:246:79 | // $ type=r1:Int target=Transformer.transform | Missing result: type=r1:Int |
+| type_constraints.swift:247:41:247:88 | // $ type=r2:String target=Transformer.transform | Missing result: target=Transformer.transform |
+| type_constraints.swift:247:41:247:88 | // $ type=r2:String target=Transformer.transform | Missing result: type=r2:String |
+| type_constraints.swift:248:28:248:69 | // $ type=r3:Bool target=Transformer.merge | Missing result: target=Transformer.merge |
+| type_constraints.swift:248:28:248:69 | // $ type=r3:Bool target=Transformer.merge | Missing result: type=r3:Bool |
+| type_constraints.swift:260:12:260:36 | clamp(...) | Unexpected result: target=clamp |
+| type_constraints.swift:260:38:260:78 | // $ type=r1:Int target=clamp(_:min:max:) | Missing result: target=clamp(_:min:max:) |
+| type_constraints.swift:260:38:260:78 | // $ type=r1:Int target=clamp(_:min:max:) | Missing result: type=r1:Int |
+| type_constraints.swift:261:12:261:41 | clamp(...) | Unexpected result: target=clamp |
+| type_constraints.swift:261:43:261:86 | // $ type=r2:Double target=clamp(_:min:max:) | Missing result: target=clamp(_:min:max:) |
+| type_constraints.swift:261:43:261:86 | // $ type=r2:Double target=clamp(_:min:max:) | Missing result: type=r2:Double |
+| type_constraints.swift:262:12:262:41 | clamp(...) | Unexpected result: target=clamp |
+| type_constraints.swift:262:43:262:86 | // $ type=r3:String target=clamp(_:min:max:) | Missing result: target=clamp(_:min:max:) |
+| type_constraints.swift:262:43:262:86 | // $ type=r3:String target=clamp(_:min:max:) | Missing result: type=r3:String |

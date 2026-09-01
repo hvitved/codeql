@@ -176,6 +176,11 @@ module Unified {
     string getExternalName() { result = this.getExternalNameNode().getValue() }
   }
 
+  class TupleExpr extends G::TupleExpr {
+    /** Gets the number of elements in this tuple expression. */
+    int getNumberOfElements() { result = count(this.getAnElement()) }
+  }
+
   class TypeAliasDeclaration extends G::TypeAliasDeclaration {
     /** Gets the name of this type alias. */
     string getName() { result = this.getNameNode().getValue() }
@@ -227,5 +232,10 @@ module Unified {
 
     /** Gets the number of arguments passed to this call, not counting implicit arguments like receiver. */
     int getNumberOfArguments() { result = count(this.getAnArgument()) }
+  }
+
+  class FunctionExpr extends G::FunctionExpr {
+    /** Gets the number of parameters of this function. */
+    int getNumberOfParameters() { result = count(this.getAParameter()) }
   }
 }
