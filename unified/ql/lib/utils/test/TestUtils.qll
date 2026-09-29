@@ -1,5 +1,6 @@
 private import unified
 private import CommentUtil
+private import codeql.unified.internal.CallableEx
 private import codeql.unified.internal.NameBinding
 private import codeql.unified.internal.typeinference.TypeInferencePlugin
 
@@ -46,41 +47,28 @@ predicate nameBinding(NameBinding v, string alias) {
   )
 }
 
-private string getCallableName(Callable c) {
-  result = c.(AccessorDeclaration).getName()
-  or
-  result = c.(ConstructorDeclaration).getName()
-  or
-  c instanceof DestructorDeclaration and
-  result = "<destructor>"
-  or
-  result = c.(FunctionDeclaration).getName()
-  or
-  c instanceof InitializerDeclaration and
-  result = "<initializer>"
-}
-
-private string defaultCallableName(Callable c) {
+private string defaultCallableName(CallableEx c) {
   exists(ClassLikeDeclaration cls |
-    c = cls.getAMember() and
-    result = deriveClassName(cls) + "." + getCallableName(c)
+    c.isMemberOf(cls) and
+    result = deriveClassName(cls) + "." + c.getName()
   )
   or
-  not c = any(ClassLikeDeclaration cls).getAMember() and
-  result = getCallableName(c)
+  not c.isMemberOf(_) and
+  result = c.getName()
   or
-  exists(ClassLikeDeclaration enum |
-    enum = c.(EnumConstructor).getEnum() and
-    result = deriveClassName(enum) + "." + c.getEnclosingClass().getName()
+  exists(ClassLikeDeclaration enum, EnumConstructor ctor |
+    ctor = c.asCallable() and
+    enum = ctor.getEnum() and
+    result = deriveClassName(enum) + "." + ctor.getEnclosingClass().getName()
   )
 }
 
-private predicate callableAt(Callable c, string filepath, int line) {
+private predicate callableAt(CallableEx c, string filepath, int line) {
   c.getLocation().hasLocationInfo(filepath, line, _, _, _)
 }
 
 /** Holds if the callable `c` has been assigned the given `alias` by a comment in the test code. */
-predicate callableName(Callable c, string alias) {
+predicate callableName(CallableEx c, string alias) {
   exists(string filepath, int line | callableAt(c, filepath, line) |
     keyValueCommentAt(filepath, line, "name", alias)
     or

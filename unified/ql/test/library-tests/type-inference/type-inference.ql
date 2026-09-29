@@ -1,5 +1,6 @@
 import utils.test.InlineExpectationsTest
 import utils.test.TestUtils
+import codeql.unified.internal.CallableEx
 import codeql.unified.internal.typeinference.Type
 import codeql.unified.internal.typeinference.TypeInference as TypeInference
 import codeql.unified.internal.StaticNameBinding
@@ -27,7 +28,7 @@ module ResolveTest implements TestSig {
   }
 
   predicate hasActualResult(Location location, string element, string tag, string value) {
-    exists(Callable c, CallExpr ce |
+    exists(CallableEx c, CallExpr ce |
       c = resolveCallTarget(ce) and
       location = ce.getLocation() and
       element = ce.toString() and
