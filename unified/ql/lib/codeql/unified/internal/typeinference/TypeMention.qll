@@ -1,9 +1,51 @@
 private import unified as Unified
 private import Type
+private import TypeAbstraction
 private import TypeInference
 private import TypeInferencePlugin as Plugin
 private import codeql.unified.internal.StaticNameBinding
 private import codeql.unified.internal.ExprPositions
+private import codeql.unified.internal.CallableEx
+
+private predicate callableExInheritedConstructorParameter(
+  CallableEx c, int i, ParameterEx p, Parameter rootParam
+) {
+  exists(CallableEx base |
+    c.isInheritedConstructor(_, base) and
+    p = c.getParameter(i)
+  |
+    rootParam = base.getParameter(i).asParameter()
+    or
+    callableExInheritedConstructorParameter(base, i, _, rootParam)
+  )
+}
+
+bindingset[abs, constraint, tp]
+pragma[inline_late]
+private Type getTraitConstraintTypeAt(
+  TypeAbstraction abs, TypeMention constraint, TypeParameter tp, TypePath path
+) {
+  BaseTypes::conditionSatisfiesConstraintTypeAt(abs, _, constraint,
+    TypePath::singleton(tp).appendInverse(path), result)
+}
+
+private Type sdf(ParameterEx param, Parameter rootParam, TypePath path) {
+  exists(
+    TypePath prefix, TypePath suffix, TypeParameter tp, TypeMention constraint,
+    ClassLikeDeclaration rootCls, TypeAbstraction abs
+  |
+    callableExInheritedConstructorParameter(_, _, param, rootParam) and
+    rootParam.getEnclosingClass() = rootCls and
+    BaseTypes::rootTypesSatisfaction(_, TClassLikeDeclarationType(rootCls), abs, _, constraint) and
+    path = prefix.append(suffix) and
+    tp = rootParam.getType().(TypeMention).getTypeAt(prefix) and
+    param.getCallable().isMemberOf(abs) and
+    // if tp = TSelfTypeParameter(_)
+    // then result = resolveImplOrTraitType(i, suffix)
+    // else
+    result = getTraitConstraintTypeAt(abs, constraint, tp, suffix)
+  )
+}
 
 /** An AST node that mentions a type. */
 abstract class TypeMention extends AstNode {

@@ -272,6 +272,9 @@ abstract private class ParameterExImpl extends TParameterEx {
     this = TInheritedConstructorParameter(ctor, baseCtor, i)
   }
 
+  /** Gets the callable that this parameter belongs to. */
+  CallableEx getCallable() { this = result.getAParameter() }
+
   /** Gets a textual representation of this parameter. */
   abstract string toString();
 
