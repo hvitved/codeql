@@ -48,10 +48,10 @@ class OverloadByLabel {
 
 func testOverloadByLabel() {
   let o = OverloadByLabel()  // $ target=OverloadByLabel.init
-  let r1 = o.configure(width: 10)  // $ type=r1:String target=OverloadByLabel.configure1 $ SPURIOUS: target=OverloadByLabel.configure2 target=OverloadByLabel.configure3 target=OverloadByLabel.configure4
-  let r2 = o.configure(height: 20)  // $ type=r2:String target=OverloadByLabel.configure2 $ SPURIOUS: target=OverloadByLabel.configure1 target=OverloadByLabel.configure3 target=OverloadByLabel.configure4
-  let r3 = o.configure(width: 10, height: 20)  // $ type=r3:String target=OverloadByLabel.configure3 $ SPURIOUS: target=OverloadByLabel.configure1 target=OverloadByLabel.configure2 target=OverloadByLabel.configure4
-  let r4 = o.configure(size: 30)  // $ type=r4:String target=OverloadByLabel.configure4 $ SPURIOUS: target=OverloadByLabel.configure1 target=OverloadByLabel.configure2 target=OverloadByLabel.configure3
+  let r1 = o.configure(width: 10)  // $ type=r1:String target=OverloadByLabel.configure1 $ SPURIOUS: target=OverloadByLabel.configure2 target=OverloadByLabel.configure4
+  let r2 = o.configure(height: 20)  // $ type=r2:String target=OverloadByLabel.configure2 $ SPURIOUS: target=OverloadByLabel.configure1 target=OverloadByLabel.configure4
+  let r3 = o.configure(width: 10, height: 20)  // $ type=r3:String target=OverloadByLabel.configure3
+  let r4 = o.configure(size: 30)  // $ type=r4:String target=OverloadByLabel.configure4 $ SPURIOUS: target=OverloadByLabel.configure1 target=OverloadByLabel.configure2
 }
 
 // --- Overload by arity (number of parameters) ---

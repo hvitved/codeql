@@ -2,17 +2,17 @@ class C1 {
     init(_ x: Int) {}  // name=C1.init
 
     convenience init() {  // name=C1.init_conv
-        self.init(0)  // $ target=C1.init $ SPURIOUS: target=C1.init_conv
+        self.init(0)  // $ target=C1.init
     }
 }
 
-var c11 = C1()  // $ type=c11:C1 target=C1.init_conv $ SPURIOUS: target=C1.init
-var c12 = C1.init()  // $ type=c12:C1 target=C1.init_conv $ SPURIOUS: target=C1.init
+var c11 = C1()  // $ type=c11:C1 target=C1.init_conv
+var c12 = C1.init()  // $ type=c12:C1 target=C1.init_conv
 
 class C2: C1 {}  // inherits `init`
 
-var c21 = C2()  // $ type=c21:C2 $ MISSING: target=C1.init_conv $ SPURIOUS: target=C2.init
-var c22 = C2.init()  // $ target=C1.init_conv $ MISSING: type=c22:C2 $ SPURIOUS: target=C1.init
+var c21 = C2()  // $ type=c21:C2 target=C1.init_conv
+var c22 = C2.init()  // $ type=c22:C2 target=C1.init_conv
 
 class C3 {
     init() {}
@@ -32,8 +32,8 @@ class C4: C3 {
 
 class C5: C4 {}  // inherits `init` and `convenience init`
 
-var c51 = C5()  // $ type=c51:C5 $ MISSING: target=C4.init $ SPURIOUS: target=C5.init
-var c52 = C5(0)  // $ type=c52:C5 $ MISSING: target=C4.init $ SPURIOUS: target=C5.init
+var c51 = C5()  // $ type=c51:C5 target=C4.init
+var c52 = C5(0)  // $ type=c52:C5 target=C4.init
 
 class C6<T1, T2> {
     init(x: T1, y: T2) {}

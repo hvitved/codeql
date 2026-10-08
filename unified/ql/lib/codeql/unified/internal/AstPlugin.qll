@@ -23,10 +23,17 @@ class AstPlugin extends Unit {
 
   /**
    * Holds if the default constructor `cd` needs a parameter at index `i` with
-   * the given name. `i = 0` is reserved for the implicit receiver parameter.
+   * the given name and type. `hasDefault` indicates whether the parameter has
+   * a default value.
+   *
+   * `i = 0` is reserved for the implicit receiver parameter.
    */
   bindingset[cd]
-  predicate defaultConstructorParameter(ConstructorDeclaration cd, int i, string name) { none() }
+  predicate defaultConstructorParameter(
+    ConstructorDeclaration cd, int i, string name, boolean hasDefault, AstNode type
+  ) {
+    none()
+  }
 }
 
 bindingset[f]
@@ -50,6 +57,8 @@ string getVariableDeclarationKeyword(VariableDeclaration decl) {
 }
 
 bindingset[cd]
-predicate defaultConstructorParameter(ConstructorDeclaration cd, int i, string name) {
-  any(AstPlugin p).defaultConstructorParameter(cd, i, name)
+predicate defaultConstructorParameter(
+  ConstructorDeclaration cd, int i, string name, boolean hasDefault, AstNode type
+) {
+  any(AstPlugin p).defaultConstructorParameter(cd, i, name, hasDefault, type)
 }

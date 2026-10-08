@@ -2684,6 +2684,8 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
        * in `inferTypeLanguageSpecific`; if in doubt, use `inferTypeLanguageSpecific` instead.
        */
       default Type inferTypeCertainLanguageSpecific(AstNode n, TypePath path) { none() }
+
+      default predicate allowContextualInference(AstNode n, TypePath path) { none() }
     }
 
     module Make3<InputSig3 Input3> {
@@ -3034,7 +3036,7 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
           // `inferTypeContextualCand2` performs the proper check for contextual
           // typing, but we can already rule out cases where receivers don't have
           // an unknown type anywhere
-          ContextualTyping::hasUnknownType(receiver)
+          ContextualTyping::hasUnknownType(receiver, _)
         )
       }
 
@@ -3223,7 +3225,7 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
         // `inferTypeContextualCand2` performs the proper check for contextual
         // typing, but we can already rule out cases where arguments don't have
         // an unknown type anywhere
-        ContextualTyping::hasUnknownType(arg)
+        ContextualTyping::hasUnknownType(arg, _)
       }
 
       /**
@@ -3296,12 +3298,14 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
         }
 
         pragma[nomagic]
-        predicate hasUnknownTypeAt(AstNode n, TypePath path) {
-          inferType(n, path) instanceof UnknownType
+        predicate hasUnknownTypeAt(AstNode n, TypePath path, boolean actual) {
+          inferType(n, path) instanceof UnknownType and actual = true
+          or
+          allowContextualInference(n, path) and actual = false
         }
 
         pragma[nomagic]
-        predicate hasUnknownType(AstNode n) { hasUnknownTypeAt(n, _) }
+        predicate hasUnknownType(AstNode n, boolean actual) { hasUnknownTypeAt(n, _, actual) }
 
         pragma[nomagic]
         private Type inferTypeContextualCand0(AstNode n, TypePath path) {
@@ -3325,18 +3329,20 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
         pragma[nomagic]
         private Type inferTypeContextualCand1(AstNode n, TypePath prefix, TypePath path) {
           result = inferTypeContextualCand0(n, path) and
-          hasUnknownType(n) and
           prefix = path.getAPrefix() and
-          // no need to propagate `UnknownType`s contextually; `n` must already have an
-          // `UnknownType` at some prefix of `path`
-          not result instanceof UnknownType
+          exists(boolean actual |
+            hasUnknownType(n, actual) and
+            // no need to propagate `UnknownType`s contextually; `n` must already have an
+            // `UnknownType` at some prefix of `path`
+            if result instanceof UnknownType then actual = false else any()
+          )
         }
 
         pragma[nomagic]
         private Type inferTypeContextualCand2(AstNode n, TypePath path) {
           exists(TypePath prefix |
             result = inferTypeContextualCand1(n, prefix, path) and
-            hasUnknownTypeAt(n, prefix)
+            hasUnknownTypeAt(n, prefix, _)
           )
         }
 
@@ -3347,7 +3353,7 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
          */
         pragma[nomagic]
         private predicate isValidContextualNonEmptyPath(AstNode n, TypePath path) {
-          hasUnknownType(n) and
+          hasUnknownType(n, _) and
           exists(TypePath prefix, TypeParameter tp |
             tp = inferType(n, prefix).getATypeParameter() and
             path = TypePath::snoc(prefix, tp)
@@ -3367,6 +3373,8 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
             path.isEmpty()
             or
             isValidContextualNonEmptyPath(n, path)
+            or
+            allowContextualInference(n, path.getAPrefix())
           )
         }
       }
@@ -3487,7 +3495,7 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
         AstNode n, TypePath prefix, int i, TypePath suffix, Type t
       ) {
         exists(TypeParameter tp, TypePath suffix0 |
-          ContextualTyping::hasUnknownTypeAt(n, prefix) and
+          ContextualTyping::hasUnknownTypeAt(n, prefix, _) and
           suffix0.isCons(tp, suffix) and
           tp = any(UnknownType ut).getPositionalTypeParameter(i) and
           t = inferType(n, prefix.appendInverse(suffix0)) and
@@ -3497,7 +3505,7 @@ module Make1<LocationSig Location, InputSig1<Location> Input1> {
 
       pragma[nomagic]
       private predicate infersKnownAndUnknownType(AstNode n, TypePath path, int i, TypeParameter tp) {
-        ContextualTyping::hasUnknownTypeAt(n, path) and
+        ContextualTyping::hasUnknownTypeAt(n, path, _) and
         exists(Type t |
           t = inferType(n, path) and
           not t instanceof UnknownType and
