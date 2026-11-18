@@ -399,6 +399,9 @@ signature module AstSig<LocationSig Location> {
     boolean getValue();
   }
 
+  /** A null literal expression. */
+  class NullLiteral extends Expr;
+
   /**
    * A pattern matching expression.
    *
@@ -956,6 +959,8 @@ module Make0<LocationSig Location, AstSig<Location> Ast> {
 
     private predicate constantCondition(AstNode n, ConditionalSuccessor t) {
       n.(BooleanLiteral).getValue() = t.(BooleanSuccessor).getValue()
+      or
+      n instanceof NullLiteral and t.(NullnessSuccessor).getValue() = true
       or
       exists(Case c, int i |
         matchAll(c) and
