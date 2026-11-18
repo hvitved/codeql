@@ -782,12 +782,8 @@ conditionBlock
 | Switch.cs:129:12:129:14 | Entry | Switch.cs:131:28:131:35 | After String s [no-match] | false |
 | Switch.cs:129:12:129:14 | Entry | Switch.cs:131:40:131:40 | After access to local variable s [non-null] | true |
 | Switch.cs:129:12:129:14 | Entry | Switch.cs:131:40:131:40 | After access to local variable s [null] | true |
-| Switch.cs:129:12:129:14 | Entry | Switch.cs:131:48:131:51 | After null [non-null] | false |
-| Switch.cs:129:12:129:14 | Entry | Switch.cs:131:48:131:51 | After null [null] | false |
 | Switch.cs:131:28:131:35 | After String s [match] | Switch.cs:131:40:131:40 | After access to local variable s [non-null] | false |
 | Switch.cs:131:28:131:35 | After String s [match] | Switch.cs:131:40:131:40 | After access to local variable s [null] | true |
-| Switch.cs:131:28:131:35 | After String s [no-match] | Switch.cs:131:48:131:51 | After null [non-null] | false |
-| Switch.cs:131:28:131:35 | After String s [no-match] | Switch.cs:131:48:131:51 | After null [null] | true |
 | Switch.cs:134:9:134:11 | Entry | Switch.cs:139:18:139:18 | After 1 [match] | true |
 | Switch.cs:134:9:134:11 | Entry | Switch.cs:139:18:139:18 | After 1 [no-match] | false |
 | Switch.cs:134:9:134:11 | Entry | Switch.cs:140:18:140:18 | After 2 [match] | false |

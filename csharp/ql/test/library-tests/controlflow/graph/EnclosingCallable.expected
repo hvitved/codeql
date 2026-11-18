@@ -6612,7 +6612,6 @@ nodeEnclosing
 | Switch.cs:131:43:131:43 | _ | Switch.cs:129:12:129:14 | M12 |
 | Switch.cs:131:43:131:51 | ... => ... | Switch.cs:129:12:129:14 | M12 |
 | Switch.cs:131:43:131:51 | After ... => ... [match] | Switch.cs:129:12:129:14 | M12 |
-| Switch.cs:131:48:131:51 | After null [non-null] | Switch.cs:129:12:129:14 | M12 |
 | Switch.cs:131:48:131:51 | After null [null] | Switch.cs:129:12:129:14 | M12 |
 | Switch.cs:131:48:131:51 | null | Switch.cs:129:12:129:14 | M12 |
 | Switch.cs:134:9:134:11 | Entry | Switch.cs:134:9:134:11 | M13 |
@@ -9486,14 +9485,11 @@ blockEnclosing
 | Switch.cs:125:34:125:34 | After access to local variable b [true] | Switch.cs:123:10:123:12 | M11 |
 | Switch.cs:129:12:129:14 | Entry | Switch.cs:129:12:129:14 | M12 |
 | Switch.cs:131:16:131:66 | After call to method ToString | Switch.cs:129:12:129:14 | M12 |
-| Switch.cs:131:17:131:53 | After ... switch { ... } [non-null] | Switch.cs:129:12:129:14 | M12 |
 | Switch.cs:131:17:131:53 | After ... switch { ... } [null] | Switch.cs:129:12:129:14 | M12 |
 | Switch.cs:131:28:131:35 | After String s [match] | Switch.cs:129:12:129:14 | M12 |
 | Switch.cs:131:28:131:35 | After String s [no-match] | Switch.cs:129:12:129:14 | M12 |
 | Switch.cs:131:40:131:40 | After access to local variable s [non-null] | Switch.cs:129:12:129:14 | M12 |
 | Switch.cs:131:40:131:40 | After access to local variable s [null] | Switch.cs:129:12:129:14 | M12 |
-| Switch.cs:131:48:131:51 | After null [non-null] | Switch.cs:129:12:129:14 | M12 |
-| Switch.cs:131:48:131:51 | After null [null] | Switch.cs:129:12:129:14 | M12 |
 | Switch.cs:134:9:134:11 | Entry | Switch.cs:134:9:134:11 | M13 |
 | Switch.cs:134:9:134:11 | Normal Exit | Switch.cs:134:9:134:11 | M13 |
 | Switch.cs:139:18:139:18 | After 1 [match] | Switch.cs:134:9:134:11 | M13 |
