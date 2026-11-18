@@ -1150,6 +1150,10 @@ module Ast implements AstSig<Py::Location> {
     }
   }
 
+  class NullLiteral extends Expr {
+    NullLiteral() { none() }
+  }
+
   /** A pattern match expression. Python has no `instanceof`-style pattern match expression. */
   class PatternMatchExpr extends Expr {
     PatternMatchExpr() { none() }

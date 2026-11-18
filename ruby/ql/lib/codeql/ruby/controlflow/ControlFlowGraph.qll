@@ -438,6 +438,10 @@ private module Ast implements AstSig<Location> {
     boolean getValue() { result = super.getValue() }
   }
 
+  class NullLiteral extends Expr {
+    NullLiteral() { none() }
+  }
+
   class PatternMatchExpr extends Expr {
     PatternMatchExpr() { none() }
 

@@ -336,6 +336,10 @@ module CfgImpl {
       boolean getValue() { none() }
     }
 
+    class NullLiteral extends Expr {
+      NullLiteral() { none() }
+    }
+
     class PatternMatchExpr extends Expr {
       PatternMatchExpr() { none() }
 

@@ -237,6 +237,8 @@ private module Ast implements AstSig<Location> {
     boolean getValue() { result = this.getBooleanValue() }
   }
 
+  class NullLiteral extends Expr, J::NullLiteral { }
+
   final private class FinalInstanceOfExpr = J::InstanceOfExpr;
 
   class PatternMatchExpr extends FinalInstanceOfExpr {

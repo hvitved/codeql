@@ -390,6 +390,10 @@ module CfgImpl {
       boolean getValue() { result = val }
     }
 
+    class NullLiteral extends Expr {
+      NullLiteral() { none() }
+    }
+
     class Assignment extends BinaryExpr {
       Assignment() { none() }
     }

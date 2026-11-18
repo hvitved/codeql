@@ -291,6 +291,8 @@ module Ast implements AstSig<Location> {
     boolean getValue() { result = this.getBoolValue() }
   }
 
+  class NullLiteral = CS::NullLiteral;
+
   final private class FinalIsExpr = CS::IsExpr;
 
   class PatternMatchExpr extends FinalIsExpr {
